@@ -11,6 +11,7 @@ require Object::ID;
 use parent 'Exporter';
 our @EXPORT = qw(p);
 our @EXPORT_OK = qw(d);
+our $VERSION = 0.01;
 
 # defaults
 my $properties = {
