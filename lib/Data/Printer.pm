@@ -60,7 +60,6 @@ sub d (\[@$%&];%) {
 sub _init {
     return {
         %$properties,            # first we get the global settings
-        %{$_[0]},                # then we override (when applicable)
 
         '_current_indent' => 0,  # used internally
         '_seen'           => {}, # used internally
