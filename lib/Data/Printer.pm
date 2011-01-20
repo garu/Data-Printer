@@ -292,6 +292,51 @@ __END__
 
 Data::Print - colored pretty-print of Perl data structures and objects
 
+=head1 SYNOPSIS
+
+  use Data::Printer;
+
+  my @array = qw(a b);
+  $array[3] = 'c';
+  
+  p(@array);  # no need to pass references!
+
+Code above will show this (with colored output):
+
+   [
+       [0] "a",
+       [1] "b",
+       [2] undef,
+       [3] "c",
+   ]
+
+You can also inspect Objects:
+
+    my $obj = SomeClass->new;
+
+    p($obj);
+
+Which might give you something like:
+
+  \ SomeClass  {
+      Parents       Moose::Object
+      Linear @ISA   SomeClass, Moose::Object
+      public methods (3) : bar, foo, meta
+      private methods (0)
+      internals: {
+         _something => 42,
+      }
+  }
+ 
+
+If for some reason you want to mangle with the output string instead of
+printing it in STDERR, you can export the 'd' function.
+
+  use Data::Printer 'd';
+
+  warn d(%some_hash);
+
+
 =head1 RATIONALE
 
 Data::Dumper is a fantastic tool, meant to stringify data structures
@@ -316,8 +361,23 @@ JSON, or whatever. CPAN is full of such solutions!
 
 Volatile interface and internals. Use at your own risk :)
 
+=head1 CAVEATS
 
-=head1 BUGS AND LIMITATIONS
+You can't pass more than one variable at a time.
+
+   p($foo, $bar); # wrong
+   p($foo);       # right
+   p($bar);       # right
+
+You are supposed to pass variables, not anonymous structures:
+
+   p( { foo => 'bar' } ); # wrong
+
+   p( %somehash );        # right
+   p( $hash_ref );        # also right
+
+
+=head1 BUGS
 
 If you find any, please file a bug report.
 
