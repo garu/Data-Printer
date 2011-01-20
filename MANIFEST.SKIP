@@ -1,0 +1,16 @@
+^\.git
+^_build
+^Build$
+^blib
+~$
+\.bak$
+cover_db
+\..*\.sw.?$
+^Makefile$
+^pm_to_blib$
+^blibdirs$
+\.old$
+^#.*#$
+^\.#
+^TODO$
+^\._.*$
