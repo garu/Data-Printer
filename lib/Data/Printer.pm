@@ -22,15 +22,15 @@ my $properties = {
     'multiline'      => 1,
     'deparse'        => 0,
     'hash_separator' => '    ',
-    'color_for'      => {
-        'array'  => 'bright_white',
-        'number' => 'bright_blue',
-        'string' => 'bright_yellow',
-        'class'  => 'bright_green',
-        'undef'  => 'bright_red',
-        'hash'   => 'magenta',
-        'regex'  => 'yellow',
-        'code'   => 'green',
+    'color'          => {
+        'array'    => 'bright_white',
+        'number'   => 'bright_blue',
+        'string'   => 'bright_yellow',
+        'class'    => 'bright_green',
+        'undef'    => 'bright_red',
+        'hash'     => 'magenta',
+        'regex'    => 'yellow',
+        'code'     => 'green',
         'repeated' => 'white on_red',
     },
     'class' => {
@@ -39,7 +39,6 @@ my $properties = {
         internals      => 1,
         show_export    => 1,
     },
-
 };
 
 
@@ -58,12 +57,37 @@ sub d (\[@$%&];%) {
 }
 
 sub _init {
-    return {
-        %$properties,            # first we get the global settings
+    my $p = shift;
 
-        '_current_indent' => 0,  # used internally
-        '_seen'           => {}, # used internally
-    };
+    if ($p) {
+        foreach my $key (keys %$p) {
+            if ($key eq 'color' or $key eq 'colour') {
+                my $color = $p->{$key};
+                if (defined $color and not $color) {
+                    $properties->{color} = {};
+                }
+                else {
+                    foreach my $target ( keys %{$p->{$key}} ) {
+                        $properties->{color}->{$target} = $p->{$key}->{$target};
+                    }
+                }
+            }
+            elsif ($key eq 'class') {
+                foreach my $item ( keys %{$p->{class}} ) {
+                    $properties->{class}->{$item} = $p->{class}->{$item};
+                }
+            }
+            else {
+                $properties->{$key} = $p->{$key};
+            }
+        }
+
+    }
+
+    $properties->{'_current_indent'} = 0;  # used internally
+    $properties->{'_seen'} = {};           # used internally
+
+    return $properties;
 }
 
 sub _p {
@@ -74,20 +98,20 @@ sub _p {
 
     # Object's unique ID, avoiding circular structures
     my $id = Object::ID::object_id( $item );
-    return colored($p->{_seen}->{$id}, $p->{color_for}->{repeated}
+    return colored($p->{_seen}->{$id}, $p->{color}->{repeated}
     ) if exists $p->{_seen}->{$id};
 
     $p->{_seen}->{$id} = $p->{name};
 
     if ($ref eq 'SCALAR') {
         if (not defined $$item) {
-            $string .= colored('undef', $p->{color_for}->{'undef'});
+            $string .= colored('undef', $p->{color}->{'undef'});
         }
         elsif (Scalar::Util::looks_like_number($$item)) {
-            $string .= colored($$item, $p->{color_for}->{'number'});
+            $string .= colored($$item, $p->{color}->{'number'});
         }
         else {
-            $string .= colored(qq["$$item"], $p->{color_for}->{'string'});
+            $string .= colored(qq["$$item"], $p->{color}->{'string'});
         }
     }
 
@@ -96,7 +120,7 @@ sub _p {
     }
 
     elsif ($ref eq 'CODE') {
-        $string .= colored('sub { ... }', $p->{color_for}->{'code'});
+        $string .= colored('sub { ... }', $p->{color}->{'code'});
     }
 
     elsif ($ref eq 'Regexp') {
@@ -104,7 +128,7 @@ sub _p {
         # a regex to parse a regex. Talk about full circle :)
         if ($val =~ m/\(\?([xism]*)(?:\-[xism]+)?:(.*)\)/) {
             my ($modifiers, $val) = ($1, $2);
-            $string .= colored($val, $p->{color_for}->{'regex'});
+            $string .= colored($val, $p->{color}->{'regex'});
             if ($modifiers) {
                 $string .= "  (modifiers: $modifiers)";
             }
@@ -124,7 +148,7 @@ sub _p {
             $string .= (' ' x $p->{_current_indent})
                      . colored(
                              sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
-                             $p->{color_for}->{'array'}
+                             $p->{color}->{'array'}
                        );
 
             $ref = ref $array_elem;
@@ -163,7 +187,7 @@ sub _p {
             $string .= (' ' x $p->{_current_indent})
                      . colored(
                              sprintf("%-*s", $len, $key),
-                             $p->{color_for}->{'hash'}
+                             $p->{color}->{'hash'}
                        )
                      . $p->{hash_separator}
                      ;
@@ -197,7 +221,7 @@ sub _class {
 
     my $string = '';
 
-    $string .= colored($ref, $p->{color_for}->{'class'}) . "  {\n";
+    $string .= colored($ref, $p->{color}->{'class'}) . "  {\n";
 
     $p->{_current_indent} += $p->{indent};
 
@@ -205,13 +229,13 @@ sub _class {
 
     $string .= (' ' x $p->{_current_indent})
              . 'Parents       ' 
-             . join(', ', map { colored($_, $p->{color_for}->{'class'}) }
+             . join(', ', map { colored($_, $p->{color}->{'class'}) }
                           $meta->superclasses
                ) . $/;
 
     $string .= (' ' x $p->{_current_indent})
              . 'Linear @ISA   '
-             . join(', ', map { colored( $_, $p->{color_for}->{'class'}) }
+             . join(', ', map { colored( $_, $p->{color}->{'class'}) }
                           $meta->linearized_isa
                ) . $/;
 
@@ -277,7 +301,7 @@ sub _show_methods {
         $string .= (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
                  . (@list ? ' : ' : '')
-                 . join(', ', map { colored($_, $p->{color_for}->{class}) }
+                 . join(', ', map { colored($_, $p->{color}->{class}) }
                               @list
                    ) . $/;
     }
