@@ -87,6 +87,9 @@ sub _init {
     $properties->{'_current_indent'} = 0;  # used internally
     $properties->{'_seen'} = {};           # used internally
 
+    # colors only if we're not being piped
+    $properties->{color} = {} if -t *STDERR;
+
     return $properties;
 }
 
