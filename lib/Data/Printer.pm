@@ -2,7 +2,7 @@ package Data::Printer;
 use strict;
 use warnings;
 use Term::ANSIColor;
-use Scalar::Util qw(reftype);
+use Scalar::Util;
 use Sort::Naturally;
 use Class::MOP;
 use Carp qw(croak);
@@ -245,7 +245,7 @@ sub _class {
 
     $string .= _show_methods($ref, $meta, $p);
 
-    my $realtype = reftype $item;
+    my $realtype = Scalar::Util::reftype $item;
     $string .= (' ' x $p->{_current_indent})
              . 'internals: ';
 
