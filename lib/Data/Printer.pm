@@ -362,6 +362,7 @@ printing it in STDERR, you can export the 'd' function.
   use Data::Printer 'd';
 
   warn d(%some_hash);
+  my $string = d(@some_array);
 
 
 =head1 RATIONALE
