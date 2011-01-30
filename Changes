@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
-0.01    20/1/2011
+0.02    30/01/2011
+        Added *EXPERIMENTAL* local properties setting, p($var, key => value).
+        Uncolors piped output, for "less" & friends (thanks Getty for reporting).
+
+0.01    20/01/2011
         First version, released on an unsuspecting world.
 
