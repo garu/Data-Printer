@@ -1,8 +1,10 @@
 ^\.git
+.pl$
 ^\ignore.txt
 ^_build
 ^Build$
 ^blib
+^Data-Printer
 ~$
 \.bak$
 cover_db
