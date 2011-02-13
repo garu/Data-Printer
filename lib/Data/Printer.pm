@@ -6,11 +6,9 @@ use Scalar::Util;
 use Sort::Naturally;
 use Class::MOP;
 use Carp qw(croak);
+use Clone qw(clone);
 require Object::ID;
 
-use parent 'Exporter';
-our @EXPORT = qw(p);
-our @EXPORT_OK = qw(d);
 our $VERSION = 0.01;
 
 # defaults
@@ -42,6 +40,18 @@ my $properties = {
 };
 
 
+sub import {
+    my $args = shift;
+
+    if (ref $args and ref $args eq 'HASH') {
+        $properties = _init( $args );
+    }
+
+    my $caller = caller;
+    no strict 'refs';
+    *{"$caller\::p"} = \&p;
+}
+
 sub p (\[@$%&];%) {
     my ($item, %local_properties) = @_;
     my $p = _init(\%local_properties);
@@ -58,39 +68,39 @@ sub d (\[@$%&];%) {
 
 sub _init {
     my $p = shift;
+    my $clone = clone($properties);
 
     if ($p) {
         foreach my $key (keys %$p) {
             if ($key eq 'color' or $key eq 'colour') {
                 my $color = $p->{$key};
                 if (defined $color and not $color) {
-                    $properties->{color} = {};
+                    $clone->{color} = {};
                 }
                 else {
                     foreach my $target ( keys %{$p->{$key}} ) {
-                        $properties->{color}->{$target} = $p->{$key}->{$target};
+                        $clone->{color}->{$target} = $p->{$key}->{$target};
                     }
                 }
             }
             elsif ($key eq 'class') {
                 foreach my $item ( keys %{$p->{class}} ) {
-                    $properties->{class}->{$item} = $p->{class}->{$item};
+                    $clone->{class}->{$item} = $p->{class}->{$item};
                 }
             }
             else {
-                $properties->{$key} = $p->{$key};
+                $clone->{$key} = $p->{$key};
             }
         }
-
     }
 
-    $properties->{'_current_indent'} = 0;  # used internally
-    $properties->{'_seen'} = {};           # used internally
+    $clone->{'_current_indent'} = 0;  # used internally
+    $clone->{'_seen'} = {};           # used internally
 
     # colors only if we're not being piped
     $ENV{ANSI_COLORS_DISABLED} = 1 if not -t *STDERR;
 
-    return $properties;
+    return $clone;
 }
 
 sub _p {
