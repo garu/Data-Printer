@@ -38,6 +38,7 @@ my $properties = {
         internals      => 1,
         show_export    => 1,
     },
+    'filters' => {},
 };
 
 
@@ -113,7 +114,12 @@ sub _p {
 
     $p->{_seen}->{$id} = $p->{name};
 
-    if ($ref eq 'SCALAR') {
+    # filter item (if user set a filter for it)
+    if ( exists $p->{filters}->{$ref} ) {
+        $string .= $p->{filters}->{$ref}->($item);
+    }
+
+    elsif ($ref eq 'SCALAR') {
         if (not defined $$item) {
             $string .= colored('undef', $p->{color}->{'undef'});
         }
