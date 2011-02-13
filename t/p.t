@@ -2,7 +2,9 @@ use strict;
 use warnings;
 
 use Test::More;
-$ENV{ANSI_COLORS_DISABLED} = 1;
+BEGIN {
+    $ENV{ANSI_COLORS_DISABLED} = 1;
+};
 
 use Data::Printer;
 
