@@ -56,15 +56,11 @@ sub p (\[@$%&];%) {
     my ($item, %local_properties) = @_;
     my $p = _init(\%local_properties);
 
-    print STDERR _p( $item, $p ) . $/;
+    my $out = _p( $item, $p );
+    print STDERR  $out . $/ unless defined wantarray;
+    return $out;
 }
 
-sub d (\[@$%&];%) {
-    my ($item, %local_properties) = @_;
-    my $p = _init(\%local_properties);
-
-    return _p( $item, $p );
-}
 
 sub _init {
     my $p = shift;
