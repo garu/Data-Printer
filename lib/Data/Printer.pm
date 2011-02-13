@@ -11,6 +11,13 @@ require Object::ID;
 
 our $VERSION = 0.01;
 
+BEGIN {
+    if ($^O =~ /Win32/i) {
+        require Win32::Console::ANSI;
+        Win32::Console::ANSI->import;
+    }
+}
+
 # defaults
 my $properties = {
     'name'           => 'var',
