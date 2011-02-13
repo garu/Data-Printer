@@ -29,6 +29,7 @@ my $properties = {
         'hash'     => 'magenta',
         'regex'    => 'yellow',
         'code'     => 'green',
+        'glob'     => 'bright_cyan',
         'repeated' => 'white on_red',
     },
     'class' => {
@@ -41,7 +42,7 @@ my $properties = {
 
 
 sub import {
-    my $args = shift;
+    my ($class, $args) = @_;
 
     if (ref $args and ref $args eq 'HASH') {
         $properties = _init( $args );
@@ -125,11 +126,20 @@ sub _p {
     }
 
     elsif ($ref eq 'REF') {
-        $string .= '\\ ' . _p($$item, $p);
+        # look-ahead, add a '\' only if it's not an object
+        if (my $ref_ahead = ref $$item ) {
+            $string .= '\\ ' if grep { $_ eq $ref_ahead }
+                qw(SCALAR CODE Regexp ARRAY HASH GLOB REF);
+        }
+        $string .= _p($$item, $p);
     }
 
     elsif ($ref eq 'CODE') {
         $string .= colored('sub { ... }', $p->{color}->{'code'});
+    }
+
+    elsif ($ref eq 'GLOB' or "$item" =~ /=GLOB\([^()]+\)$/ ) {
+        $string .= colored("$$item", $p->{color}->{'glob'});
     }
 
     elsif ($ref eq 'Regexp') {
@@ -257,11 +267,7 @@ sub _class {
 
     # Note: we can't do p($$item) directly
     # or we'd fall in a deep recursion trap
-    if ($realtype eq 'SCALAR') {
-        my $realvalue = $$item;
-        $string .= _p(\$realvalue, $p);
-    }
-    elsif ($realtype eq 'HASH') {
+    if ($realtype eq 'HASH') {
         my %realvalue = %$item;
         $string .= _p(\%realvalue, $p);
     }
@@ -273,8 +279,10 @@ sub _class {
         my $realvalue = &$item;
         $string .= _p(\$realvalue, $p);
     }
+    # SCALAR and friends
     else {
-        croak "Type '$realtype' not identified. Please file a bug report for Data::Printer.";
+        my $realvalue = $$item;
+        $string .= _p(\$realvalue, $p);
     }
 
     $p->{_current_indent} -= $p->{indent};
