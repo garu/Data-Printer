@@ -1,9 +1,26 @@
 Revision history for Data-Printer
 
-0.02    30/01/2011
-        - Added *EXPERIMENTAL* local properties setting, p($var, key => value).
-        - Uncolors piped output, for "less" & friends (thanks Getty for reporting).
-        - More tests added.
+0.02    13/02/2011
+
+    CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
+        - d() function removed. You can now call p($var) in void context to print,
+          or as "my $output = p($var)" to retrieve results without printing.
+
+    NEW FEATURES:
+        - new import syntax, use Data::Printer { option => value }
+        - new "filters" property available to filter certain types.
+        - updated documentation.
+
+    NEW ***EXPERIMENTAL*** FEATURES
+        - local properties setting, p($var, key => value).
+
+    BUG FIXES:
+        - properly handles GLOB references
+        - colors now work on Win32 as well.
+        - uncolors piped output, for "less" & friends (thanks Getty for reporting).
+        - added all possible regex modifiers to the regex output.
+        - more tests added.
+
 
 0.01    20/01/2011
         - First version, released on an unsuspecting world.
