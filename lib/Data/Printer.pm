@@ -353,7 +353,7 @@ Data::Print - colored pretty-print of Perl data structures and objects
   my @array = qw(a b);
   $array[3] = 'c';
   
-  p(@array);  # no need to pass references!
+  p @array;  # no need to pass references!
 
 Code above will show this (with colored output):
 
@@ -384,13 +384,24 @@ Which might give you something like:
  
 
 If for some reason you want to mangle with the output string instead of
-printing it in STDERR, you can export the 'd' function.
+printing it to STDERR, you can simply ask for a return value:
 
-  use Data::Printer 'd';
+  my $string = p(@some_array);
+  warn p(%some_hash);
 
-  warn d(%some_hash);
-  my $string = d(@some_array);
+Finally, you can set all options during initialization, including
+coloring, identation and filters!
 
+  use Data::Printer {
+      color => {
+         'regex' => 'blue',
+         'hash'  => 'yellow',
+      },
+      filters => {
+         'DateTime' => sub { $_[0]->ymd },
+         'SCALAR'   => sub { "oh noes, a found a scalar! $_[0]" },
+      },
+  };
 
 =head1 RATIONALE
 
@@ -412,9 +423,58 @@ If you want to serialize/store/restore Perl data structures,
 this module will NOT help you. Try Storable, Data::Dumper,
 JSON, or whatever. CPAN is full of such solutions!
 
-=head1 WARNING - EXTREMELY BETA CODE
+=head1 COLORS
 
-Volatile interface and internals. Use at your own risk :)
+Below are all the available colorizations and their default values.
+Note that both spellings ('color' and 'colour') will work.
+
+   use Data::Printer {
+       color => {
+        array    => 'bright_white',  # array index numbers
+        number   => 'bright_blue',   # numbers
+        string   => 'bright_yellow', # strings
+        class    => 'bright_green',  # class names
+        undef    => 'bright_red',    # the 'undef' value
+        hash     => 'magenta',       # hash keys
+        regex    => 'yellow',        # regular expressions
+        code     => 'green',         # code references
+        glob     => 'bright_cyan',   # globs (usually file handles)
+        repeated => 'white on_red',  # references to seen values
+       },
+   };
+
+=head1 FILTERS
+
+Data::Printer offers you the ability to use filters to override
+any kind of data display. The filters are placed on a hash,
+where the keys are the types or class names, and the values
+are anonymous subs that receive the item itself as a parameter.
+This lets you quickly override the way Data::Printer handles
+and displays data types and, in particular, objects.
+
+  use Data::Printer {
+        filters => {
+            'DateTime'      => sub { $_[0]->ymd },
+            'HTTP::Request' => sub { $_[0]->uri },
+        },
+  };
+
+Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
+I<HASH>, I<REF>, I<CODE>, I<Regexp> and I<GLOB>. As for objects,
+just use the object's name, as shown above.
+
+
+=head1 EXPERIMENTAL FEATURES
+
+The following are volatile parts of the API which are subject to
+change at any given version. Use them at your own risk.
+
+=head2 Local Configuration (experimental!)
+
+You can override global configurations by writing them as the second
+parameter for p(). For example:
+
+  p( %var, color => { hash => 'green' } );
 
 =head1 CAVEATS
 
@@ -428,8 +488,8 @@ You are supposed to pass variables, not anonymous structures:
 
    p( { foo => 'bar' } ); # wrong
 
-   p( %somehash );        # right
-   p( $hash_ref );        # also right
+   p %somehash;        # right
+   p $hash_ref;        # also right
 
 
 =head1 BUGS
