@@ -9,7 +9,7 @@ use Carp qw(croak);
 use Clone qw(clone);
 require Object::ID;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -65,7 +65,7 @@ sub p (\[@$%&];%) {
     my ($item, %local_properties) = @_;
     my $p = _init(\%local_properties);
 
-    my $out = _p( $item, $p );
+    my $out = color('reset') . _p( $item, $p );
     print STDERR  $out . $/ unless defined wantarray;
     return $out;
 }

@@ -1,5 +1,8 @@
 Revision history for Data-Printer
 
+0.03    14/02/2011
+        - reseting colors before starting
+
 0.02    13/02/2011
 
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
