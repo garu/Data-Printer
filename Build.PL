@@ -23,4 +23,8 @@ my $builder = Module::Build->new(
     create_makefile_pl => 'traditional',
 );
 
+if ($^O =~ /Win32/i) {
+    $builder->requires->{'Win32::Console::ANSI'} = 1.0;
+}
+
 $builder->create_build_script();
