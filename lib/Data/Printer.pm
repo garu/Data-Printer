@@ -158,7 +158,8 @@ sub _p {
     elsif ($ref eq 'Regexp') {
         my $val = "$item";
         # a regex to parse a regex. Talk about full circle :)
-        if ($val =~ m/\(\?([xismpogce]*)(?:\-[xismpogce]+)?:(.*)\)/) {
+        # note: we are not validating anything, just grabbing modifiers
+        if ($val =~ m/\(\?\^?([uladxismpogce]*)(?:\-[uladxismpogce]+)?:(.*)\)/) {
             my ($modifiers, $val) = ($1, $2);
             $string .= colored($val, $p->{color}->{'regex'});
             if ($modifiers) {
