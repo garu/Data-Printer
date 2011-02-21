@@ -9,7 +9,7 @@ use Carp qw(croak);
 use Clone qw(clone);
 require Object::ID;
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 BEGIN {
     if ($^O =~ /Win32/i) {

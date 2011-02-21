@@ -1,5 +1,8 @@
 Revision history for Data-Printer
 
+0.04    21/02/2011
+        - supporting the new (5.13.6) perl regex modifiers syntax
+
 0.03    14/02/2011
         - reseting colors before starting
 
