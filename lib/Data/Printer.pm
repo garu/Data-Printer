@@ -375,7 +375,7 @@ __END__
 
 =head1 NAME
 
-Data::Print - colored pretty-print of Perl data structures and objects
+Data::Printer - colored pretty-print of Perl data structures and objects
 
 =head1 SYNOPSIS
 
@@ -430,7 +430,7 @@ coloring, identation and filters!
       },
       filters => {
          'DateTime' => sub { $_[0]->ymd },
-         'SCALAR'   => sub { "oh noes, a found a scalar! $_[0]" },
+         'SCALAR'   => sub { "oh noes, I found a scalar! $_[0]" },
       },
   };
 
@@ -465,7 +465,7 @@ Below are all the available colorizations and their default values.
 Note that both spellings ('color' and 'colour') will work.
 
    use Data::Printer {
-       color => {
+     color => {
         array    => 'bright_white',  # array index numbers
         number   => 'bright_blue',   # numbers
         string   => 'bright_yellow', # strings
@@ -476,7 +476,7 @@ Note that both spellings ('color' and 'colour') will work.
         code     => 'green',         # code references
         glob     => 'bright_cyan',   # globs (usually file handles)
         repeated => 'white on_red',  # references to seen values
-       },
+     },
    };
 
 =head1 FILTERS
