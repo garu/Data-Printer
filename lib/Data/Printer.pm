@@ -86,9 +86,10 @@ sub import {
         $properties = _init( $args );
     }
 
+    my $imported_method = $properties->{alias} || 'p';
     my $caller = caller;
     no strict 'refs';
-    *{"$caller\::p"} = \&p;
+    *{"$caller\::$imported_method"} = \&p;
 }
 
 sub p (\[@$%&];%) {
@@ -498,6 +499,18 @@ and displays data types and, in particular, objects.
 Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
 I<HASH>, I<REF>, I<CODE>, I<Regexp> and I<GLOB>. As for objects,
 just use the object's name, as shown above.
+
+=head1 ALIASING
+
+Data::Printer provides the nice, short, C<p()> function to dump your
+data structures and objects. In case you rather use a more explicit
+name, already have a C<p()> function (why?) in your code and want
+to avoid clashing, or are just used to other function names for that
+purpose, you can easily rename it:
+
+  use Data::Printer { alias => 'Dumper' };
+
+  Dumper( %foo );
 
 
 =head1 CONFIGURATION FILE (RUN CONTROL)

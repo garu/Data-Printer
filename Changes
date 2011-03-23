@@ -3,6 +3,7 @@ Revision history for Data-Printer
 0.05    23/03/2011
     NEW FEATURES:
         - local configuration file support ($HOME/.dataprinter)
+        - you can now alias p() to whatever name you like
 
 0.04    21/02/2011
     NEW FEATURE (or BUGFIX depending on how you look at it):
