@@ -1,9 +1,15 @@
 Revision history for Data-Printer
 
+0.05    23/03/2011
+    NEW FEATURES:
+        - local configuration file support ($HOME/.dataprinter)
+
 0.04    21/02/2011
+    NEW FEATURE (or BUGFIX depending on how you look at it):
         - supporting the new (5.13.6) perl regex modifiers syntax
 
 0.03    14/02/2011
+    BUG FIXES:
         - reseting colors before starting
 
 0.02    13/02/2011
