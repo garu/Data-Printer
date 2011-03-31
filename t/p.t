@@ -29,7 +29,17 @@ is( p($scalar), '4.2', 'stringified float scalar' );
 $scalar = 7;
 is( p($scalar_ref), '\\ 7', 'simple numeric ref' );
 
-my @array = (1 .. 3);
+my @array = ();
+is( p(@array),
+'[
+]', 'empty array' );
+
+undef @array;
+is( p(@array),
+'[
+]', 'undefined array' );
+
+@array = (1 .. 3);
 is( p(@array),
 '[
     [0] 1,
@@ -88,7 +98,31 @@ is( p(@array),
     [10] 11,
 ]', 'nested array');
 
-my %hash = ( foo => 33, bar => 99 );
+my %hash = ();
+is( p(%hash),
+'{
+}', 'empty hash');
+
+undef %hash;
+is( p(%hash),
+'{
+}', 'undefined hash');
+
+# the "%hash = 1" code below is wrong and issues
+# an "odd number of elements in hash assignment"
+# warning message. But since it's just a warning
+# (meaning the code will still run even under strictness)
+# we make sure to test everything will be alright.
+{
+    no warnings 'misc';
+    %hash = 1;
+}
+is( p(%hash),
+'{
+    1    undef,
+}', 'evil hash of doom');
+
+%hash = ( foo => 33, bar => 99 );
 is( p(%hash),
 '{
     bar    99,
