@@ -93,7 +93,11 @@ sub import {
 }
 
 sub p (\[@$%&];%) {
+    croak 'If you call p() inside a filter, please pass arguments as references'
+        unless ref $_[0];
+
     my ($item, %local_properties) = @_;
+
     my $p = _init(\%local_properties);
 
     my $out = color('reset') . _p( $item, $p );
@@ -500,6 +504,11 @@ Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
 I<HASH>, I<REF>, I<CODE>, I<Regexp> and I<GLOB>. As for objects,
 just use the object's name, as shown above.
 
+B<Note>: If you plan on calling C<p()> from I<within> a filter,
+please make sure you are passing only REFERENCES as arguments.
+See L</CAVEATS> below.
+
+
 =head1 ALIASING
 
 Data::Printer provides the nice, short, C<p()> function to dump your
@@ -585,6 +594,30 @@ You are supposed to pass variables, not anonymous structures:
 
    p %somehash;        # right
    p $hash_ref;        # also right
+
+
+If you are using filters, and calling p() (or whatever name you aliased it to)
+from inside those filters, you B<must> pass the arguments to C<p()> as a reference:
+
+  use Data::Printer {
+      filters => {
+          ARRAY => sub {
+              my $listref = shift;
+              my $string = '';
+              foreach my $item (@$listref) {
+                  $string .= p( \$item );      # p( $item ) will not work!
+              }
+              return $string;
+          },
+      },
+  };
+
+This happens because your filter is compiled I<before> Data::Printer itself loads,
+so the filter does not see the function prototype. If you forget to pass a reference,
+Data::Printer will generate an exception for you with the following message:
+
+    'If you call p() inside a filter, please pass arguments as references'
+
 
 
 =head1 BUGS
