@@ -18,3 +18,4 @@ cover_db
 ^TODO$
 ^\._.*$
 ^MYMETA.yml$
+^MYMETA\.json$
