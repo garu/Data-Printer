@@ -1,5 +1,12 @@
 Revision history for Data-Printer
 
+0.06    31/03/2011
+    BUG FIXES:
+        - if you want to call p() from within a filter, the
+          argument to p() must be passed as a *reference*. This
+          is now enforced to avoid users shooting themselves in the foot.
+        - more tests added
+
 0.05    23/03/2011
     NEW FEATURES:
         - local configuration file support ($HOME/.dataprinter)
