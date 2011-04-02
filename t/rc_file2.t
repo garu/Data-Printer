@@ -4,7 +4,7 @@ use Test::More;
 
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
-    use_ok ('Term::ANSIColor', 'colored');
+    use_ok ('Term::ANSIColor');
     use_ok ('File::HomeDir::Test');
     use_ok ('File::HomeDir');
     use_ok ('File::Spec');
@@ -38,7 +38,7 @@ BEGIN {
 
 my %hash = ( key => 'value' );
 
-is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), "{$/    "
+is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('reset') . "{$/    "
               . colored('key', 'blue')
               . '  *  '
               . colored('"value"', 'bright_yellow')
