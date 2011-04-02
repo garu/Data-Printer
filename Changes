@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.07    02/04/2011
+    BUG FIXES:
+        - Making sure File::HomeDir is 0.91 or higher
+        - Making tests stricter, since they were failing on Win32
+
 0.06    31/03/2011
     BUG FIXES:
         - if you want to call p() from within a filter, the
