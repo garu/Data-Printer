@@ -18,7 +18,7 @@ my $builder = Module::Build->new(
         'Carp'            => 0,
         'Clone'           => 0.31,
         'Object::ID'      => 0,
-        'File::HomeDir'   => 0,
+        'File::HomeDir'   => 0.91,
         'File::Spec'      => 0,
     },
     add_to_cleanup      => [ 'Data-Printer-*' ],
