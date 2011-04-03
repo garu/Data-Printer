@@ -8,7 +8,7 @@ my $builder = Module::Build->new(
     dist_author         => q{Breno G. de Oliveira <garu@cpan.org>},
     dist_version_from   => 'lib/Data/Printer.pm',
     build_requires => {
-        'Test::More' => 0,
+        'Test::More' => 0.88,
     },
     requires => {
         'Term::ANSIColor' => 3.00,
