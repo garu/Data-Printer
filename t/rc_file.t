@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
+my $file;
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
     use_ok ('Term::ANSIColor');
@@ -9,7 +10,7 @@ BEGIN {
     use_ok ('File::HomeDir');
     use_ok ('File::Spec');
 
-    my $file = File::Spec->catfile(
+    $file = File::Spec->catfile(
             File::HomeDir->my_home,
             '.dataprinter'
     );
@@ -48,5 +49,6 @@ is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('re
               . ",$/}"
 , 'local configuration overrides our rc file');
 
+unlink $file or fail('error removing test file');
 
 done_testing;
