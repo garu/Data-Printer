@@ -265,6 +265,17 @@ is( p($regex),
 $regex = qr{(?:moo(\d|\s)*[a-z]+(.?))};
 is( p($regex), '\ (?:moo(\d|\s)*[a-z]+(.?))', 'plain regex' );
 
+$regex = qr{
+    \;
+      |
+    ^ \s* go \s
+}x;
+is( p($regex), '\ 
+    \;
+      |
+    ^ \s* go \s
+  (modifiers: x)', 'creepy regex' );
+
 $array[0] = qr{\d(\W)[\s]*};
 $array[2][1] = qr{\d(\W)[\s]*};
 is( p(@array),
