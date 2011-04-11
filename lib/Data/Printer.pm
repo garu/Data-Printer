@@ -11,7 +11,7 @@ require Object::ID;
 use File::Spec;
 use File::HomeDir ();
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 BEGIN {
     if ($^O =~ /Win32/i) {

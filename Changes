@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.08
+0.08    11/04/2011
     BUG FIXES:
         - improving test suite (was still failing on NetBSD)
         - Improved handling of extended regexps (thanks Getty for reporting)
