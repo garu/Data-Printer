@@ -524,6 +524,23 @@ purpose, you can easily rename it:
   Dumper( %foo );
 
 
+=head1 CUSTOMIZATION
+
+I tried to provide sane defaults for Data::Printer, so you'll never have
+to worry about anything other than typing C<< "p( $var )" >> in your code.
+That said, and besides coloring and filtering, there are several other
+customization options available, as shown below (with default values):
+
+  use Data::Printer {
+      name           => 'var',   # name to display on cyclic references
+      indent         => 4,       # how many spaces in each indent
+      hash_separator => '    ',  # what separates keys from values
+
+      class => {
+          internals => 1,        # show internal data structures of classes
+      },
+  };
+
 =head1 CONFIGURATION FILE (RUN CONTROL)
 
 Data::Printer tries to let you easily customize as much as possible
