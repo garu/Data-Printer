@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.09    13/04/2011
+    NEW FEATURES:
+        - allowing for 'internals' display customization
+
+    BUG FIXES:
+        - improving test suite
+        - improving documentation
+
 0.08    11/04/2011
     BUG FIXES:
         - improving test suite (was still failing on NetBSD)
