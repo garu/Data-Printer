@@ -305,33 +305,35 @@ sub _class {
              . 'Linear @ISA   '
              . join(', ', map { colored( $_, $p->{color}->{'class'}) }
                           $meta->linearized_isa
-               ) . $/;
+               );
 
 
     $string .= _show_methods($ref, $meta, $p);
 
-    my $realtype = Scalar::Util::reftype $item;
-    $string .= (' ' x $p->{_current_indent})
-             . 'internals: ';
+    if ( $p->{'class'}->{'internals'} ) {
+        my $realtype = Scalar::Util::reftype $item;
+        $string .= $/ . (' ' x $p->{_current_indent})
+                 . 'internals: ';
 
-    # Note: we can't do p($$item) directly
-    # or we'd fall in a deep recursion trap
-    if ($realtype eq 'HASH') {
-        my %realvalue = %$item;
-        $string .= _p(\%realvalue, $p);
-    }
-    elsif ($realtype eq 'ARRAY') {
-        my @realvalue = @$item;
-        $string .= _p(\@realvalue, $p);
-    }
-    elsif ($realtype eq 'CODE') {
-        my $realvalue = &$item;
-        $string .= _p(\$realvalue, $p);
-    }
-    # SCALAR and friends
-    else {
-        my $realvalue = $$item;
-        $string .= _p(\$realvalue, $p);
+        # Note: we can't do p($$item) directly
+        # or we'd fall in a deep recursion trap
+        if ($realtype eq 'HASH') {
+            my %realvalue = %$item;
+            $string .= _p(\%realvalue, $p);
+        }
+        elsif ($realtype eq 'ARRAY') {
+            my @realvalue = @$item;
+            $string .= _p(\@realvalue, $p);
+        }
+        elsif ($realtype eq 'CODE') {
+            my $realvalue = &$item;
+            $string .= _p(\$realvalue, $p);
+        }
+        # SCALAR and friends
+        else {
+            my $realvalue = $$item;
+            $string .= _p(\$realvalue, $p);
+        }
     }
 
     $p->{_current_indent} -= $p->{indent};
@@ -364,12 +366,12 @@ sub _show_methods {
     foreach my $type (qw(public private)) {
         my @list = nsort @{ $methods->{$type} };
 
-        $string .= (' ' x $p->{_current_indent})
+        $string .= $/ . (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
                  . (@list ? ' : ' : '')
                  . join(', ', map { colored($_, $p->{color}->{class}) }
                               @list
-                   ) . $/;
+                   );
     }
 
     return $string;
