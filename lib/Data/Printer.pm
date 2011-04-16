@@ -213,11 +213,13 @@ sub _p {
             $p->{name} .= "[$i]";
 
             my $array_elem = $item->[$i];
-            $string .= (' ' x $p->{_current_indent})
-                     . colored(
+            $string .= (' ' x $p->{_current_indent});
+            if ($p->{'index'}) {
+                $string .= colored(
                              sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
                              $p->{color}->{'array'}
                        );
+            }
 
             $ref = ref $array_elem;
 
@@ -534,7 +536,8 @@ customization options available, as shown below (with default values):
   use Data::Printer {
       name           => 'var',   # name to display on cyclic references
       indent         => 4,       # how many spaces in each indent
-      hash_separator => '    ',  # what separates keys from values
+      hash_separator => '   ',   # what separates keys from values
+      index          => 1,       # display array indices
 
       class => {
           internals => 1,        # show internal data structures of classes
