@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.10
+    OTHERS:
+        - default separator for key/values reduced to 3 spaces for
+          improved readability.
+
 0.09    13/04/2011
     NEW FEATURES:
         - allowing for 'internals' display customization

@@ -34,7 +34,7 @@ is( p($obj), 'Foo  {
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
-        test    42,
+        test   42,
     }
 }', 'testing objects' );
 

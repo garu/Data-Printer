@@ -33,7 +33,7 @@ is( p(@array), color('reset') . "[$/    "
 my %hash = (1=>2);
 is( p(%hash), color('reset') . "{$/    "
               . colored(1, 'magenta')
-              . '    '
+              . '   '
               . colored(2, 'bright_blue')
               . ",$/}"
 , 'colored hash');

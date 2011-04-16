@@ -119,14 +119,14 @@ is( p(%hash),
 }
 is( p(%hash),
 '{
-    1    undef,
+    1   undef,
 }', 'evil hash of doom');
 
 %hash = ( foo => 33, bar => 99 );
 is( p(%hash),
 '{
-    bar    99,
-    foo    33,
+    bar   99,
+    foo   33,
 }', 'simple hash');
 
 $hash{$scalar} = \$scalar;
@@ -136,33 +136,33 @@ $hash{zelda} = 'moo';
 
 is( p(%hash),
 '{
-    4.2          \\ 4.2,
-    bar          99,
-    foo          33,
-    hash         {
-        1     2,
-        3     {
-            4    5,
+    4.2         \\ 4.2,
+    bar         99,
+    foo         33,
+    hash        {
+        1    2,
+        3    {
+            4   5,
         },
-        10    11,
+        10   11,
     },
-    something    [
+    something   [
         [0] 3,
         [1] 4,
         [2] 5,
     ],
-    zelda        "moo",
+    zelda       "moo",
 }', 'nested hash');
 
 @array = ( { 1 => 2 }, 3, { 4 => 5 } );
 is( p(@array),
 '[
     [0] {
-        1    2,
+        1   2,
     },
     [1] 3,
     [2] {
-        4    5,
+        4   5,
     },
 ]', 'array of hashes');
 
@@ -182,11 +182,11 @@ my $hash_ref = { c => 3 };
 %hash = ( a => 1, b => \$hash_ref, d => 4 );
 is( p(%hash),
 '{
-    a    1,
-    b    \\ {
-        c    3,
+    a   1,
+    b   \\ {
+        c   3,
     },
-    d    4,
+    d   4,
 }', 'reference of a hash reference');
 
 is( p($array_ref),
@@ -197,7 +197,7 @@ is( p($array_ref),
 
 is( p($hash_ref),
 '\\ {
-    c    3,
+    c   3,
 }', 'simple hash ref' );
 
 # null tests
@@ -221,11 +221,11 @@ is( p(@array),
 %hash = ( 'undef' => undef, foo => { 'meep' => undef }, zed => 26 );
 is( p(%hash),
 '{
-    foo      {
-        meep    undef,
+    foo     {
+        meep   undef,
     },
-    undef    undef,
-    zed      26,
+    undef   undef,
+    zed     26,
 }', 'hash with undefs' );
 
 my $sub = sub { 0 };
@@ -249,12 +249,12 @@ $hash{foo}{bar} = sub { 3 };
 $hash{'undef'} = sub { 4 };
 is( p(%hash),
 '{
-    foo      {
-        bar     sub { ... },
-        meep    undef,
+    foo     {
+        bar    sub { ... },
+        meep   undef,
     },
-    undef    sub { ... },
-    zed      26,
+    undef   sub { ... },
+    zed     26,
 }', 'hash with subrefs' );
 
 
@@ -291,12 +291,12 @@ $hash{foo}{bar} = qr{\d(\W)[\s]*};
 $hash{'undef'} = qr{\d(\W)[\s]*};
 is( p(%hash),
 '{
-    foo      {
-        bar     \d(\W)[\s]*,
-        meep    undef,
+    foo     {
+        bar    \d(\W)[\s]*,
+        meep   undef,
     },
-    undef    \d(\W)[\s]*,
-    zed      26,
+    undef   \d(\W)[\s]*,
+    zed     26,
 }', 'hash with regex' );
 
 $scalar = 3;
@@ -333,7 +333,7 @@ is( p(@array),
     [0] var,
     [1] [
         [0] {
-            foo    sub { ... },
+            foo   sub { ... },
         },
         [1] var[1],
         [2] test,
