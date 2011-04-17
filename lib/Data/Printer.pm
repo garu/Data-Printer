@@ -167,6 +167,8 @@ sub _p {
         $string .= $p->{filters}->{$ref}->($item);
     }
 
+    # TODO: Might be a good idea to set the rest of this sub
+    # inside the filter dispatch table.
     elsif ($ref eq 'SCALAR') {
         if (not defined $$item) {
             $string .= colored('undef', $p->{color}->{'undef'});
@@ -217,80 +219,97 @@ sub _p {
     }
 
     elsif ($ref eq 'ARRAY') {
-        $string .= "[$BREAK";
-        $p->{_current_indent} += $p->{indent};
-        foreach my $i (0 .. $#{$item} ) {
-            $p->{name} .= "[$i]";
+        $p->{_depth}++;
 
-            my $array_elem = $item->[$i];
-            $string .= (' ' x $p->{_current_indent});
-            if ($p->{'index'}) {
-                $string .= colored(
-                             sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
-                             $p->{color}->{'array'}
-                       );
-            }
-
-            $ref = ref $array_elem;
-
-            # scalar references should be re-referenced
-            # to gain a '\' sign in front of them
-            if (!$ref or $ref eq 'SCALAR') {
-                $string .= _p( \$array_elem, $p );
-            }
-            else {
-                $string .= _p( $array_elem, $p );
-            }
-            $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
-            my $size = 2 + length($i); # [10], [100], etc
-            substr $p->{name}, -$size, $size, '';
+        if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
+            $string .= '[ ... ]';
         }
-        $p->{_current_indent} -= $p->{indent};
-        $string .= (' ' x $p->{_current_indent}) . "]";
+        else {
+            $string .= "[$BREAK";
+            $p->{_current_indent} += $p->{indent};
+
+            foreach my $i (0 .. $#{$item} ) {
+                $p->{name} .= "[$i]";
+
+                my $array_elem = $item->[$i];
+                $string .= (' ' x $p->{_current_indent});
+                if ($p->{'index'}) {
+                    $string .= colored(
+                                 sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
+                                 $p->{color}->{'array'}
+                           );
+                }
+
+                $ref = ref $array_elem;
+
+                # scalar references should be re-referenced
+                # to gain a '\' sign in front of them
+                if (!$ref or $ref eq 'SCALAR') {
+                    $string .= _p( \$array_elem, $p );
+                }
+                else {
+                    $string .= _p( $array_elem, $p );
+                }
+                $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
+                my $size = 2 + length($i); # [10], [100], etc
+                substr $p->{name}, -$size, $size, '';
+            }
+            $p->{_current_indent} -= $p->{indent};
+            $string .= (' ' x $p->{_current_indent}) . "]";
+        }
+        $p->{_depth}--;
     }
 
     elsif ($ref eq 'HASH') {
-        $string .= "{$BREAK";
-        $p->{_current_indent} += $p->{indent};
+        $p->{_depth}++;
 
-        # length of the largest key is used for indenting
-        my $len = 0;
-        if ($p->{multiline}) {
-            foreach (keys %$item) {
-                my $l = length;
-                $len = $l if $l > $len;
-            }
+        if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
+            $string .= '{ ... }';
         }
+        else {
+            $string .= "{$BREAK";
+            $p->{_current_indent} += $p->{indent};
 
-        my $total_keys = scalar keys %$item;
-        foreach my $key (nsort keys %$item) {
-            $p->{name} .= "{$key}";
-            my $element = $item->{$key};
-
-            $string .= (' ' x $p->{_current_indent})
-                     . colored(
-                             sprintf("%-*s", $len, $key),
-                             $p->{color}->{'hash'}
-                       )
-                     . $p->{hash_separator}
-                     ;
-
-            $ref = ref $element;
-            # scalar references should be re-referenced
-            # to gain a '\' sign in front of them
-            if (!$ref or $ref eq 'SCALAR') {
-                $string .= _p( \$element, $p );
+            # length of the largest key is used for indenting
+            my $len = 0;
+            if ($p->{multiline}) {
+                foreach (keys %$item) {
+                    my $l = length;
+                    $len = $l if $l > $len;
+                }
             }
-            else {
-                $string .= _p( $element, $p );
-            }
-            $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
 
-            my $size = 2 + length($key); # {foo}, {z}, etc
-            substr $p->{name}, -$size, $size, '';
+            my $total_keys = scalar keys %$item;
+            foreach my $key (nsort keys %$item) {
+                $p->{name} .= "{$key}";
+                my $element = $item->{$key};
+
+                $string .= (' ' x $p->{_current_indent})
+                         . colored(
+                                 sprintf("%-*s", $len, $key),
+                                 $p->{color}->{'hash'}
+                           )
+                         . $p->{hash_separator}
+                         ;
+
+                $ref = ref $element;
+                # scalar references should be re-referenced
+                # to gain a '\' sign in front of them
+                if (!$ref or $ref eq 'SCALAR') {
+                    $string .= _p( \$element, $p );
+                }
+                else {
+                    $string .= _p( $element, $p );
+                }
+                $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
+
+                my $size = 2 + length($key); # {foo}, {z}, etc
+                substr $p->{name}, -$size, $size, '';
+            }
+            $p->{_current_indent} -= $p->{indent};
+            $string .= (' ' x $p->{_current_indent}) . "}";
         }
-        $p->{_current_indent} -= $p->{indent};
-        $string .= (' ' x $p->{_current_indent}) . "}";
+        $p->{_depth}--;
     }
     else {
         $string .= _class($ref, $item, $p);
@@ -568,6 +587,7 @@ customization options available, as shown below (with default values):
       hash_separator => '   ',   # what separates keys from values
       index          => 1,       # display array indices
       multiline      => 1,       # display in multiple lines (see note below)
+      max_depth      => 0,       # how deep to traverse the data (0 for all)
       deparse        => 0,       # use B::Deparse to expand subrefs
 
       class => {
