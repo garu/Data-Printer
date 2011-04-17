@@ -189,7 +189,11 @@ sub _p {
     }
 
     elsif ($ref eq 'CODE') {
-        $string .= colored('sub { ... }', $p->{color}->{'code'});
+        my $code = 'sub { ... }';
+        if ($p->{deparse}) {
+            $code = _deparse( $item, $p );
+        }
+        $string .= colored($code, $p->{color}->{'code'});
     }
 
     elsif ($ref eq 'GLOB' or "$item" =~ /=GLOB\([^()]+\)$/ ) {
@@ -293,6 +297,18 @@ sub _p {
     }
 
     return $string;
+}
+
+sub _deparse {
+    my ($item, $p) = @_;
+    require B::Deparse;
+    my $i = $p->{indent};
+    my $deparseopts = ["-sCi${i}v'Useless const omitted'"];
+
+    my $sub = 'sub ' . B::Deparse->new($deparseopts)->coderef2text($item);
+    my $pad = "\n" . (' ' x ($p->{_current_indent} + $i));
+    $sub    =~ s/\n/$pad/gse;
+    return $sub;
 }
 
 sub _class {
@@ -548,6 +564,7 @@ customization options available, as shown below (with default values):
       hash_separator => '   ',   # what separates keys from values
       index          => 1,       # display array indices
       multiline      => 1,       # display in multiple lines (see note below)
+      deparse        => 0,       # use B::Deparse to expand subrefs
 
       class => {
           internals => 1,        # show internal data structures of classes
