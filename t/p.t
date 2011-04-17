@@ -44,14 +44,14 @@ is( p(@array),
 '[
     [0] 1,
     [1] 2,
-    [2] 3,
+    [2] 3
 ]', 'simple array');
 
 @array = ( 1, $scalar_ref );
 is( p(@array),
 '[
     [0] 1,
-    [1] \\ 7,
+    [1] \\ 7
 ]', 'simple array with scalar ref');
 $scalar = 4.2;
 
@@ -68,7 +68,7 @@ is( p(@array),
     [7]  8,
     [8]  9,
     [9]  10,
-    [10] 11,
+    [10] 11
 ]', 'simple array alignment');
 
 $array[2] = [ 'foo', 7 ];
@@ -79,23 +79,23 @@ is( p(@array),
     [1]  2,
     [2]  [
         [0] "foo",
-        [1] 7,
+        [1] 7
     ],
     [3]  4,
     [4]  5,
     [5]  [
         [0] -6,
         [1] [
-            [0] 64,
+            [0] 64
         ],
         [2] "one",
-        [3] \\ 4.2,
+        [3] \\ 4.2
     ],
     [6]  7,
     [7]  8,
     [8]  9,
     [9]  10,
-    [10] 11,
+    [10] 11
 ]', 'nested array');
 
 my %hash = ();
@@ -119,14 +119,14 @@ is( p(%hash),
 }
 is( p(%hash),
 '{
-    1   undef,
+    1   undef
 }', 'evil hash of doom');
 
 %hash = ( foo => 33, bar => 99 );
 is( p(%hash),
 '{
     bar   99,
-    foo   33,
+    foo   33
 }', 'simple hash');
 
 $hash{$scalar} = \$scalar;
@@ -142,28 +142,28 @@ is( p(%hash),
     hash        {
         1    2,
         3    {
-            4   5,
+            4   5
         },
-        10   11,
+        10   11
     },
     something   [
         [0] 3,
         [1] 4,
-        [2] 5,
+        [2] 5
     ],
-    zelda       "moo",
+    zelda       "moo"
 }', 'nested hash');
 
 @array = ( { 1 => 2 }, 3, { 4 => 5 } );
 is( p(@array),
 '[
     [0] {
-        1   2,
+        1   2
     },
     [1] 3,
     [2] {
-        4   5,
-    },
+        4   5
+    }
 ]', 'array of hashes');
 
 my $array_ref = [ 1..2 ];
@@ -173,9 +173,9 @@ is( p(@array),
     [0] 7,
     [1] \\ [
         [0] 1,
-        [1] 2,
+        [1] 2
     ],
-    [2] 8,
+    [2] 8
 ]', 'reference of an array reference');
 
 my $hash_ref = { c => 3 };
@@ -184,20 +184,20 @@ is( p(%hash),
 '{
     a   1,
     b   \\ {
-        c   3,
+        c   3
     },
-    d   4,
+    d   4
 }', 'reference of a hash reference');
 
 is( p($array_ref),
 '\\ [
     [0] 1,
-    [1] 2,
+    [1] 2
 ]', 'simple array ref' );
 
 is( p($hash_ref),
 '\\ {
-    c   3,
+    c   3
 }', 'simple hash ref' );
 
 # null tests
@@ -213,19 +213,19 @@ is( p(@array),
     [0] undef,
     [1] undef,
     [2] [
-        [0] undef,
+        [0] undef
     ],
-    [3] undef,
+    [3] undef
 ]', 'array with undefs' );
 
 %hash = ( 'undef' => undef, foo => { 'meep' => undef }, zed => 26 );
 is( p(%hash),
 '{
     foo     {
-        meep   undef,
+        meep   undef
     },
     undef   undef,
-    zed     26,
+    zed     26
 }', 'hash with undefs' );
 
 my $sub = sub { 0 };
@@ -239,9 +239,9 @@ is( p(@array),
     [1] undef,
     [2] [
         [0] undef,
-        [1] sub { ... },
+        [1] sub { ... }
     ],
-    [3] undef,
+    [3] undef
 ]', 'array with subrefs' );
 
 
@@ -251,10 +251,10 @@ is( p(%hash),
 '{
     foo     {
         bar    sub { ... },
-        meep   undef,
+        meep   undef
     },
     undef   sub { ... },
-    zed     26,
+    zed     26
 }', 'hash with subrefs' );
 
 
@@ -282,9 +282,9 @@ is( p(@array),
     [1] undef,
     [2] [
         [0] undef,
-        [1] \d(\W)[\s]*,
+        [1] \d(\W)[\s]*
     ],
-    [3] undef,
+    [3] undef
 ]', 'array with regex' );
 
 $hash{foo}{bar} = qr{\d(\W)[\s]*};
@@ -293,10 +293,10 @@ is( p(%hash),
 '{
     foo     {
         bar    \d(\W)[\s]*,
-        meep   undef,
+        meep   undef
     },
     undef   \d(\W)[\s]*,
-    zed     26,
+    zed     26
 }', 'hash with regex' );
 
 $scalar = 3;
@@ -307,7 +307,7 @@ is( p(@array),
 '[
     [0] 3,
     [1] \\ 3,
-    [2] \\ var[1],
+    [2] \\ var[1]
 ]', 'scalar refs in array' );
 
 @array = ();
@@ -333,17 +333,17 @@ is( p(@array),
     [0] var,
     [1] [
         [0] {
-            foo   sub { ... },
+            foo   sub { ... }
         },
         [1] var[1],
-        [2] test,
+        [2] test
     ],
     [2] var[1][0]{foo},
     [3] var[1][2],
     [4] "foobar",
     [5] \\ "foobar",
     [6] \\ var[5],
-    [7] \\ var[5],
+    [7] \\ var[5]
 ]', 'handling repeated and circular references' );
 
 

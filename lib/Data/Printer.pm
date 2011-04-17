@@ -50,6 +50,7 @@ my $properties = {
     'filters' => {},
 };
 
+my $BREAK = "\n";
 
 sub import {
     my ($class, $args) = @_;
@@ -99,6 +100,11 @@ sub p (\[@$%&];%) {
     my ($item, %local_properties) = @_;
 
     my $p = _init(\%local_properties);
+    unless ($p->{multiline}) {
+        $BREAK = ' ';
+        $p->{'indent'} = 0;
+        $p->{'index'}  = 0;
+    }
 
     my $out = color('reset') . _p( $item, $p );
     print STDERR  $out . $/ unless defined wantarray;
@@ -207,7 +213,7 @@ sub _p {
     }
 
     elsif ($ref eq 'ARRAY') {
-        $string .= "[\n";
+        $string .= "[$BREAK";
         $p->{_current_indent} += $p->{indent};
         foreach my $i (0 .. $#{$item} ) {
             $p->{name} .= "[$i]";
@@ -231,7 +237,7 @@ sub _p {
             else {
                 $string .= _p( $array_elem, $p );
             }
-            $string .= ",\n";
+            $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
         }
@@ -240,16 +246,19 @@ sub _p {
     }
 
     elsif ($ref eq 'HASH') {
-        $string .= "{\n";
+        $string .= "{$BREAK";
         $p->{_current_indent} += $p->{indent};
 
         # length of the largest key is used for indenting
         my $len = 0;
-        foreach (keys %$item) {
-            my $l = length;
-            $len = $l if $l > $len;
+        if ($p->{multiline}) {
+            foreach (keys %$item) {
+                my $l = length;
+                $len = $l if $l > $len;
+            }
         }
 
+        my $total_keys = scalar keys %$item;
         foreach my $key (nsort keys %$item) {
             $p->{name} .= "{$key}";
             my $element = $item->{$key};
@@ -271,7 +280,7 @@ sub _p {
             else {
                 $string .= _p( $element, $p );
             }
-            $string .= ",\n";
+            $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
 
             my $size = 2 + length($key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
@@ -291,7 +300,7 @@ sub _class {
 
     my $string = '';
 
-    $string .= colored($ref, $p->{color}->{'class'}) . "  {\n";
+    $string .= colored($ref, $p->{color}->{'class'}) . "  {$BREAK";
 
     $p->{_current_indent} += $p->{indent};
 
@@ -301,7 +310,7 @@ sub _class {
              . 'Parents       ' 
              . join(', ', map { colored($_, $p->{color}->{'class'}) }
                           $meta->superclasses
-               ) . $/;
+               ) . $BREAK;
 
     $string .= (' ' x $p->{_current_indent})
              . 'Linear @ISA   '
@@ -314,7 +323,7 @@ sub _class {
 
     if ( $p->{'class'}->{'internals'} ) {
         my $realtype = Scalar::Util::reftype $item;
-        $string .= $/ . (' ' x $p->{_current_indent})
+        $string .= $BREAK . (' ' x $p->{_current_indent})
                  . 'internals: ';
 
         # Note: we can't do p($$item) directly
@@ -339,7 +348,7 @@ sub _class {
     }
 
     $p->{_current_indent} -= $p->{indent};
-    $string .= $/ . (' ' x $p->{_current_indent}) . "}";
+    $string .= $BREAK . (' ' x $p->{_current_indent}) . "}";
 
     return $string;
 }
@@ -368,7 +377,7 @@ sub _show_methods {
     foreach my $type (qw(public private)) {
         my @list = nsort @{ $methods->{$type} };
 
-        $string .= $/ . (' ' x $p->{_current_indent})
+        $string .= $BREAK . (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
                  . (@list ? ' : ' : '')
                  . join(', ', map { colored($_, $p->{color}->{class}) }
@@ -538,11 +547,14 @@ customization options available, as shown below (with default values):
       indent         => 4,       # how many spaces in each indent
       hash_separator => '   ',   # what separates keys from values
       index          => 1,       # display array indices
+      multiline      => 1,       # display in multiple lines (see note below)
 
       class => {
           internals => 1,        # show internal data structures of classes
       },
   };
+
+Note: setting C<multiline> to 0 will also set C<index> and C<indent> to 0.
 
 =head1 CONFIGURATION FILE (RUN CONTROL)
 

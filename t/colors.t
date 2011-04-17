@@ -27,7 +27,7 @@ my @array = (1);
 is( p(@array), color('reset') . "[$/    "
                . colored('[0] ', 'bright_white')
                . colored(1, 'bright_blue')
-               . ",$/]"
+               . "$/]"
 , 'colored array');
 
 my %hash = (1=>2);
@@ -35,7 +35,7 @@ is( p(%hash), color('reset') . "{$/    "
               . colored(1, 'magenta')
               . '   '
               . colored(2, 'bright_blue')
-              . ",$/}"
+              . "$/}"
 , 'colored hash');
 
 my $circular = [];
@@ -43,7 +43,7 @@ $circular->[0] = $circular;
 is( p($circular), color('reset') . "\\ [$/    "
                   . colored('[0] ', 'bright_white')
                   . colored('var', 'white on_red')
-                  . ",$/]"
+                  . "$/]"
 , 'colored circular ref');
 
 done_testing;

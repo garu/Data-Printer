@@ -43,7 +43,7 @@ is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('re
               . colored('key', 'blue')
               . '  *  '
               . colored('"value"', 'bright_yellow')
-              . ",$/}"
+              . "$/}"
 , 'global configuration overrides our rc file');
 
 

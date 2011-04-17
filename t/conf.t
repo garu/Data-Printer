@@ -20,9 +20,9 @@ is( p($data), '\\ [
   1,
   2,
   {
-    foo => 3,
+    foo => 3
   },
-  TEST[2],
+  TEST[2]
 ]', 'customization' );
 
 done_testing;

@@ -3,6 +3,7 @@ Revision history for Data-Printer
 0.10
     NEW FEATURES:
         - allowing toggle for array indices
+        - allowing 'multiline' display customization
 
     OTHERS:
         - default separator for key/values reduced to 3 spaces for

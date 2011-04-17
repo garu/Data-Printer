@@ -38,7 +38,7 @@ is( p(%hash), color('reset') . "{$/    "
               . colored('key', 'red')
               . '  +  '
               . colored('"value"', 'bright_yellow')
-              . ",$/}"
+              . "$/}"
    , 'hash keys are now red'
 );
 
@@ -46,7 +46,7 @@ is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('re
               . colored('key', 'blue')
               . '  *  '
               . colored('"value"', 'bright_yellow')
-              . ",$/}"
+              . "$/}"
 , 'local configuration overrides our rc file');
 
 unlink $file or fail('error removing test file');
