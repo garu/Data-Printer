@@ -42,10 +42,10 @@ my $properties = {
         'repeated' => 'white on_red',
     },
     'class' => {
-        show_inherited => 'all',   # also 0, 'none', 'public' or 'private'
-        expand         => 'first', # also 1, 'all', 'none', 0
-        internals      => 1,
-        show_export    => 1,
+        inherited   => 'none',   # also 0, 'none', 'public' or 'private'
+        expand      => 'first', # also 1, 'all', 'none', 0
+        internals   => 1,
+        show_export => 1,
     },
     'filters' => {},
 };
@@ -377,16 +377,20 @@ sub _show_methods {
         public => [],
         private => [],
     };
+    my $inherited = $p->{class}{inherited} || 'none';
+
+METHOD:
     foreach my $method ($meta->get_all_methods) {
         my $method_string = $method->name;
+        my $type = substr($method_string, 0, 1) eq '_' ? 'private' : 'public';
 
         if ($method->package_name ne $ref) {
-            next; #FIXME :)
+            next METHOD unless $inherited ne 'none'
+                           and ($inherited eq 'all' or $type eq $inherited);
             $method_string .= ' (' . $method->package_name . ')';
         }
 
-        my $type = substr($method->name, 0, 1) eq '_' ? 'private' : 'public';
-            push @{ $methods->{$type} }, $method_string;
+        push @{ $methods->{$type} }, $method_string;
     }
 
     # render our string doing a natural sort by method name
@@ -568,6 +572,8 @@ customization options available, as shown below (with default values):
 
       class => {
           internals => 1,        # show internal data structures of classes
+          inherited => 'none',   # show inherited methods,
+                                 # can also be 'all', 'private', or 'public'.
       },
   };
 

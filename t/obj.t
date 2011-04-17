@@ -8,6 +8,7 @@ BEGIN {
 package Bar;
 sub bar    { }
 sub borg   { }
+sub _moo   { }
 
 1;
 
@@ -45,6 +46,49 @@ is( p($obj, class => { internals => 0 } ),
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
 }', 'testing objects (no internals)' );
+
+is( p($obj, class => { inherited => 0 }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (inherited => 0)' );
+
+
+is( p($obj, class => { inherited => 'all' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (5) : bar (Bar), baz, borg, foo, new
+    private methods (2) : _moo (Bar), _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (inherited => "all")' );
+
+is( p($obj, class => { inherited => 'public' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (5) : bar (Bar), baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (inherited => "public")' );
+
+is( p($obj, class => { inherited => 'private' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (2) : _moo (Bar), _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (inherited => "private")' );
+
+
 
 
 done_testing;
