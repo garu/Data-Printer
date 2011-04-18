@@ -27,6 +27,7 @@ my $properties = {
     'index'          => 1,
     'max_depth'      => 0,
     'multiline'      => 1,
+    'sort_keys'      => 1,
     'deparse'        => 0,
     'hash_separator' => '   ',
     'color'          => {
@@ -42,10 +43,11 @@ my $properties = {
         'repeated' => 'white on_red',
     },
     'class' => {
-        inherited => 'none',   # also 0, 'none', 'public' or 'private'
-        expand    => 1,        # how many levels to expand. 0 for none, 'all' for all
-        internals => 1,
-        export    => 1,
+        inherited    => 'none',   # also 0, 'none', 'public' or 'private'
+        expand       => 1,        # how many levels to expand. 0 for none, 'all' for all
+        internals    => 1,
+        export       => 1,
+        sort_methods => 1,
     },
     'filters' => {},
 };
@@ -282,7 +284,8 @@ sub _p {
             }
 
             my $total_keys = scalar keys %$item;
-            foreach my $key (nsort keys %$item) {
+            my @keys = ($p->{sort_keys} ? nsort keys %$item : keys %$item );
+            foreach my $key (@keys) {
                 $p->{name} .= "{$key}";
                 my $element = $item->{$key};
 
@@ -426,7 +429,7 @@ METHOD:
 
     # render our string doing a natural sort by method name
     foreach my $type (qw(public private)) {
-        my @list = nsort @{ $methods->{$type} };
+        my @list = ($p->{class}{sort_methods} ? nsort @{$methods->{$type}} : @{$methods->{$type}});
 
         $string .= (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
@@ -600,6 +603,7 @@ customization options available, as shown below (with default values):
       index          => 1,       # display array indices
       multiline      => 1,       # display in multiple lines (see note below)
       max_depth      => 0,       # how deep to traverse the data (0 for all)
+      sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
 
       class => {
@@ -613,6 +617,8 @@ customization options available, as shown below (with default values):
                                  # 1, meaning expand only itself. Can be any
                                  # number, 0 for no class expansion, and 'all'
                                  # to expand everything.
+
+          sort_methods => 1      # sort public and private methods
       },
   };
 

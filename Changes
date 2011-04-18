@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.11
+    NEW FEATURES:
+        - allowing 'sort_keys' display customization (default true)
+        - allowing 'sort_methods' class display customization (default true)
+
+    OTHERS:
+        - more tests
+
 0.10    18/04/2011
     NEW FEATURES:
         - allowing toggle for array indices
