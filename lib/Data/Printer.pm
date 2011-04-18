@@ -42,10 +42,10 @@ my $properties = {
         'repeated' => 'white on_red',
     },
     'class' => {
-        inherited   => 'none',   # also 0, 'none', 'public' or 'private'
-        expand      => 'first', # also 1, 'all', 'none', 0
-        internals   => 1,
-        show_export => 1,
+        inherited => 'none',   # also 0, 'none', 'public' or 'private'
+        expand    => 1,        # how many levels to expand. 0 for none, 'all' for all
+        internals => 1,
+        export    => 1,
     },
     'filters' => {},
 };
@@ -142,6 +142,8 @@ sub _init {
 
     $clone->{'_current_indent'} = 0;  # used internally
     $clone->{'_seen'} = {};           # used internally
+    $clone->{'_depth'} = 0;           # used internally
+    $clone->{'class'}{'_depth'} = 0;  # used internally
 
     # colors only if we're not being piped
     $ENV{ANSI_COLORS_DISABLED} = 1 if not -t *STDERR;
@@ -334,58 +336,66 @@ sub _class {
     my ($ref, $item, $p) = @_;
 
     my $string = '';
+    $p->{class}{_depth}++;
 
-    $string .= colored($ref, $p->{color}->{'class'}) . "  {$BREAK";
+    $string .= colored($ref, $p->{color}->{'class'});
 
-    $p->{_current_indent} += $p->{indent};
+    if ($p->{class}{expand} eq 'all'
+        or $p->{class}{expand} >= $p->{class}{_depth}
+    ) {
+        $string .= "  {$BREAK";
 
-    my $meta = Class::MOP::Class->initialize($ref);
+        $p->{_current_indent} += $p->{indent};
 
-    if ( my @superclasses = $meta->superclasses ) {
-        $string .= (' ' x $p->{_current_indent})
-                . 'Parents       '
-                . join(', ', map { colored($_, $p->{color}->{'class'}) }
-                             @superclasses
-                ) . $BREAK;
+        my $meta = Class::MOP::Class->initialize($ref);
 
-        $string .= (' ' x $p->{_current_indent})
-                . 'Linear @ISA   '
-                . join(', ', map { colored( $_, $p->{color}->{'class'}) }
-                          $meta->linearized_isa
-                ) . $BREAK;
+        if ( my @superclasses = $meta->superclasses ) {
+            $string .= (' ' x $p->{_current_indent})
+                    . 'Parents       '
+                    . join(', ', map { colored($_, $p->{color}->{'class'}) }
+                                 @superclasses
+                    ) . $BREAK;
+
+            $string .= (' ' x $p->{_current_indent})
+                    . 'Linear @ISA   '
+                    . join(', ', map { colored( $_, $p->{color}->{'class'}) }
+                              $meta->linearized_isa
+                    ) . $BREAK;
+        }
+
+        $string .= _show_methods($ref, $meta, $p);
+
+        if ( $p->{'class'}->{'internals'} ) {
+            my $realtype = Scalar::Util::reftype $item;
+            $string .= (' ' x $p->{_current_indent})
+                    . 'internals: ';
+
+            # Note: we can't do p($$item) directly
+            # or we'd fall in a deep recursion trap
+            if ($realtype eq 'HASH') {
+                my %realvalue = %$item;
+                $string .= _p(\%realvalue, $p);
+            }
+            elsif ($realtype eq 'ARRAY') {
+                my @realvalue = @$item;
+                $string .= _p(\@realvalue, $p);
+            }
+            elsif ($realtype eq 'CODE') {
+                my $realvalue = &$item;
+                $string .= _p(\$realvalue, $p);
+            }
+            # SCALAR and friends
+            else {
+                my $realvalue = $$item;
+                $string .= _p(\$realvalue, $p);
+            }
+            $string .= $BREAK;
+        }
+
+        $p->{_current_indent} -= $p->{indent};
+        $string .= (' ' x $p->{_current_indent}) . "}";
     }
-
-    $string .= _show_methods($ref, $meta, $p);
-
-    if ( $p->{'class'}->{'internals'} ) {
-        my $realtype = Scalar::Util::reftype $item;
-        $string .= (' ' x $p->{_current_indent})
-                . 'internals: ';
-
-        # Note: we can't do p($$item) directly
-        # or we'd fall in a deep recursion trap
-        if ($realtype eq 'HASH') {
-            my %realvalue = %$item;
-            $string .= _p(\%realvalue, $p);
-        }
-        elsif ($realtype eq 'ARRAY') {
-            my @realvalue = @$item;
-            $string .= _p(\@realvalue, $p);
-        }
-        elsif ($realtype eq 'CODE') {
-            my $realvalue = &$item;
-            $string .= _p(\$realvalue, $p);
-        }
-        # SCALAR and friends
-        else {
-            my $realvalue = $$item;
-            $string .= _p(\$realvalue, $p);
-        }
-        $string .= $BREAK;
-    }
-
-    $p->{_current_indent} -= $p->{indent};
-    $string .= (' ' x $p->{_current_indent}) . "}";
+    $p->{class}{_depth}--;
 
     return $string;
 }
@@ -594,8 +604,15 @@ customization options available, as shown below (with default values):
 
       class => {
           internals => 1,        # show internal data structures of classes
+
           inherited => 'none',   # show inherited methods,
                                  # can also be 'all', 'private', or 'public'.
+
+          expand    => 1,        # how deep to traverse the object (in case
+                                 # it contains other objects). Defaults to
+                                 # 1, meaning expand only itself. Can be any
+                                 # number, 0 for no class expansion, and 'all'
+                                 # to expand everything.
       },
   };
 

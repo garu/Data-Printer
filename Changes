@@ -1,18 +1,21 @@
 Revision history for Data-Printer
 
-0.10
+0.10    18/04/2011
     NEW FEATURES:
         - allowing toggle for array indices
         - allowing 'multiline' display customization
         - allowing 'deparse' display customization
         - allowing 'max_depth' display customization
         - allowing 'inherited' class display customization
+        - allowing 'expand' class display customization, defaults
+          to 1 (expand only the object itself)
 
     OTHERS:
         - removed ending comma from arrays and hashes
         - showing parents/ISA information only when it's there
         - default separator for key/values reduced to 3 spaces for
           improved readability.
+        - improved test suite
 
 0.09    13/04/2011
     NEW FEATURES:
