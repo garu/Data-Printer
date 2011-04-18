@@ -1,32 +1,48 @@
-Data-Printer
+## Data::Printer ##
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Data::Printer is a Perl module to pretty-print Perl data structures
+and objects in full color. It is meant to display variables on
+screen, properly formatted to be inspected by a human.
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+Data::Printer is highly customizable, from indentation size to
+depth level. You can even rename the exported p() function!
+
+Data::Printer also lets you create filters to help debugging
+your objects easily.
 
 
-INSTALLATION
+### INSTALLATION ###
 
-To install this module, run the following commands:
+   # from CPAN
+   $ cpan Data::Printer
 
-	perl Build.PL
-	./Build
-	./Build test
-	./Build install
+   # from cpanm
+   $ cpanm Data::Printer
 
-SUPPORT AND DOCUMENTATION
+   # cloning the repository
+   $ git clone git://github.com/garu/Data-Printer.git
 
-After installing, you can find documentation for this module with the
-perldoc command.
+   # manual installation, after downloading
+   perl Build.PL
+   ./Build
+   ./Build test
+   ./Build install
 
-    perldoc Data::Printer
+
+### USAGE ###
+
+   use Data::Printer;
+   p $data;
+
+Please refer to http://search.cpan.org/perldoc?Data::Printer for
+complete documentation, or type:
+
+   perldoc Data::Printer
+
+after the installation.
+
+
+### SUPPORT AND DOCUMENTATION ###
 
 You can also look for information at:
 
@@ -43,7 +59,7 @@ You can also look for information at:
         http://search.cpan.org/dist/Data-Printer/
 
 
-LICENSE AND COPYRIGHT
+### LICENSE AND COPYRIGHT ###
 
 Copyright (C) 2011 Breno G. de Oliveira
 
