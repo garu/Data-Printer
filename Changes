@@ -9,6 +9,7 @@ Revision history for Data-Printer
         - allowing 'inherited' class display customization
 
     OTHERS:
+        - removed ending comma from arrays and hashes
         - default separator for key/values reduced to 3 spaces for
           improved readability.
 
