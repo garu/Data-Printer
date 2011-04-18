@@ -622,7 +622,7 @@ customization options available, as shown below (with default values):
       },
   };
 
-Note: setting C<multiline> to 0 will also set C<index> and C<indent> to 0.
+Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
 
 =head1 CONFIGURATION FILE (RUN CONTROL)
 
