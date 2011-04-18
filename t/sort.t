@@ -24,8 +24,6 @@ use Data::Printer {
 };
 
 my $data =  { foo => 3, bar => 2, baz => 1 };
-my @keys = keys %$data;
-
 my $string = "\\ {\n";
 
 # perl does not guarantee that hash keys are
@@ -58,7 +56,7 @@ isnt($method_list, 'aaa, bbb, new',
 ok( $res =~ m/private methods \(3\) : (.+)/,
     'found private methods'
 );
-my $method_list = $1;
+$method_list = $1;
 isnt($method_list, '_ccc, _ddd, _zzz',
      'unordered private methods'
 );
