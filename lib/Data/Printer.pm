@@ -341,25 +341,26 @@ sub _class {
 
     my $meta = Class::MOP::Class->initialize($ref);
 
-    $string .= (' ' x $p->{_current_indent})
-             . 'Parents       ' 
-             . join(', ', map { colored($_, $p->{color}->{'class'}) }
-                          $meta->superclasses
-               ) . $BREAK;
+    if ( my @superclasses = $meta->superclasses ) {
+        $string .= (' ' x $p->{_current_indent})
+                . 'Parents       '
+                . join(', ', map { colored($_, $p->{color}->{'class'}) }
+                             @superclasses
+                ) . $BREAK;
 
-    $string .= (' ' x $p->{_current_indent})
-             . 'Linear @ISA   '
-             . join(', ', map { colored( $_, $p->{color}->{'class'}) }
+        $string .= (' ' x $p->{_current_indent})
+                . 'Linear @ISA   '
+                . join(', ', map { colored( $_, $p->{color}->{'class'}) }
                           $meta->linearized_isa
-               );
-
+                ) . $BREAK;
+    }
 
     $string .= _show_methods($ref, $meta, $p);
 
     if ( $p->{'class'}->{'internals'} ) {
         my $realtype = Scalar::Util::reftype $item;
-        $string .= $BREAK . (' ' x $p->{_current_indent})
-                 . 'internals: ';
+        $string .= (' ' x $p->{_current_indent})
+                . 'internals: ';
 
         # Note: we can't do p($$item) directly
         # or we'd fall in a deep recursion trap
@@ -380,10 +381,11 @@ sub _class {
             my $realvalue = $$item;
             $string .= _p(\$realvalue, $p);
         }
+        $string .= $BREAK;
     }
 
     $p->{_current_indent} -= $p->{indent};
-    $string .= $BREAK . (' ' x $p->{_current_indent}) . "}";
+    $string .= (' ' x $p->{_current_indent}) . "}";
 
     return $string;
 }
@@ -416,12 +418,12 @@ METHOD:
     foreach my $type (qw(public private)) {
         my @list = nsort @{ $methods->{$type} };
 
-        $string .= $BREAK . (' ' x $p->{_current_indent})
+        $string .= (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
                  . (@list ? ' : ' : '')
                  . join(', ', map { colored($_, $p->{color}->{class}) }
                               @list
-                   );
+                   ) . $BREAK;
     }
 
     return $string;

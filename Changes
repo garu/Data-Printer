@@ -10,6 +10,7 @@ Revision history for Data-Printer
 
     OTHERS:
         - removed ending comma from arrays and hashes
+        - showing parents/ISA information only when it's there
         - default separator for key/values reduced to 3 spaces for
           improved readability.
 

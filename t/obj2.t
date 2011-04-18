@@ -25,8 +25,6 @@ my $array  = FooArray->new;
 my $code   = FooCode->new;
 
 is( p($scalar), 'FooScalar  {
-    Parents       
-    Linear @ISA   FooScalar
     public methods (2) : foo, new
     private methods (0)
     internals: 42
@@ -34,8 +32,6 @@ is( p($scalar), 'FooScalar  {
 
 is( p($array ), 
 'FooArray  {
-    Parents       
-    Linear @ISA   FooArray
     public methods (2) : foo, new
     private methods (0)
     internals: [
@@ -47,8 +43,6 @@ SKIP: {
 
 is( p($code), 
 'FooCode  {
-    Parents       
-    Linear @ISA   FooCode
     public methods (2) : foo, new
     private methods (0)
     internals: sub { ... }
