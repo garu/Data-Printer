@@ -136,6 +136,32 @@ sub _init {
                     $clone->{class}->{$item} = $p->{class}->{$item};
                 }
             }
+            elsif ($key eq 'filters') {
+                my $val = $p->{$key};
+
+                foreach my $item (keys %$val) {
+
+                    # EXPERIMENTAL: filters in modules
+                    if ($item eq 'external') {
+                        foreach my $class ( @{$val->{$item}} ) {
+                            my $module = "Data::Printer::Filter::$class";
+                            eval "use $module";
+                            if ($@) {
+                                warn "Error loading filter '$module': $@";
+                            }
+                            else {
+                                my %from_module = %{$module->_filter_list};
+                                foreach my $k (keys %from_module) {
+                                    $clone->{filters}->{$k} = $from_module{$k};
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        $clone->{filters}->{$item} = $val->{$item};
+                    }
+                }
+            }
             else {
                 $clone->{$key} = $p->{$key};
             }
@@ -168,7 +194,7 @@ sub _p {
 
     # filter item (if user set a filter for it)
     if ( exists $p->{filters}->{$ref} ) {
-        $string .= $p->{filters}->{$ref}->($item);
+        $string .= $p->{filters}->{$ref}->($item, $p);
     }
 
     # TODO: Might be a good idea to set the rest of this sub
@@ -681,6 +707,13 @@ You can override global configurations by writing them as the second
 parameter for p(). For example:
 
   p( %var, color => { hash => 'green' } );
+
+
+=head2 Filter classes
+
+As of Data::Printer 0.11, you can create complex filters as a separate
+module. Those can even be uploaded to CPAN and used by other people!
+See L<Data::Printer::Filter> for further information.
 
 =head1 CAVEATS
 

@@ -5,6 +5,10 @@ Revision history for Data-Printer
         - allowing 'sort_keys' display customization (default true)
         - allowing 'sort_methods' class display customization (default true)
 
+    NEW ***EXPERIMENTAL*** FEATURES:
+        - Data::Printer::Filter, enabling separate filter classes
+        - filter for modules handling date and time (DateTime & friends)
+
     OTHERS:
         - more tests
 
