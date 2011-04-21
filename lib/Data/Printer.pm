@@ -515,8 +515,15 @@ Which might give you something like:
 If for some reason you want to mangle with the output string instead of
 printing it to STDERR, you can simply ask for a return value:
 
+  # move to a string
   my $string = p(@some_array);
-  warn p(%some_hash);
+
+  # output to STDOUT instead of STDERR
+  print p(%some_hash);
+
+  # or even render as html
+  use HTML::FromANSI;
+  ansi2html( p($object) );
 
 Finally, you can set all options during initialization, including
 coloring, identation and filters!
