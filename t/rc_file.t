@@ -30,6 +30,7 @@ BEGIN {
     # module and see if it overrides the default conf
     # with our .dataprinter RC file
     use_ok ('Data::Printer');
+    unlink $file or fail('error removing test file');
 };
 
 my %hash = ( key => 'value' );
@@ -49,6 +50,5 @@ is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('re
               . "$/}"
 , 'local configuration overrides our rc file');
 
-unlink $file or fail('error removing test file');
 
 done_testing;

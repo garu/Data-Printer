@@ -35,6 +35,7 @@ BEGIN {
                 },
                 hash_separator => '  *  ',
            });
+    unlink $file or fail('error removing test file');
 };
 
 my %hash = ( key => 'value' );
@@ -45,8 +46,5 @@ is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('re
               . colored('"value"', 'bright_yellow')
               . "$/}"
 , 'global configuration overrides our rc file');
-
-
-unlink $file or fail('error removing test file');
 
 done_testing;
