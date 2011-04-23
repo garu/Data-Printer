@@ -3,6 +3,7 @@ use warnings;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
 package FooArray;

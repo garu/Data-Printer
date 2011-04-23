@@ -6,6 +6,7 @@ my $has_timepiece;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    use File::HomeDir::Test;  # avoid user's .dataprinter
 
     # Time::Piece is only able to overload
     # localtime() if it's loaded during compile-time
