@@ -1,6 +1,7 @@
 package Data::Printer::Filter;
 use strict;
 use warnings;
+use Clone qw(clone);
 require Object::ID;
 
 my %_filters_for = ();
@@ -9,9 +10,19 @@ sub import {
     my $caller = caller;
     my $id = Object::ID::object_id( \$caller );
 
+    my %properties = ();
+
     my $filter = sub {
         my ($type, $code) = @_;
-        $_filters_for{$id}{$type} = $code;
+
+        $_filters_for{$id}{$type} = sub {
+            my ($item, $p) = @_;
+
+            # send our closured %properties var instead
+            # so newline(), indent(), etc can work it
+            %properties = %{ clone $p };
+            $code->($item, \%properties);
+        };
     };
 
     my $filters = sub {
@@ -72,7 +83,7 @@ Later, in your main code:
       },
   };
 
-=head1 WARNING - VERY ALPHA CODE (LOOSE API)
+=head1 WARNING - ALPHA CODE (VERY LOOSE API)
 
 We are still experimenting with the standalone filter syntax, so
 B<< filters written like so may break in the future without any warning! >>
