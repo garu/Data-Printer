@@ -33,9 +33,21 @@ sub import {
         return ${$properties{_linebreak}} . (' ' x $properties{_current_indent});
     };
 
+    my $indent = sub {
+        $properties{_current_indent} += $properties{indent};
+        return;
+    };
+
+    my $outdent = sub {
+        $properties{_current_indent} -= $properties{indent};
+        return;
+    };
+
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
+        *{"$caller\::indent"}  = $indent;
+        *{"$caller\::outdent"} = $outdent;
         *{"$caller\::newline"} = $newline;
 
         *{"$caller\::_filter_list"} = $filters;
