@@ -116,7 +116,7 @@ sub p (\[@$%&];%) {
 
 sub _merge {
     my $p = shift;
-    my $clone = clone($properties);
+    my $clone = clone $properties;
 
     if ($p) {
         foreach my $key (keys %$p) {
