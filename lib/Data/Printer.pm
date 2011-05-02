@@ -93,6 +93,9 @@ sub import {
     my $caller = caller;
     no strict 'refs';
     *{"$caller\::$imported_method"} = \&p;
+
+    # colors only if we're not being piped
+    $ENV{ANSI_COLORS_DISABLED} = 1 if not -t *STDERR;
 }
 
 sub p (\[@$%&];%) {
@@ -172,9 +175,6 @@ sub _merge {
     $clone->{'_seen'} = {};           # used internally
     $clone->{'_depth'} = 0;           # used internally
     $clone->{'class'}{'_depth'} = 0;  # used internally
-
-    # colors only if we're not being piped
-    $ENV{ANSI_COLORS_DISABLED} = 1 if not -t *STDERR;
 
     return $clone;
 }
