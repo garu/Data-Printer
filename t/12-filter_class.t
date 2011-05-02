@@ -10,16 +10,43 @@ BEGIN {
 use Data::Printer::Filter;
 
 my $filters = _filter_list();
-is( $filters, undef, 'no filters set' );
+is $filters, undef, 'no filters set';
 
-sub test  { 'test' }
-sub test2 { 'other test' }
+my $properties = {
+    indent => 5,
+    _current_indent => 0,
+    _linebreak => \"\n",
+};
+
+sub test {
+    is scalar @_, 2, 'got two elements';
+    is $_[0], 'SCALAR', 'first element';
+    is_deeply $_[1], $properties, 'second element is properties';
+
+    indent();
+    is $_[1]->{_current_indent}, 5, 'indent()';
+    is newline, "\n     ", 'newline()';
+    indent();
+    is $_[1]->{_current_indent}, 10, 'indent() again';
+    outdent;
+    is $_[1]->{_current_indent}, 5, 'outdent()';
+
+    return 'test';
+}
+
+sub test2 { 'other test for: ' . p($_[0], $_[1]) }
 
 filter 'SCALAR', \&test;
 
 filter HASH => \&test2;
 
 $filters = _filter_list();
-is_deeply( $filters, { SCALAR => \&test, HASH => \&test2 }, 'proper filters set' );
+is scalar keys %$filters, 2, 'filters set';
+
+ok exists $filters->{SCALAR}, 'SCALAR filter set';
+ok exists $filters->{HASH}, 'HASH filter set';
+
+is $filters->{SCALAR}->('SCALAR', $properties), 'test', 'SCALAR filter called';
+is $filters->{HASH}->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
 
 done_testing;
