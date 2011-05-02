@@ -57,31 +57,35 @@ my $BREAK = "\n";
 sub import {
     my ($class, $args) = @_;
 
-    # the RC file overrides the defaults
-    my $file = File::Spec->catfile(
-        File::HomeDir->my_home,
-        '.dataprinter'
-    );
-    if (-e $file) {
-        if ( open my $fh, '<', $file ) {
-            my $rc_data;
-            { local $/; $rc_data = <$fh> }
-            close $fh;
+    # the RC file overrides the defaults,
+    # (and we load it only once)
+    unless( exists $properties->{_initialized} ) {
+        my $file = File::Spec->catfile(
+            File::HomeDir->my_home,
+            '.dataprinter'
+        );
+        if (-e $file) {
+            if ( open my $fh, '<', $file ) {
+                my $rc_data;
+                { local $/; $rc_data = <$fh> }
+                close $fh;
 
-            my $config = eval $rc_data;
-            if ( $@ ) {
-                warn "Error loading $file: $@\n";
-            }
-            elsif (!ref $config or ref $config ne 'HASH') {
-                warn "Error loading $file: config file must return a hash reference\n";
+                my $config = eval $rc_data;
+                if ( $@ ) {
+                    warn "Error loading $file: $@\n";
+                }
+                elsif (!ref $config or ref $config ne 'HASH') {
+                    warn "Error loading $file: config file must return a hash reference\n";
+                }
+                else {
+                    $properties = _merge( $config );
+                }
             }
             else {
-                $properties = _merge( $config );
+                warn "error opening '$file': $!\n";
             }
         }
-        else {
-            warn "error opening '$file': $!\n";
-        }
+        $properties->{_initialized} = 1;
     }
 
     # and 'use' arguments override the RC file
