@@ -29,9 +29,15 @@ sub import {
         return $_filters_for{$id};
     };
 
+    my $newline = sub {
+        return ${$properties{_linebreak}} . (' ' x $properties{_current_indent});
+    };
+
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
+        *{"$caller\::newline"} = $newline;
+
         *{"$caller\::_filter_list"} = $filters;
     }
 };

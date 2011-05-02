@@ -176,6 +176,7 @@ sub _merge {
     }
 
     $clone->{'_current_indent'} = 0;  # used internally
+    $clone->{'_linebreak'} = \$BREAK; # used internally
     $clone->{'_seen'} = {};           # used internally
     $clone->{'_depth'} = 0;           # used internally
     $clone->{'class'}{'_depth'} = 0;  # used internally
