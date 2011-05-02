@@ -76,7 +76,7 @@ sub import {
                 warn "Error loading $file: config file must return a hash reference\n";
             }
             else {
-                $properties = _init( $config );
+                $properties = _merge( $config );
             }
         }
         else {
@@ -86,7 +86,7 @@ sub import {
 
     # and 'use' arguments override the RC file
     if (ref $args and ref $args eq 'HASH') {
-        $properties = _init( $args );
+        $properties = _merge( $args );
     }
 
     my $imported_method = $properties->{alias} || 'p';
@@ -101,7 +101,7 @@ sub p (\[@$%&];%) {
 
     my ($item, %local_properties) = @_;
 
-    my $p = _init(\%local_properties);
+    my $p = _merge(\%local_properties);
     unless ($p->{multiline}) {
         $BREAK = ' ';
         $p->{'indent'} = 0;
@@ -114,7 +114,7 @@ sub p (\[@$%&];%) {
 }
 
 
-sub _init {
+sub _merge {
     my $p = shift;
     my $clone = clone($properties);
 
