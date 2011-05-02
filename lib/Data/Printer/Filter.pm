@@ -43,12 +43,25 @@ sub import {
         return;
     };
 
+    my $imported = sub (\[@$%&];%) {
+        my ($item, $p) = @_;
+
+        # TODO: make sure this actually works as expected
+        my %temp_p = %properties;
+        @temp_p{ keys %$p } = values %$p;
+
+        require Data::Printer;
+        return Data::Printer::p( $item, %temp_p );
+    };
+
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
         *{"$caller\::indent"}  = $indent;
         *{"$caller\::outdent"} = $outdent;
         *{"$caller\::newline"} = $newline;
+
+        *{"$caller\::p"} = $imported;
 
         *{"$caller\::_filter_list"} = $filters;
     }
