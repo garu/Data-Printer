@@ -530,7 +530,7 @@ printing it to STDERR, you can simply ask for a return value:
   # output to STDOUT instead of STDERR
   print p(%some_hash);
 
-  # or even render as html
+  # or even render as HTML
   use HTML::FromANSI;
   ansi2html( p($object) );
 
