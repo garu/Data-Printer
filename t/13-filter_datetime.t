@@ -32,21 +32,25 @@ SKIP: {
 
     my @list = ($t, { foo => 1 } );
 
-    is ( p($t), 'Fri Feb 13 21:31:30 2009', 'Time::Piece' );
+    # we can't use a literal in our tests because of
+    # timezone and epoch issues
+    my $time_str = $t->cdate;
+
+    is ( p($t), $time_str, 'Time::Piece' );
     is ( p($t, datetime => { show_class_name => 1 }),
-         'Fri Feb 13 21:31:30 2009 (Time::Piece)',
+         "$time_str (Time::Piece)",
          'Time::Piece with class name'
     );
-    is ( p(@list), '[
-    [0] Fri Feb 13 21:31:30 2009,
+    is ( p(@list), "[
+    [0] $time_str,
     [1] this is a hash
-]', 'inline and class filters together (Time::Piece)'
+]", 'inline and class filters together (Time::Piece)'
     );
 };
 
 SKIP: {
     eval 'use DateTime';
-    skip 'DateTime not available', 2 if $@;
+    skip 'DateTime not available', 3 if $@;
 
     my $d1 = DateTime->new( year => 1981, month =>  9, day => 29 );
     my $d2 = DateTime->new( year => 1984, month => 11, day => 15 );
