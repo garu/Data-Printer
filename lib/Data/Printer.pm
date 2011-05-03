@@ -55,7 +55,11 @@ my $properties = {
 my $BREAK = "\n";
 
 sub import {
-    my ($class, $args) = @_;
+    my $class = shift;
+    my $args;
+    if (scalar @_) {
+        $args = @_ == 1 ? shift : {@_};
+    }
 
     # the RC file overrides the defaults,
     # (and we load it only once)
@@ -543,6 +547,11 @@ coloring, identation and filters!
          'SCALAR'   => sub { "oh noes, I found a scalar! $_[0]" },
       },
   };
+
+You can ommit the first {} block and just initialize it with a
+regular hash:
+
+  use Data::Printer  deparse => 1, sort_keys => 0;
 
 And if you like your setup better than the defaults, just put them in
 a '.dataprinter' file in your home dir and don't repeat yourself
