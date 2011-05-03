@@ -593,10 +593,12 @@ Note that both spellings ('color' and 'colour') will work.
 
 Data::Printer offers you the ability to use filters to override
 any kind of data display. The filters are placed on a hash,
-where the keys are the types or class names, and the values
-are anonymous subs that receive the item itself as a parameter.
-This lets you quickly override the way Data::Printer handles
-and displays data types and, in particular, objects.
+where keys are the types - or class names - and values
+are anonymous subs that receive two arguments: the item itself
+as first parameter, and the properties hashref (in case your
+filter wants to read from it). This lets you quickly override
+the way Data::Printer handles and displays data types and, in
+particular, objects.
 
   use Data::Printer {
         filters => {
@@ -607,11 +609,16 @@ and displays data types and, in particular, objects.
 
 Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
 I<HASH>, I<REF>, I<CODE>, I<Regexp> and I<GLOB>. As for objects,
-just use the object's name, as shown above.
+just use the class' name, as shown above.
 
-B<Note>: If you plan on calling C<p()> from I<within> a filter,
-please make sure you are passing only REFERENCES as arguments.
-See L</CAVEATS> below.
+B<Note>: If you plan on calling C<p()> from I<within> an inline
+filter, please make sure you are passing only REFERENCES as
+arguments. See L</CAVEATS> below.
+
+You may also like to specify standalone filter modules. Please
+see L<Data::Printer::Filter> for further information on this,
+including useful filters that are shipped as part of this
+distribution.
 
 
 =head1 ALIASING
@@ -743,8 +750,9 @@ You are supposed to pass variables, not anonymous structures:
    p $hash_ref;        # also right
 
 
-If you are using filters, and calling p() (or whatever name you aliased it to)
-from inside those filters, you B<must> pass the arguments to C<p()> as a reference:
+If you are using inline filters, and calling p() (or whatever name you
+aliased it to) from inside those filters, you B<must> pass the arguments
+to C<p()> as a reference:
 
   use Data::Printer {
       filters => {
@@ -759,13 +767,15 @@ from inside those filters, you B<must> pass the arguments to C<p()> as a referen
       },
   };
 
-This happens because your filter is compiled I<before> Data::Printer itself loads,
-so the filter does not see the function prototype. If you forget to pass a reference,
-Data::Printer will generate an exception for you with the following message:
+This happens because your filter function is compiled I<before> Data::Printer
+itself loads, so the filter does not see the function prototype. As a way
+to avoid unpleasant surprises, if you forget to pass a reference, Data::Printer
+will generate an exception for you with the following message:
 
     'If you call p() inside a filter, please pass arguments as references'
 
-
+Another way to avoid this is to use the much more complete L<Data::Printer::Filter>
+interface for standalone filters.
 
 =head1 BUGS
 
