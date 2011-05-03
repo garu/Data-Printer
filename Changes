@@ -1,16 +1,21 @@
 Revision history for Data-Printer
 
-0.11
+0.11    03/05/2011
     NEW FEATURES:
         - allowing 'sort_keys' display customization (default true)
         - allowing 'sort_methods' class display customization (default true)
+        - now you can add options to Data::Printer as a plain hash, not
+          just as a hash ref (feature request by edenc)
 
     NEW ***EXPERIMENTAL*** FEATURES:
         - Data::Printer::Filter, enabling separate filter classes
         - filter for modules handling date and time (DateTime & friends)
+        - filter for database modules (DBI only for now)
 
     OTHERS:
         - more tests
+        - improved documentation, including how to turn output to HTML
+        - some internal refactorings
 
 0.10    18/04/2011
     NEW FEATURES:
