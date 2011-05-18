@@ -30,6 +30,7 @@ my $properties = {
     'sort_keys'      => 1,
     'deparse'        => 0,
     'hash_separator' => '   ',
+    'class_method'   => undef,        # use a specific dump method, if available
     'color'          => {
         'array'    => 'bright_white',
         'number'   => 'bright_blue',
@@ -373,6 +374,12 @@ sub _deparse {
 sub _class {
     my ($ref, $item, $p) = @_;
 
+    # if the user specified a method to use instead, we do that
+    if ( $p->{class_method} and $item->can($p->{class_method}) ) {
+        my $method = $p->{class_method};
+        return $item->$method;
+    }
+
     my $string = '';
     $p->{class}{_depth}++;
 
@@ -659,6 +666,8 @@ customization options available, as shown below (with default values):
       max_depth      => 0,       # how deep to traverse the data (0 for all)
       sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
+      class_method   => undef,   # if available in the target object, use
+                                 # this method instead to dump it
 
       class => {
           internals => 1,        # show internal data structures of classes
