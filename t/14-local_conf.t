@@ -4,23 +4,9 @@ use Test::More;
 
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
-    use_ok ('Term::ANSIColor');
-    use_ok ('Data::Printer');
-    use_ok ('File::HomeDir::Test');
-    use_ok ('File::HomeDir');
-    use_ok ('File::Spec');
-
-    my $file = File::Spec->catfile(
-            File::HomeDir->my_home,
-            '.dataprinter'
-    );
-
-    if (-e $file) {
-        unless (unlink $file) {
-            diag('error removing temporary rc file: ' . $@);
-            plan skip_all => 'File .dataprinter should not be in test homedir';
-        }
-    }
+    use File::HomeDir::Test; # avoid user's .dataprinter
+    use_ok 'Term::ANSIColor';
+    use_ok 'Data::Printer';
 };
 
 my %hash = ( key => 'value' );
