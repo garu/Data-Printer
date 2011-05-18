@@ -556,7 +556,7 @@ coloring, identation and filters!
   };
 
 You can ommit the first {} block and just initialize it with a
-regular hash:
+regular hash, if it makes things easier to read:
 
   use Data::Printer  deparse => 1, sort_keys => 0;
 
@@ -645,7 +645,7 @@ name, already have a C<p()> function (why?) in your code and want
 to avoid clashing, or are just used to other function names for that
 purpose, you can easily rename it:
 
-  use Data::Printer { alias => 'Dumper' };
+  use Data::Printer alias => 'Dumper';
 
   Dumper( %foo );
 
@@ -809,6 +809,8 @@ L<Data::Dump>
 L<Data::Dumper::Concise>
 
 L<Data::Dump::Streamer>
+
+L<Data::PrettyPrintObjects>
 
 L<Data::TreeDumper>
 
