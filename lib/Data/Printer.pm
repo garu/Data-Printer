@@ -30,6 +30,7 @@ my $properties = {
     'sort_keys'      => 1,
     'deparse'        => 0,
     'hash_separator' => '   ',
+    'show_tied'      => 1,
     'class_method'   => undef,        # use a specific dump method, if available
     'color'          => {
         'array'    => 'bright_white',
@@ -192,6 +193,7 @@ sub _merge {
 sub _p {
     my ($item, $p) = @_;
     my $ref = ref $item;
+    my $tie;
 
     my $string = '';
 
@@ -219,6 +221,8 @@ sub _p {
         else {
             $string .= colored(qq["$$item"], $p->{color}->{'string'});
         }
+
+        $tie = ref tied $$item;
     }
 
     elsif ($ref eq 'REF') {
@@ -240,6 +244,7 @@ sub _p {
 
     elsif ($ref eq 'GLOB' or "$item" =~ /=GLOB\([^()]+\)$/ ) {
         $string .= colored("$$item", $p->{color}->{'glob'});
+        $tie = ref tied *$$item;
     }
 
     elsif ($ref eq 'Regexp') {
@@ -297,6 +302,8 @@ sub _p {
             $p->{_current_indent} -= $p->{indent};
             $string .= (' ' x $p->{_current_indent}) . "]";
         }
+
+        $tie = ref tied @$item;
         $p->{_depth}--;
     }
 
@@ -350,10 +357,16 @@ sub _p {
             $p->{_current_indent} -= $p->{indent};
             $string .= (' ' x $p->{_current_indent}) . "}";
         }
+
+        $tie = ref tied %$item;
         $p->{_depth}--;
     }
     else {
         $string .= _class($ref, $item, $p);
+    }
+
+    if ($p->{show_tied} and $tie) {
+        $string .= " (tied to $tie)";
     }
 
     return $string;
