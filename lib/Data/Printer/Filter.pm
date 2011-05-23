@@ -111,7 +111,7 @@ Later, in your main code:
 
   use Data::Printer {
       filters => {
-          external => [ 'MyFilter', 'OtherFilter' ],
+          -external => [ 'MyFilter', 'OtherFilter' ],
 
           # you can still add regular (inline) filters
           SCALAR => sub {
@@ -149,12 +149,13 @@ package's namespace the L</filter> function, along with some helpers to
 create custom filter packages.
 
 L<Data::Printer> recognizes all filters in the C<Data::Printer::Filter::*>
-namespace. You can load them by specifying them in the 'external' filter
-list:
+namespace. You can load them by specifying them in the '-external' filter
+list (note the dash, to avoid clashing with a potential class or pragma
+labelled 'external'):
 
   use Data::Printer {
       filters => {
-          external => [ 'MyFilter' ],
+          -external => [ 'MyFilter' ],
       },
   };
 

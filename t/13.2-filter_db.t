@@ -11,7 +11,7 @@ BEGIN {
 
 use Data::Printer {
     filters => {
-        external => [ 'DB' ]
+        -external => [ 'DB' ]
     },
 };
 

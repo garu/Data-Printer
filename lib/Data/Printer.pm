@@ -155,7 +155,7 @@ sub _merge {
                 foreach my $item (keys %$val) {
 
                     # EXPERIMENTAL: filters in modules
-                    if ($item eq 'external') {
+                    if ($item eq '-external') {
                         foreach my $class ( @{$val->{$item}} ) {
                             my $module = "Data::Printer::Filter::$class";
                             eval "use $module";
