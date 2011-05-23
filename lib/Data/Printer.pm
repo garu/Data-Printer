@@ -10,6 +10,7 @@ use Clone qw(clone);
 require Object::ID;
 use File::Spec;
 use File::HomeDir ();
+use Fcntl;
 
 our $VERSION = 0.12;
 
@@ -244,6 +245,35 @@ sub _p {
 
     elsif ($ref eq 'GLOB' or "$item" =~ /=GLOB\([^()]+\)$/ ) {
         $string .= colored("$$item", $p->{color}->{'glob'});
+
+        my $extra = '';
+        if (my $flags = fcntl($$item, F_GETFL, 0) ) {
+
+            $extra .= $flags & O_WRONLY ? 'write-only'
+                    : $flags & O_RDWR   ? 'read/write'
+                    : 'read-only'
+                    ;
+
+            my %flags = (
+                    'append'      => O_APPEND,
+                    'async'       => O_ASYNC,
+                    'create'      => O_CREAT,
+                    'truncate'    => O_TRUNC,
+                    'nonblocking' => O_NONBLOCK,
+            );
+
+            if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
+                $extra .= ", flags: @flags";
+            }
+            $extra .= ', ';
+        }
+        my @layers = ();
+        eval { @layers = PerlIO::get_layers $$item };
+        unless ($@) {
+            $extra .= "layers: @layers";
+        }
+        $string .= "  ($extra)" if $extra;
+
         $tie = ref tied *$$item;
     }
 

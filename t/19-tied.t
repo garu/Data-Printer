@@ -146,10 +146,14 @@ is p(%var), '{
 }', 'cleared (untied) hash again shows no tie information';
 
 $var = *DATA;
-is p($var), '*main::DATA', 'untied handle shows only the handle itself';
+like p($var), qr/\*main::DATA/, 'untied handle properly referenced';
+unlike p($var), qr/tied to/, 'untied handle shows only the handle itself';
 
 tie *$var, 'Tie::Fighter::Handle';
-is p($var), '*main::DATA (tied to Tie::Fighter::Handle)', 'tied handle contains tied message';
+like p($var), qr/tied to Tie::Fighter::Handle/, 'tied handle contains tied message';
+
+untie *$var;
+unlike p($var), qr/tied to/, 'cleared (untied) handle again shows no tie information';
 
 done_testing;
 

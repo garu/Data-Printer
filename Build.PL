@@ -20,6 +20,7 @@ my $builder = Module::Build->new(
         'Object::ID'      => 0,
         'File::HomeDir'   => 0.91,
         'File::Spec'      => 0,
+        'Fcntl'           => 0,
     },
     add_to_cleanup      => [ 'Data-Printer-*' ],
     create_makefile_pl => 'traditional',
