@@ -166,13 +166,13 @@ sub _merge {
                             else {
                                 my %from_module = %{$module->_filter_list};
                                 foreach my $k (keys %from_module) {
-                                    $clone->{filters}->{$k} = $from_module{$k};
+                                    push @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
                                 }
                             }
                         }
                     }
                     else {
-                        $clone->{filters}->{$item} = $val->{$item};
+                        push @{ $clone->{filters}->{$item} }, $val->{$item};
                     }
                 }
             }
@@ -207,7 +207,12 @@ sub _p {
 
     # filter item (if user set a filter for it)
     if ( exists $p->{filters}->{$ref} ) {
-        $string .= $p->{filters}->{$ref}->($item, $p);
+        foreach my $filter ( @{ $p->{filters}->{$ref} } ) {
+            if ( my $result = $filter->($item, $p) ) {
+                $string .= $result;
+                last;
+            }
+        }
     }
 
     # TODO: Might be a good idea to set the rest of this sub
@@ -675,9 +680,9 @@ filter, please make sure you are passing only REFERENCES as
 arguments. See L</CAVEATS> below.
 
 You may also like to specify standalone filter modules. Please
-see L<Data::Printer::Filter> for further information on this,
-including useful filters that are shipped as part of this
-distribution.
+see L<Data::Printer::Filter> for further information on a more
+powerful filter interface for Data::Printer, including useful
+filters that are shipped as part of this distribution.
 
 
 =head1 ALIASING

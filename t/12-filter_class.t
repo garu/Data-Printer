@@ -37,6 +37,7 @@ sub test {
 sub test2 { 'other test for: ' . p($_[0], $_[1]) }
 
 filter 'SCALAR', \&test;
+filter 'SCALAR', \&test2;
 
 filter HASH => \&test2;
 
@@ -46,7 +47,12 @@ is scalar keys %$filters, 2, 'filters set';
 ok exists $filters->{SCALAR}, 'SCALAR filter set';
 ok exists $filters->{HASH}, 'HASH filter set';
 
-is $filters->{SCALAR}->('SCALAR', $properties), 'test', 'SCALAR filter called';
-is $filters->{HASH}->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
+is scalar @{ $filters->{SCALAR} }, 2, 'two scalar filters';
+is scalar @{ $filters->{HASH}   }, 1, 'only one hash filter';
+
+is $filters->{SCALAR}->[0]->('SCALAR', $properties), 'test', 'SCALAR filter called';
+is $filters->{SCALAR}->[1]->('SCALAR', $properties), 'other test for: "SCALAR"', 'SCALAR filter called again';
+
+is $filters->{HASH}->[0]->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
 
 done_testing;

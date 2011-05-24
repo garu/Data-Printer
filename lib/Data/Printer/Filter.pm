@@ -15,7 +15,7 @@ sub import {
     my $filter = sub {
         my ($type, $code) = @_;
 
-        $_filters_for{$id}{$type} = sub {
+        push @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $p) = @_;
 
             # send our closured %properties var instead
@@ -78,6 +78,7 @@ Create your filter module:
   package Data::Printer::Filter::MyFilter;
   use strict;
   use warnings;
+
   use Data::Printer::Filter;
 
   # type filter
@@ -165,7 +166,6 @@ module.
 B<< IMPORTANT: THIS WAY OF LOADING EXTERNAL PLUGINS IS EXPERIMENTAL AND
 SUBJECT TO SUDDEN CHANGE! IF YOU CARE, AND/OR HAVE IDEAS ON A BETTER API,
 PLEASE LET US KNOW >>
-
 
 =head1 HELPER FUNCTIONS
 
@@ -258,6 +258,38 @@ far only DBI is covered, but more to come!
 L<Data::Printer::Filter::DateTime> pretty-prints several date
 and time objects (not just DateTime) for you on the fly, including
 duration/delta objects!
+
+=head1 USING MORE THAN ONE FILTER FOR THE SAME TYPE/CLASS
+
+Unlike the inline version, standalone filters let you stack together
+filters for the same type or class. Filters of the same type are
+called in order, until one of them returns a string. This lets
+you have several filters inspecting the same given value until
+one of them decides to actually treat it somehow.
+
+If your filter catched a value and you don't want to treat it,
+simply return and the next filter will be called. If there are no
+other filters for that particular class or type available, the
+standard Data::Printer calls will be used.
+
+For example:
+
+  filter SCALAR => sub {
+      my ($ref, $properties) = @_;
+      if ( Scalar::Util::looks_like_number $$ref ) {
+          return sprintf "%.8d", $$ref;
+      }
+      return; # lets the other SCALAR filter have a go
+  };
+
+  filter SCALAR => sub {
+      my ($ref, $properties) = @_;
+      return qq["$$ref"];
+  };
+
+Note that this "filter stack" is not possible on inline filters, since
+it's a hash and keys with the same name are overwritten.
+
 
 =head1 SEE ALSO
 
