@@ -552,7 +552,7 @@ Data::Printer - colored pretty-print of Perl data structures and objects
 
 =head1 SYNOPSIS
 
-  use Data::Printer;
+  use Data::Printer;   # or just "use DDP" for short
 
   my @array = qw(a b);
   $array[3] = 'c';
@@ -792,6 +792,18 @@ and from then on all you have to do while debugging scripts is:
   use Data::Printer;
 
 and it will load your custom settings every time :)
+
+
+=head1 THE "DDP" PACKAGE ALIAS
+
+You're likely to add/remove Data::Printer from source code being
+developed and debugged all the time, and typing it might feel too
+long. Because of this the 'DDP' package is provided as a shorter
+alias to Data::Printer:
+
+   use DDP;
+   p %some_var;
+
 
 =head1 EXPERIMENTAL FEATURES
 
