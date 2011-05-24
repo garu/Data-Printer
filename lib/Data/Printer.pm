@@ -12,7 +12,7 @@ use File::Spec;
 use File::HomeDir ();
 use Fcntl;
 
-our $VERSION = 0.12;
+our $VERSION = 0.13;
 
 BEGIN {
     if ($^O =~ /Win32/i) {

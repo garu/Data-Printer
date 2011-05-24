@@ -1,5 +1,33 @@
 Revision history for Data-Printer
 
+0.13    24/05/2011
+    CHANGES THAT ***BREAK*** BACKWARDS COMPATIBILITY:
+        - 'external' is now called '-external' to avoid name clash
+          with a potential "external.pm" class;
+        - filters for the same type/class are now stacked and called
+          in order. The first one that returns a defined value (string)
+          is used, otherwise it will forward the call to the next filter.
+          In earlier versions, the last declared filter would be the one
+          used. Note that this feature is only available for stand-alone
+          filters, since inline filters are actually a hash.
+
+    NEW FEATURES:
+        - use a specific dump method via the 'class_method' display
+          customization (default undef)
+        - display tie information via the 'show_tied' display
+          customization (default true)
+        - display extra information (mode, flags, layers) on I/O handles
+        - new '-class' type (note the dash) called when we find a
+          non-native type (i.e. an object). If you return anything at
+          all - even an empty string - the filter will succeed. Otherwise
+          it will forward the call to the next '-class' filter, in order.
+        - new DDP package alias
+
+
+    OTHERS:
+        - improved test suite
+        - improved documentation
+
 0.12    03/05/2011
     BUG FIXES:
         - fixed failing filter test due to timezone/epoch issues
