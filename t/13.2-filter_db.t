@@ -70,18 +70,59 @@ is( p($dbh), 'DBM Database Handle (disconnected) {
 }', 'DBH output (after disconnecting)'
 );
 
+cleanup();
 
-# cleanup
-use File::Spec;
-foreach my $ext (qw(dir lck pag)) {
-    my $file = File::Spec->catfile( $dir, "foo.$ext" );
-    if (-e $file) {
-        unlink $file;
-    }
-    else {
-        diag("error removing $file");
+################
+## DBIx::Class
+
+my $packages = <<'EOPACKAGES';
+package MyTest::Schema;
+use base 'DBIx::Class::Schema';
+__PACKAGE__->load_namespaces;
+
+1;
+
+package MyTest::Schema::Result::Foo;
+use base 'DBIx::Class::Core';
+__PACKAGE__->table('foo');
+__PACKAGE__->add_columns(qw/ bar baz /);
+
+1;
+
+EOPACKAGES
+
+SKIP: {
+    eval "$packages";
+    skip "DBIx::Class not available: $@", 1 if $@;
+    package main;
+
+    my $schema = MyTest::Schema->connect(
+            'dbi:DBM(RaiseError=1):', undef, undef, {f_dir => $dir }
+    );
+
+    is p($schema), 'MyTest::Schema DBIC Schema with \ DBM Database Handle (connected) {
+    Auto Commit: 1
+    Statement Handles: 0
+    Last Statement: -
+}', 'dumping DBIC schema';
+
+};
+
+ok 2, 'still here, cleaning up';
+cleanup();
+
+sub cleanup {
+    use File::Spec;
+    foreach my $ext (qw(dir lck pag)) {
+        my $file = File::Spec->catfile( $dir, "foo.$ext" );
+        if (-e $file) {
+            unlink $file;
+        }
+        else {
+            note("error removing $file");
+        }
     }
 }
-   
 
 done_testing;
+

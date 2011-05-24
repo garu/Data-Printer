@@ -61,6 +61,23 @@ filter 'DBI::st', sub {
     return $str;
 };
 
+# DBIx::Class filters
+filter '-class' => sub {
+    my ($obj, $properties) = @_;
+
+    if ( $obj->isa('DBIx::Class::Schema') ) {
+        return ref($obj) . ' DBIC Schema with ' . p( $obj->storage->dbh );
+    }
+    elsif ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
+        return colored( ref($obj), $properties->{color}{class} )
+             . ' (' . colored( $obj->as_query, 'bright_yellow' ) . ')';
+    }
+    else {
+        return;
+    }
+};
+
+
 1;
 __END__
 
