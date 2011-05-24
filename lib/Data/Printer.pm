@@ -714,6 +714,7 @@ customization options available, as shown below (with default values):
       max_depth      => 0,       # how deep to traverse the data (0 for all)
       sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
+      show_tied      => 1,       # expose tied() variables
       class_method   => undef,   # if available in the target object, use
                                  # this method instead to dump it
 
