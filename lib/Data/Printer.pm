@@ -887,6 +887,34 @@ L<Data::PrettyPrintObjects>
 L<Data::TreeDumper>
 
 
+=head1 AUTHOR
+
+Breno G. de Oliveira C<< <garu at cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+Many thanks to everyone that helped design and develop this module, in
+one way or the other. They are (alphabetically):
+
+=over 4
+
+=item * brian d foy
+
+=item * Chris Prather (perigrin)
+
+=item * Eden Cardim (edenc)
+
+=item * Kartik Thakore (kthakore)
+
+=item * Kip Hampton (ubu)
+
+=item * Torsten Raudssus (Getty)
+
+=back
+
+If I missed your name, please drop me a line!
+
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2011 Breno G. de Oliveira C<< <garu at cpan.org> >>. All rights reserved.
