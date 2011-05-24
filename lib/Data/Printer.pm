@@ -641,8 +641,8 @@ I<< display Perl variables and objects on screen, properly
 formatted >> (to be inspected by a human)
 
 If you want to serialize/store/restore Perl data structures,
-this module will NOT help you. Try Storable, Data::Dumper,
-JSON, or whatever. CPAN is full of such solutions!
+this module will NOT help you. Try L<Storable>, L<Data::Dumper>,
+L<JSON>, or whatever. CPAN is full of such solutions!
 
 =head1 COLORS
 
@@ -675,11 +675,9 @@ filter wants to read from it). This lets you quickly override
 the way Data::Printer handles and displays data types and, in
 particular, objects.
 
-  use Data::Printer {
-        filters => {
+  use Data::Printer filters => {
             'DateTime'      => sub { $_[0]->ymd },
             'HTTP::Request' => sub { $_[0]->uri },
-        },
   };
 
 Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
@@ -794,7 +792,6 @@ and from then on all you have to do while debugging scripts is:
   use Data::Printer;
 
 and it will load your custom settings every time :)
-
 
 =head1 EXPERIMENTAL FEATURES
 
