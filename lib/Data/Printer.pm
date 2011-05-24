@@ -397,7 +397,18 @@ sub _p {
         $p->{_depth}--;
     }
     else {
-        $string .= _class($ref, $item, $p);
+        # let '-class' filters have a go
+        my $visited = 0;
+        if ( exists $p->{filters}->{'-class'} ) {
+            foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
+                if ( my $result = $filter->($item, $p) ) {
+                    $string .= $result;
+                    $visited = 1;
+                    last;
+                }
+            }
+        }
+        $string .= _class($ref, $item, $p) unless $visited;
     }
 
     if ($p->{show_tied} and $tie) {
@@ -674,6 +685,9 @@ particular, objects.
 Perl types are named as C<ref> calls them: I<SCALAR>, I<ARRAY>,
 I<HASH>, I<REF>, I<CODE>, I<Regexp> and I<GLOB>. As for objects,
 just use the class' name, as shown above.
+
+As of version 0.13, you may also use the '-class' filter, which
+will be called for all non-perl types (objects).
 
 B<Note>: If you plan on calling C<p()> from I<within> an inline
 filter, please make sure you are passing only REFERENCES as
