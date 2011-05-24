@@ -261,7 +261,7 @@ duration/delta objects!
 
 =head1 USING MORE THAN ONE FILTER FOR THE SAME TYPE/CLASS
 
-Unlike the inline version, standalone filters let you stack together
+As of version 0.13, standalone filters let you stack together
 filters for the same type or class. Filters of the same type are
 called in order, until one of them returns a string. This lets
 you have several filters inspecting the same given value until
