@@ -33,7 +33,7 @@ my $properties = {
     'hash_separator' => '   ',
     'show_tied'      => 1,
     'colored'        => 'auto',       # also 0 or 1
-    'class_method'   => undef,        # use a specific dump method, if available
+    'class_method'   => '_data_printer', # use a specific dump method, if available
     'color'          => {
         'array'    => 'bright_white',
         'number'   => 'bright_blue',
@@ -703,6 +703,43 @@ see L<Data::Printer::Filter> for further information on a more
 powerful filter interface for Data::Printer, including useful
 filters that are shipped as part of this distribution.
 
+=head1 MAKING YOUR CLASSES DDP-AWARE (WITHOUT ADDING ANY DEPS)
+
+Whenever printing the contents of a class, Data::Printer first
+checks to see if that class implements a sub called '_data_printer'
+(or whatever you set the "class_method" option to in your settings,
+see L</CUSTOMIZATION> below).
+
+If a sub with that exact name is available in the target object,
+Data::Printer will use it to get the string to print instead of
+making a regular class dump.
+
+This means you could have the following in one of your classes:
+
+  sub _data_printer {
+      my ($self, $properties) = @_;
+      return 'Hey, no peeking! But foo contains ' . $self->foo;
+  }
+
+Notice you don't have to depend on Data::Printer at all, just
+write your sub and it will use that to pretty-print your objects.
+
+If you want to use colors and filter helpers, and still not
+add Data::Printer to your dependencies, remember you can import
+them during runtime:
+
+  sub _data_printer {
+      require Data::Printer::Filter;
+      Data::Printer::Filter->import;
+
+      # now we have 'indent', outdent', 'linebreak', 'p' and 'colored'
+      my ($self, $properties) = @_;
+      ...
+  }
+
+Having a filter for that particular class will of course override
+this setting.
+
 
 =head1 ALIASING
 
@@ -734,8 +771,9 @@ customization options available, as shown below (with default values):
       sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
       show_tied      => 1,       # expose tied() variables
-      class_method   => undef,   # if available in the target object, use
-                                 # this method instead to dump it
+
+      class_method   => '_data_printer', # make classes aware of Data::Printer
+                                         # and able to dump themselves.
 
       class => {
           internals => 1,        # show internal data structures of classes
