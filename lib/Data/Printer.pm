@@ -32,6 +32,7 @@ my $properties = {
     'deparse'        => 0,
     'hash_separator' => '   ',
     'show_tied'      => 1,
+    'colored'        => 'auto',       # also 0 or 1
     'class_method'   => undef,        # use a specific dump method, if available
     'color'          => {
         'array'    => 'bright_white',
@@ -105,8 +106,6 @@ sub import {
     no strict 'refs';
     *{"$caller\::$imported_method"} = \&p;
 
-    # colors only if we're not being piped
-    $ENV{ANSI_COLORS_DISABLED} = 1 if not -t *STDERR;
 }
 
 sub p (\[@$%&];%) {
@@ -120,6 +119,14 @@ sub p (\[@$%&];%) {
         $BREAK = ' ';
         $p->{'indent'} = 0;
         $p->{'index'}  = 0;
+    }
+
+    # colors only if we're not being piped
+    if ( !$p->{colored} or ($p->{colored} eq 'auto' and not -t *STDERR) ) {
+        $ENV{ANSI_COLORS_DISABLED} = 1;
+    }
+    else {
+        delete $ENV{ANSI_COLORS_DISABLED};
     }
 
     my $out = color('reset') . _p( $item, $p );

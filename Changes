@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.14
+    NEW FEATURES:
+        - allowing 'colored' display customization to control colored
+          output. Default is 'auto', showing colors only when
+          output is not being piped. You may also set this to 0 to
+          disable colors completely, or 1 to enable output coloring
+          all the time (even when piped).
+
 0.13    24/05/2011
     CHANGES THAT ***BREAK*** BACKWARDS COMPATIBILITY:
         - 'external' is now called '-external' to avoid name clash

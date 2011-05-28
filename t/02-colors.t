@@ -47,4 +47,9 @@ is( p($circular), color('reset') . "\\ [$/    "
                   . "$/]"
 , 'colored circular ref');
 
+
+# testing 'colored' property
+is( p($number, colored => 0), $number, 'uncolored number');
+
+
 done_testing;
