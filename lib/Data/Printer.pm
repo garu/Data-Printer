@@ -37,16 +37,16 @@ my $properties = {
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
     'class_method'   => '_data_printer', # use a specific dump method, if available
     'color'          => {
-        'array'    => 'bright_white',
-        'number'   => 'bright_blue',
-        'string'   => 'bright_yellow',
-        'class'    => 'bright_green',
-        'undef'    => 'bright_red',
-        'hash'     => 'magenta',
-        'regex'    => 'yellow',
-        'code'     => 'green',
-        'glob'     => 'bright_cyan',
-        'repeated' => 'white on_red',
+        'array'       => 'bright_white',
+        'number'      => 'bright_blue',
+        'string'      => 'bright_yellow',
+        'class'       => 'bright_green',
+        'undef'       => 'bright_red',
+        'hash'        => 'magenta',
+        'regex'       => 'yellow',
+        'code'        => 'green',
+        'glob'        => 'bright_cyan',
+        'repeated'    => 'white on_red',
         'caller_info' => 'bright_cyan'
     },
     'class' => {
@@ -681,16 +681,16 @@ Note that both spellings ('color' and 'colour') will work.
 
    use Data::Printer {
      color => {
-        array    => 'bright_white',  # array index numbers
-        number   => 'bright_blue',   # numbers
-        string   => 'bright_yellow', # strings
-        class    => 'bright_green',  # class names
-        undef    => 'bright_red',    # the 'undef' value
-        hash     => 'magenta',       # hash keys
-        regex    => 'yellow',        # regular expressions
-        code     => 'green',         # code references
-        glob     => 'bright_cyan',   # globs (usually file handles)
-        repeated => 'white on_red',  # references to seen values
+        array       => 'bright_white',  # array index numbers
+        number      => 'bright_blue',   # numbers
+        string      => 'bright_yellow', # strings
+        class       => 'bright_green',  # class names
+        undef       => 'bright_red',    # the 'undef' value
+        hash        => 'magenta',       # hash keys
+        regex       => 'yellow',        # regular expressions
+        code        => 'green',         # code references
+        glob        => 'bright_cyan',   # globs (usually file handles)
+        repeated    => 'white on_red',  # references to seen values
         caller_info => 'bright_cyan' # details on what's being printed
      },
    };
