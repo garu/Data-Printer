@@ -35,11 +35,13 @@ sub import {
 
     my $indent = sub {
         $properties{_current_indent} += $properties{indent};
+        $properties{_depth}++;
         return;
     };
 
     my $outdent = sub {
         $properties{_current_indent} -= $properties{indent};
+        $properties{_depth}--;
         return;
     };
 
