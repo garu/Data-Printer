@@ -896,9 +896,13 @@ be interpolated into their according value so you can customize them at will:
   use Data::Printer
     caller_info => 1,
     caller_message => "Okay, __PACKAGE__, let's dance!"
-  ;
+    color => {
+        caller_info => 'bright_red',
+    };
 
-You may also set a color for "caller_info" in your color hash. Default is cyan.
+As shown above, you may also set a color for "caller_info" in your color
+hash. Default is cyan.
+
 
 =head1 EXPERIMENTAL FEATURES
 
