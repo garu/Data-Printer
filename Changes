@@ -7,6 +7,7 @@ Revision history for Data-Printer
           output is not being piped. You may also set this to 0 to
           disable colors completely, or 1 to enable output coloring
           all the time (even when piped).
+        - new 'caller_info' display customization.
         - default 'class_method' is now set to '_data_printer', so your
           modules and apps can be aware of Data::Printer automatically.
 

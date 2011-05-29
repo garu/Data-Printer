@@ -33,6 +33,8 @@ my $properties = {
     'hash_separator' => '   ',
     'show_tied'      => 1,
     'colored'        => 'auto',       # also 0 or 1
+    'caller_info'    => 0,
+    'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
     'class_method'   => '_data_printer', # use a specific dump method, if available
     'color'          => {
         'array'    => 'bright_white',
@@ -45,6 +47,7 @@ my $properties = {
         'code'     => 'green',
         'glob'     => 'bright_cyan',
         'repeated' => 'white on_red',
+        'caller_info' => 'bright_cyan'
     },
     'class' => {
         inherited    => 'none',   # also 0, 'none', 'public' or 'private'
@@ -129,9 +132,29 @@ sub p (\[@$%&];%) {
         delete $ENV{ANSI_COLORS_DISABLED};
     }
 
-    my $out = color('reset') . _p( $item, $p );
+    my $out = color('reset');
+
+    if ( $p->{caller_info} and $p->{_depth} == 0 ) {
+        $out .= _get_info_message($p);
+    }
+
+    $out .= _p( $item, $p );
     print STDERR  $out . $/ unless defined wantarray;
     return $out;
+}
+
+
+sub _get_info_message {
+    my $p = shift;
+    my @caller = caller 1;
+
+    my $message = $p->{caller_message};
+
+    $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
+    $message =~ s/\b__FILENAME__\b/$caller[1]/g;
+    $message =~ s/\b__LINE__\b/$caller[2]/g;
+
+    return colored($message, $p->{color}{caller_info}) . $BREAK;
 }
 
 
@@ -668,6 +691,7 @@ Note that both spellings ('color' and 'colour') will work.
         code     => 'green',         # code references
         glob     => 'bright_cyan',   # globs (usually file handles)
         repeated => 'white on_red',  # references to seen values
+        caller_info => 'bright_cyan' # details on what's being printed
      },
    };
 
@@ -771,6 +795,7 @@ customization options available, as shown below (with default values):
       sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
       show_tied      => 1,       # expose tied() variables
+      caller_info    => 0,       # include information on what's being printed
 
       class_method   => '_data_printer', # make classes aware of Data::Printer
                                          # and able to dump themselves.
@@ -849,6 +874,31 @@ alias to Data::Printer:
    use DDP;
    p %some_var;
 
+=head1 CALLER INFORMATION
+
+If you set caller_info to a true value, Data::Printer will prepend
+every call with an informational message. For example:
+
+  use Data::Printer caller_info => 1;
+
+  my $var = 42;
+  p $var;
+
+will output something like:
+
+  Printing in line 4 of myapp.pl:
+  42
+
+The default message is C<< 'Printing in line __LINE__ of __FILENAME__:' >>.
+The special strings C<__LINE__>, C<__FILENAME__> and C<__PACKAGE__> will
+be interpolated into their according value so you can customize them at will:
+
+  use Data::Printer
+    caller_info => 1,
+    caller_message => "Okay, __PACKAGE__, let's dance!"
+  ;
+
+You may also set a color for "caller_info" in your color hash. Default is cyan.
 
 =head1 EXPERIMENTAL FEATURES
 
