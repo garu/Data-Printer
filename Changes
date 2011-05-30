@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.15    30/05/2011
+    OTHERS:
+        - updating filters docs
+        - adding default color for DateTime filter
+
 0.14    30/05/2011
     NEW FEATURES:
         - allowing 'colored' display customization to control colored
