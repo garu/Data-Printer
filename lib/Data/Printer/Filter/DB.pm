@@ -90,14 +90,15 @@ Data::Printer::Filter::DB - pretty printing database objects
 
 In your program:
 
-  use Data::Printer {
-      filters => [ 'DB' ],
+  use Data::Printer filters => {
+      -external => [ 'DB' ],
   };
 
 or, in your C<.dataprinter> file:
 
   {
-      filters => [ 'DB' ],
+    filters => {
+      -external => [ 'DB' ],
   };
 
 

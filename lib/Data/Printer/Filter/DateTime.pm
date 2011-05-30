@@ -52,7 +52,10 @@ sub _format {
         $str .= ' (' . ref($obj) . ')';
     }
 
-    return colored( $str, $p->{color}{datetime} );
+    my $color = $p->{color}{datetime};
+    $color = 'bright_green' unless defined $color;
+
+    return colored( $str, $color );
 }
 
 1;
@@ -67,20 +70,24 @@ Data::Printer::Filter::DateTime - pretty-printing date and time objects (not jus
 
 In your program:
 
-  use Data::Printer {
-      filters => [ 'DateTime' ],
+  use Data::Printer filters => {
+    -external => [ 'DateTime' ],
   };
 
 or, in your C<.dataprinter> file:
 
   {
-      filters => [ 'DateTime' ],
+    filters => {
+       -external => [ 'DateTime' ],
+    },
   };
 
-You can also setup color and display:
+You can also setup color and display details:
 
-  use Data::Printer {
-      filters => [ 'DateTime' ],
+  use Data::Printer
+      filters => {
+          -external => [ 'DateTime' ],
+      },
       color   => {
           datetime => 'bright_green',
       }
