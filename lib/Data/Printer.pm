@@ -282,26 +282,32 @@ sub _p {
         $string .= colored("$$item", $p->{color}->{'glob'});
 
         my $extra = '';
-        if (my $flags = fcntl($$item, F_GETFL, 0) ) {
 
-            $extra .= $flags & O_WRONLY ? 'write-only'
-                    : $flags & O_RDWR   ? 'read/write'
-                    : 'read-only'
-                    ;
+        # unfortunately, some systems (like Win32) do not
+        # implement some of these flags (maybe not even
+        # fcntl() itself, so we must wrap it.
+        eval {
+            if (my $flags = fcntl($$item, F_GETFL, 0) ) {
 
-            my %flags = (
-                    'append'      => O_APPEND,
-                    'async'       => O_ASYNC,
-                    'create'      => O_CREAT,
-                    'truncate'    => O_TRUNC,
-                    'nonblocking' => O_NONBLOCK,
-            );
+                $extra .= $flags & O_WRONLY ? 'write-only'
+                        : $flags & O_RDWR   ? 'read/write'
+                        : 'read-only'
+                        ;
 
-            if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
-                $extra .= ", flags: @flags";
+                my %flags = (
+                        'append'      => O_APPEND,
+                        'async'       => O_ASYNC,
+                        'create'      => O_CREAT,
+                        'truncate'    => O_TRUNC,
+                        'nonblocking' => O_NONBLOCK,
+                );
+
+                if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
+                    $extra .= ", flags: @flags";
+                }
+                $extra .= ', ';
             }
-            $extra .= ', ';
-        }
+        };
         my @layers = ();
         eval { @layers = PerlIO::get_layers $$item };
         unless ($@) {

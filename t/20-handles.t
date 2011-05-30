@@ -4,10 +4,10 @@ use warnings;
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
     use File::HomeDir::Test;  # avoid user's .dataprinter
+    use Test::More;
+    use_ok('Fcntl') or plan skip_all => 'Fcntl not available';
 };
 
-use Test::More;
-use Fcntl;
 use Data::Printer;
 
 open my $var, '+>>', 't/test_file.dat' or plan skip_all => 'error opening file for testing';
@@ -22,7 +22,11 @@ unless ($@) {
     }
 }
 
-my $flags = fcntl($var, F_GETFL, 0) or plan skip_all => 'fcntl not present?';
+my $flags;
+eval {
+    $flags = fcntl($var, F_GETFL, 0);
+};
+plan skip_all => 'fcntl not fully supported' if $@ or !$flags;
 
 like $str, qr{read/write}, 'read/write handle';
 like $str, qr/flags: append/, 'append flag';
