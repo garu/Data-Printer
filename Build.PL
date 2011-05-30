@@ -24,6 +24,12 @@ my $builder = Module::Build->new(
     },
     add_to_cleanup      => [ 'Data-Printer-*' ],
     create_makefile_pl => 'traditional',
+
+    meta_merge     => {
+        resources => {
+            repository  => 'http://github.com/garu/Data-Printer/'
+        },
+    },
 );
 
 if ($^O =~ /Win32/i) {
