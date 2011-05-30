@@ -105,7 +105,7 @@ is p($var), '1 (tied to Tie::Fighter::Scalar)', 'tied scalar contains tied messa
 
 untie $var;
 
-is p($var), '1', 'clered (untied) scalar again shows no tie information';
+is p($var), '1', 'cleared (untied) scalar again shows no tie information';
 
 my @var = (1);
 
