@@ -5,10 +5,10 @@ use Test::More;
 my $file;
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
-    use_ok ('Term::ANSIColor');
-    use_ok ('File::HomeDir::Test');
-    use_ok ('File::HomeDir');
-    use_ok ('File::Spec');
+    use Term::ANSIColor;
+    use File::HomeDir::Test;
+    use File::HomeDir;
+    use File::Spec;
 
     $file = File::Spec->catfile(
             File::HomeDir->my_home,

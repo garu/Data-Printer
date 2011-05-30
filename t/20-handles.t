@@ -1,46 +1,66 @@
 use strict;
 use warnings;
 
+my ($var, $filename);
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
     use File::HomeDir::Test;  # avoid user's .dataprinter
+    use File::HomeDir;
+    use File::Spec;
     use Test::More;
-    use_ok('Fcntl') or plan skip_all => 'Fcntl not available';
+    use Fcntl;
+
+    use Data::Printer;
+
+    $filename = File::Spec->catfile(
+        File::HomeDir->my_home, 'test_file.dat'
+    );
 };
 
-use Data::Printer;
+if ( open $var, '>', $filename ) {
+    my $str = p $var;
 
-open my $var, '+>>', 't/test_file.dat' or plan skip_all => 'error opening file for testing';
+    my @layers = ();
+    eval { @layers = PerlIO::get_layers $var };
 
-my $str = p $var;
+    close $var;
 
-my @layers = ();
-eval { @layers = PerlIO::get_layers $var };
-unless ($@) {
-    foreach my $l (@layers) {
-        like $str, qr/$l/, "layer $l present in info";
+    unless ($@) {
+        foreach my $l (@layers) {
+            like $str, qr/$l/, "layer $l present in info";
+        }
     }
 }
+else {
+    diag("error writing to $filename: $!");
+}
 
-my $flags;
-eval {
-    $flags = fcntl($var, F_GETFL, 0);
+
+SKIP: {
+    skip "error opening $filename for (write) testing: $!", 4
+        unless open $var, '>', $filename;
+
+    my $flags;
+    eval { $flags = fcntl($var, F_GETFL, 0) };
+    skip 'fcntl not fully supported', 4 if $@ or !$flags;
+
+    like p($var), qr{write-only}, 'write-only handle';
+    close $var;
+
+    skip "error appending to $filename: $!", 3
+        unless open $var, '+>>', $filename;
+
+    like p($var), qr{read/write}, 'read/write handle';
+    like p($var), qr/flags: append/, 'append flag';
+
+    close $var;
+
+    skip "error reading from $filename: $!", 1
+        unless open $var, '<', $filename;
+
+    like p($var), qr{read-only}, 'read-only handle';
+    close $var;
 };
-plan skip_all => 'fcntl not fully supported' if $@ or !$flags;
 
-like $str, qr{read/write}, 'read/write handle';
-like $str, qr/flags: append/, 'append flag';
-
-close $var;
-
-open $var, '>', 't/test_file.dat' or plan skip_all => 'error opening file for (write) testing';
-like p($var), qr{write-only}, 'write-only handle';
-close $var;
-
-open $var, '<', 't/test_file.dat' or plan skip_all => 'error opening file for (read) testing';
-like p($var), qr{read-only}, 'read-only handle';
-close $var;
-
-
-done_testing;
+done_testing();
 
