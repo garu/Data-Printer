@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.14
+0.14    30/05/2011
     NEW FEATURES:
         - allowing 'colored' display customization to control colored
           output. Default is 'auto', showing colors only when
