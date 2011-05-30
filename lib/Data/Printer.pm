@@ -656,7 +656,7 @@ regular hash, if it makes things easier to read:
   use Data::Printer  deparse => 1, sort_keys => 0;
 
 And if you like your setup better than the defaults, just put them in
-a '.dataprinter' file in your home dir and don't repeat yourself
+a 'C<.dataprinter>' file in your home dir and don't repeat yourself
 ever again :)
 
 
@@ -701,9 +701,67 @@ Note that both spellings ('color' and 'colour') will work.
      },
    };
 
-You can disable colors altogether with:
+Don't fancy colors? Disable them with:
 
   use Data::Printer colored => 0;
+
+Remember to put your preferred settings in the C<.dataprinter> file
+so you never have to type them at all!
+
+
+=head1 ALIASING
+
+Data::Printer provides the nice, short, C<p()> function to dump your
+data structures and objects. In case you rather use a more explicit
+name, already have a C<p()> function (why?) in your code and want
+to avoid clashing, or are just used to other function names for that
+purpose, you can easily rename it:
+
+  use Data::Printer alias => 'Dumper';
+
+  Dumper( %foo );
+
+
+=head1 CUSTOMIZATION
+
+I tried to provide sane defaults for Data::Printer, so you'll never have
+to worry about anything other than typing C<< "p( $var )" >> in your code.
+That said, and besides coloring and filtering, there are several other
+customization options available, as shown below (with default values):
+
+  use Data::Printer {
+      name           => 'var',   # name to display on cyclic references
+      indent         => 4,       # how many spaces in each indent
+      hash_separator => '   ',   # what separates keys from values
+      index          => 1,       # display array indices
+      multiline      => 1,       # display in multiple lines (see note below)
+      max_depth      => 0,       # how deep to traverse the data (0 for all)
+      sort_keys      => 1,       # sort hash keys
+      deparse        => 0,       # use B::Deparse to expand subrefs
+      show_tied      => 1,       # expose tied() variables
+      caller_info    => 0,       # include information on what's being printed
+
+      class_method   => '_data_printer', # make classes aware of Data::Printer
+                                         # and able to dump themselves.
+
+      class => {
+          internals => 1,        # show internal data structures of classes
+
+          inherited => 'none',   # show inherited methods,
+                                 # can also be 'all', 'private', or 'public'.
+
+          expand    => 1,        # how deep to traverse the object (in case
+                                 # it contains other objects). Defaults to
+                                 # 1, meaning expand only itself. Can be any
+                                 # number, 0 for no class expansion, and 'all'
+                                 # to expand everything.
+
+          sort_methods => 1      # sort public and private methods
+      },
+  };
+
+Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
+
 
 =head1 FILTERS
 
@@ -774,59 +832,6 @@ them during runtime:
 Having a filter for that particular class will of course override
 this setting.
 
-
-=head1 ALIASING
-
-Data::Printer provides the nice, short, C<p()> function to dump your
-data structures and objects. In case you rather use a more explicit
-name, already have a C<p()> function (why?) in your code and want
-to avoid clashing, or are just used to other function names for that
-purpose, you can easily rename it:
-
-  use Data::Printer alias => 'Dumper';
-
-  Dumper( %foo );
-
-
-=head1 CUSTOMIZATION
-
-I tried to provide sane defaults for Data::Printer, so you'll never have
-to worry about anything other than typing C<< "p( $var )" >> in your code.
-That said, and besides coloring and filtering, there are several other
-customization options available, as shown below (with default values):
-
-  use Data::Printer {
-      name           => 'var',   # name to display on cyclic references
-      indent         => 4,       # how many spaces in each indent
-      hash_separator => '   ',   # what separates keys from values
-      index          => 1,       # display array indices
-      multiline      => 1,       # display in multiple lines (see note below)
-      max_depth      => 0,       # how deep to traverse the data (0 for all)
-      sort_keys      => 1,       # sort hash keys
-      deparse        => 0,       # use B::Deparse to expand subrefs
-      show_tied      => 1,       # expose tied() variables
-      caller_info    => 0,       # include information on what's being printed
-
-      class_method   => '_data_printer', # make classes aware of Data::Printer
-                                         # and able to dump themselves.
-
-      class => {
-          internals => 1,        # show internal data structures of classes
-
-          inherited => 'none',   # show inherited methods,
-                                 # can also be 'all', 'private', or 'public'.
-
-          expand    => 1,        # how deep to traverse the object (in case
-                                 # it contains other objects). Defaults to
-                                 # 1, meaning expand only itself. Can be any
-                                 # number, 0 for no class expansion, and 'all'
-                                 # to expand everything.
-
-          sort_methods => 1      # sort public and private methods
-      },
-  };
-
-Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
 
 =head1 CONFIGURATION FILE (RUN CONTROL)
 
