@@ -701,6 +701,10 @@ Note that both spellings ('color' and 'colour') will work.
      },
    };
 
+You can disable colors altogether with:
+
+  use Data::Printer colored => 0;
+
 =head1 FILTERS
 
 Data::Printer offers you the ability to use filters to override
