@@ -10,6 +10,7 @@ Revision history for Data-Printer
         - new 'caller_info' display customization.
         - default 'class_method' is now set to '_data_printer', so your
           modules and apps can be aware of Data::Printer automatically.
+
     BUG FIXES:
         - Skipping calls to fcntl() in systems that don't support it.
 
