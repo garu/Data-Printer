@@ -12,7 +12,7 @@ use File::Spec;
 use File::HomeDir ();
 use Fcntl;
 
-our $VERSION = 0.15;
+our $VERSION = 0.16;
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -289,8 +289,8 @@ sub _p {
         eval {
             if (my $flags = fcntl($$item, F_GETFL, 0) ) {
 
-                $extra .= $flags & O_WRONLY ? 'write-only'
-                        : $flags & O_RDWR   ? 'read/write'
+                $extra .= ($flags & O_WRONLY) ? 'write-only'
+                        : ($flags & O_RDWR)   ? 'read/write'
                         : 'read-only'
                         ;
 
@@ -1041,6 +1041,8 @@ one way or the other. They are (alphabetically):
 =item * Kartik Thakore (kthakore)
 
 =item * Kip Hampton (ubu)
+
+=item * Sergey Aleynikov (randir)
 
 =item * Torsten Raudssus (Getty)
 
