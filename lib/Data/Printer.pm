@@ -889,6 +889,26 @@ alias to Data::Printer:
    use DDP;
    p %some_var;
 
+=head1 AUTOMATIC LOADING
+
+For even more faster debugging you can automatically add C<Data::Printer::p()>
+to every loaded module using this in your main program:
+
+    BEGIN {
+        {
+            no strict 'refs';
+            use Data::Printer;
+            foreach my $package ( keys %main:: ) {
+                my $alias = 'p';
+                *{ $package . $alias } = \&Data::Printer::p;
+            }
+        }
+    }
+
+B<WARNING> This will override all locally defined subroutines/methods that are
+named C<p>, if they exist, in every loaded module, so be sure to change C<$alias>
+to something custom.
+
 =head1 CALLER INFORMATION
 
 If you set caller_info to a true value, Data::Printer will prepend
