@@ -1044,6 +1044,8 @@ one way or the other. They are (alphabetically):
 
 =item * Sergey Aleynikov (randir)
 
+=item * sugyan
+
 =item * Torsten Raudssus (Getty)
 
 =back

@@ -99,7 +99,7 @@ SKIP: {
     eval 'use Date::Pcalc::Object';
     skip 'Date::Pcalc::Object not available', 2 if $@;
 
-    my $d = Date::Pcalc::Object->localtime( [1234567890] );
+    my $d = Date::Pcalc::Object->localtime( 1234567890 );
     my $string = $d->string(2);
     is( p($d), $string, 'Date::Pcalc::Object' );
     my @list = ($d, { foo => 1 });

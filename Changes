@@ -3,6 +3,7 @@ Revision history for Data-Printer
 0.17    01/06/2011
     BUG FIXES:
         - make sure filter output is defined, not just true (RANDIR)
+        - fixed filter tests for Date::Calc & Date::Pcalc (SUGYAN, GARU)
 
 0.16    31/05/2011
     BUG FIXES:
