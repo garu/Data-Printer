@@ -238,7 +238,7 @@ sub _p {
     # filter item (if user set a filter for it)
     if ( exists $p->{filters}->{$ref} ) {
         foreach my $filter ( @{ $p->{filters}->{$ref} } ) {
-            if ( my $result = $filter->($item, $p) ) {
+            if ( defined (my $result = $filter->($item, $p)) ) {
                 $string .= $result;
                 last;
             }
