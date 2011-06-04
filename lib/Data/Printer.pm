@@ -21,6 +21,8 @@ BEGIN {
     }
 }
 
+my $BREAK = "\n";
+
 # defaults
 my $properties = {
     'name'           => 'var',
@@ -55,11 +57,16 @@ my $properties = {
         internals    => 1,
         export       => 1,
         sort_methods => 1,
+        _depth       => 0,        # used internally
     },
     'filters' => {},
+
+    _current_indent  => 0,           # used internally
+    _linebreak       => \$BREAK,     # used internally
+    _seen            => {},          # used internally
+    _depth           => 0,           # used internally
 };
 
-my $BREAK = "\n";
 
 sub import {
     my $class = shift;
@@ -211,12 +218,6 @@ sub _merge {
             }
         }
     }
-
-    $clone->{'_current_indent'} = 0;  # used internally
-    $clone->{'_linebreak'} = \$BREAK; # used internally
-    $clone->{'_seen'} = {};           # used internally
-    $clone->{'_depth'} = 0;           # used internally
-    $clone->{'class'}{'_depth'} = 0;  # used internally
 
     return $clone;
 }
