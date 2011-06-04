@@ -50,8 +50,8 @@ ok exists $filters->{HASH}, 'HASH filter set';
 is scalar @{ $filters->{SCALAR} }, 2, 'two scalar filters';
 is scalar @{ $filters->{HASH}   }, 1, 'only one hash filter';
 
-is $filters->{SCALAR}->[0]->('SCALAR', $properties), 'test', 'SCALAR filter called';
-is $filters->{SCALAR}->[1]->('SCALAR', $properties), 'other test for: "SCALAR"', 'SCALAR filter called again';
+is $filters->{SCALAR}->[1]->('SCALAR', $properties), 'test', 'SCALAR filter called';
+is $filters->{SCALAR}->[0]->('SCALAR', $properties), 'other test for: "SCALAR"', 'SCALAR filter called again';
 
 is $filters->{HASH}->[0]->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
 

@@ -15,12 +15,13 @@ sub import {
     my $filter = sub {
         my ($type, $code) = @_;
 
-        push @{ $_filters_for{$id}{$type} }, sub {
+        unshift @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $p) = @_;
 
             # send our closured %properties var instead
             # so newline(), indent(), etc can work it
             %properties = %{ clone $p };
+            delete $properties{filters};
             $code->($item, \%properties);
         };
     };
@@ -47,13 +48,8 @@ sub import {
 
     my $imported = sub (\[@$%&];%) {
         my ($item, $p) = @_;
-
-        # TODO: make sure this actually works as expected
-        my %temp_p = %properties;
-        @temp_p{ keys %$p } = values %$p;
-
         require Data::Printer;
-        return Data::Printer::p( $item, %temp_p );
+        return Data::Printer::p( $item, %properties );
     };
 
     {

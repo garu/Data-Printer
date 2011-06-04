@@ -196,13 +196,13 @@ sub _merge {
                             else {
                                 my %from_module = %{$module->_filter_list};
                                 foreach my $k (keys %from_module) {
-                                    push @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
+                                    unshift @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
                                 }
                             }
                         }
                     }
                     else {
-                        push @{ $clone->{filters}->{$item} }, $val->{$item};
+                        unshift @{ $clone->{filters}->{$item} }, $val->{$item};
                     }
                 }
             }
@@ -436,8 +436,8 @@ sub _p {
         # let '-class' filters have a go
         my $visited = 0;
         if ( exists $p->{filters}->{'-class'} ) {
-            foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
-                if ( my $result = $filter->($item, $p) ) {
+            foreach my $cfilter ( @{ $p->{filters}->{'-class'} } ) {
+                if ( my $result = $cfilter->($item, $p) ) {
                     $string .= $result;
                     $visited = 1;
                     last;
