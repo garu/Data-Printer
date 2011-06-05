@@ -1157,8 +1157,9 @@ Breno G. de Oliveira C<< <garu at cpan.org> >>
 
 =head1 CONTRIBUTORS
 
-Many thanks to everyone that helped design and develop this module, in
-one way or the other. They are (alphabetically):
+Many thanks to everyone that helped design and develop this module
+with patches, bug reports, wishlists, comments and tests. They are
+(alphabetically):
 
 =over 4
 
@@ -1170,15 +1171,23 @@ one way or the other. They are (alphabetically):
 
 =item * Damien Krotkine (dams)
 
+=item * Dotan Dimet
+
 =item * Eden Cardim (edenc)
+
+=item * Fernando Corrêa (SmokeMachine)
 
 =item * Kartik Thakore (kthakore)
 
 =item * Kip Hampton (ubu)
 
+=item * Paul Evans (LeoNerd)
+
 =item * Sergey Aleynikov (randir)
 
 =item * sugyan
+
+=item * Tatsuhiko Miyagawa (miyagawa)
 
 =item * Torsten Raudssus (Getty)
 
