@@ -36,6 +36,12 @@ is( p($obj), 'this is a test', 'testing filter for object' );
 my $scalar = 42;
 is( p($scalar), 'found!!', 'testing filter for SCALAR' );
 
+is( p($scalar, filters => { SCALAR => sub { return 'a' } }), 'a', 'overriding SCALAR filter' );
+
+is( p($scalar), 'found!!', "inline filters shouldn't stick" );
+
+is( p($scalar, filters => { SCALAR => sub { return } }), 'found!!', 'SCALAR filter fallback' );
+
 my $scalar_ref = \$scalar;
 is( p($scalar_ref), '\\ found!!', 'testing filter for SCALAR (passing a ref instead)' );
 

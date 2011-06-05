@@ -21,9 +21,9 @@ BEGIN {
     }
 }
 
-my $BREAK = "\n";
 
 # defaults
+my $BREAK = "\n";
 my $properties = {
     'name'           => 'var',
     'indent'         => 4,
@@ -59,12 +59,22 @@ my $properties = {
         sort_methods => 1,
         _depth       => 0,        # used internally
     },
-    'filters' => {},
+    'filters' => {
+        SCALAR => [ \&SCALAR ],
+        ARRAY  => [ \&ARRAY  ],
+        HASH   => [ \&HASH   ],
+        REF    => [ \&REF    ],
+        CODE   => [ \&CODE   ],
+        GLOB   => [ \&GLOB   ],
+        Regexp => [ \&Regexp ],
+        -class => [ \&_class ],
+    },
 
     _current_indent  => 0,           # used internally
     _linebreak       => \$BREAK,     # used internally
     _seen            => {},          # used internally
     _depth           => 0,           # used internally
+    _tie             => 0,           # used internally
 };
 
 
@@ -118,6 +128,7 @@ sub import {
 
 }
 
+
 sub p (\[@$%&];%) {
     croak 'When calling p() inside inline filters, please pass arguments as references'
         unless ref $_[0];
@@ -151,77 +162,6 @@ sub p (\[@$%&];%) {
 }
 
 
-sub _get_info_message {
-    my $p = shift;
-    my @caller = caller 1;
-
-    my $message = $p->{caller_message};
-
-    $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
-    $message =~ s/\b__FILENAME__\b/$caller[1]/g;
-    $message =~ s/\b__LINE__\b/$caller[2]/g;
-
-    return colored($message, $p->{color}{caller_info}) . $BREAK;
-}
-
-
-sub _merge {
-    my $p = shift;
-    my $clone = clone $properties;
-
-    if ($p) {
-        foreach my $key (keys %$p) {
-            if ($key eq 'color' or $key eq 'colour') {
-                my $color = $p->{$key};
-                if (defined $color and not $color) {
-                    $clone->{color} = {};
-                }
-                else {
-                    foreach my $target ( keys %{$p->{$key}} ) {
-                        $clone->{color}->{$target} = $p->{$key}->{$target};
-                    }
-                }
-            }
-            elsif ($key eq 'class') {
-                foreach my $item ( keys %{$p->{class}} ) {
-                    $clone->{class}->{$item} = $p->{class}->{$item};
-                }
-            }
-            elsif ($key eq 'filters') {
-                my $val = $p->{$key};
-
-                foreach my $item (keys %$val) {
-
-                    # EXPERIMENTAL: filters in modules
-                    if ($item eq '-external') {
-                        foreach my $class ( @{$val->{$item}} ) {
-                            my $module = "Data::Printer::Filter::$class";
-                            eval "use $module";
-                            if ($@) {
-                                warn "Error loading filter '$module': $@";
-                            }
-                            else {
-                                my %from_module = %{$module->_filter_list};
-                                foreach my $k (keys %from_module) {
-                                    unshift @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        unshift @{ $clone->{filters}->{$item} }, $val->{$item};
-                    }
-                }
-            }
-            else {
-                $clone->{$key} = $p->{$key};
-            }
-        }
-    }
-
-    return $clone;
-}
-
 sub _p {
     my ($item, $p) = @_;
     my $ref = ref $item;
@@ -236,6 +176,10 @@ sub _p {
 
     $p->{_seen}->{$id} = $p->{name};
 
+    # globs don't play nice
+    $ref = 'GLOB' if "$item" =~ /=GLOB\([^()]+\)$/;
+
+
     # filter item (if user set a filter for it)
     if ( exists $p->{filters}->{$ref} ) {
         foreach my $filter ( @{ $p->{filters}->{$ref} } ) {
@@ -245,230 +189,255 @@ sub _p {
             }
         }
     }
-
-    # TODO: Might be a good idea to set the rest of this sub
-    # inside the filter dispatch table.
-    elsif ($ref eq 'SCALAR') {
-        if (not defined $$item) {
-            $string .= colored('undef', $p->{color}->{'undef'});
-        }
-        elsif (Scalar::Util::looks_like_number($$item)) {
-            $string .= colored($$item, $p->{color}->{'number'});
-        }
-        else {
-            $string .= colored(qq["$$item"], $p->{color}->{'string'});
-        }
-
-        $tie = ref tied $$item;
-    }
-
-    elsif ($ref eq 'REF') {
-        # look-ahead, add a '\' only if it's not an object
-        if (my $ref_ahead = ref $$item ) {
-            $string .= '\\ ' if grep { $_ eq $ref_ahead }
-                qw(SCALAR CODE Regexp ARRAY HASH GLOB REF);
-        }
-        $string .= _p($$item, $p);
-    }
-
-    elsif ($ref eq 'CODE') {
-        my $code = 'sub { ... }';
-        if ($p->{deparse}) {
-            $code = _deparse( $item, $p );
-        }
-        $string .= colored($code, $p->{color}->{'code'});
-    }
-
-    elsif ($ref eq 'GLOB' or "$item" =~ /=GLOB\([^()]+\)$/ ) {
-        $string .= colored("$$item", $p->{color}->{'glob'});
-
-        my $extra = '';
-
-        # unfortunately, some systems (like Win32) do not
-        # implement some of these flags (maybe not even
-        # fcntl() itself, so we must wrap it.
-        eval {
-            if (my $flags = fcntl($$item, F_GETFL, 0) ) {
-
-                $extra .= ($flags & O_WRONLY) ? 'write-only'
-                        : ($flags & O_RDWR)   ? 'read/write'
-                        : 'read-only'
-                        ;
-
-                my %flags = (
-                        'append'      => O_APPEND,
-                        'async'       => O_ASYNC,
-                        'create'      => O_CREAT,
-                        'truncate'    => O_TRUNC,
-                        'nonblocking' => O_NONBLOCK,
-                );
-
-                if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
-                    $extra .= ", flags: @flags";
-                }
-                $extra .= ', ';
-            }
-        };
-        my @layers = ();
-        eval { @layers = PerlIO::get_layers $$item };
-        unless ($@) {
-            $extra .= "layers: @layers";
-        }
-        $string .= "  ($extra)" if $extra;
-
-        $tie = ref tied *$$item;
-    }
-
-    elsif ($ref eq 'Regexp') {
-        my $val = "$item";
-        # a regex to parse a regex. Talk about full circle :)
-        # note: we are not validating anything, just grabbing modifiers
-        if ($val =~ m/\(\?\^?([uladxismpogce]*)(?:\-[uladxismpogce]+)?:(.*)\)/s) {
-            my ($modifiers, $val) = ($1, $2);
-            $string .= colored($val, $p->{color}->{'regex'});
-            if ($modifiers) {
-                $string .= "  (modifiers: $modifiers)";
-            }
-        }
-        else {
-            croak "Unrecognized regex $val. Please submit a bug report for Data::Printer.";
-        }
-    }
-
-    elsif ($ref eq 'ARRAY') {
-        $p->{_depth}++;
-
-        if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
-            $string .= '[ ... ]';
-        }
-        else {
-            $string .= "[$BREAK";
-            $p->{_current_indent} += $p->{indent};
-
-            foreach my $i (0 .. $#{$item} ) {
-                $p->{name} .= "[$i]";
-
-                my $array_elem = $item->[$i];
-                $string .= (' ' x $p->{_current_indent});
-                if ($p->{'index'}) {
-                    $string .= colored(
-                                 sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
-                                 $p->{color}->{'array'}
-                           );
-                }
-
-                $ref = ref $array_elem;
-
-                # scalar references should be re-referenced
-                # to gain a '\' sign in front of them
-                if (!$ref or $ref eq 'SCALAR') {
-                    $string .= _p( \$array_elem, $p );
-                }
-                else {
-                    $string .= _p( $array_elem, $p );
-                }
-                $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
-                my $size = 2 + length($i); # [10], [100], etc
-                substr $p->{name}, -$size, $size, '';
-            }
-            $p->{_current_indent} -= $p->{indent};
-            $string .= (' ' x $p->{_current_indent}) . "]";
-        }
-
-        $tie = ref tied @$item;
-        $p->{_depth}--;
-    }
-
-    elsif ($ref eq 'HASH') {
-        $p->{_depth}++;
-
-        if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
-            $string .= '{ ... }';
-        }
-        else {
-            $string .= "{$BREAK";
-            $p->{_current_indent} += $p->{indent};
-
-            # length of the largest key is used for indenting
-            my $len = 0;
-            if ($p->{multiline}) {
-                foreach (keys %$item) {
-                    my $l = length;
-                    $len = $l if $l > $len;
-                }
-            }
-
-            my $total_keys = scalar keys %$item;
-            my @keys = ($p->{sort_keys} ? nsort keys %$item : keys %$item );
-            foreach my $key (@keys) {
-                $p->{name} .= "{$key}";
-                my $element = $item->{$key};
-
-                $string .= (' ' x $p->{_current_indent})
-                         . colored(
-                                 sprintf("%-*s", $len, $key),
-                                 $p->{color}->{'hash'}
-                           )
-                         . $p->{hash_separator}
-                         ;
-
-                $ref = ref $element;
-                # scalar references should be re-referenced
-                # to gain a '\' sign in front of them
-                if (!$ref or $ref eq 'SCALAR') {
-                    $string .= _p( \$element, $p );
-                }
-                else {
-                    $string .= _p( $element, $p );
-                }
-                $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
-
-                my $size = 2 + length($key); # {foo}, {z}, etc
-                substr $p->{name}, -$size, $size, '';
-            }
-            $p->{_current_indent} -= $p->{indent};
-            $string .= (' ' x $p->{_current_indent}) . "}";
-        }
-
-        $tie = ref tied %$item;
-        $p->{_depth}--;
-    }
     else {
         # let '-class' filters have a go
-        my $visited = 0;
-        if ( exists $p->{filters}->{'-class'} ) {
-            foreach my $cfilter ( @{ $p->{filters}->{'-class'} } ) {
-                if ( my $result = $cfilter->($item, $p) ) {
-                    $string .= $result;
-                    $visited = 1;
-                    last;
-                }
+        foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
+            if ( defined (my $result = $filter->($item, $p)) ) {
+                $string .= $result;
+                last;
             }
         }
-        $string .= _class($ref, $item, $p) unless $visited;
     }
 
-    if ($p->{show_tied} and $tie) {
-        $string .= " (tied to $tie)";
+    if ($p->{show_tied} and $p->{_tie} ) {
+        $string .= ' (tied to ' . $p->{_tie} . ')';
     }
 
     return $string;
 }
 
-sub _deparse {
-    my ($item, $p) = @_;
-    require B::Deparse;
-    my $i = $p->{indent};
-    my $deparseopts = ["-sCi${i}v'Useless const omitted'"];
 
-    my $sub = 'sub ' . B::Deparse->new($deparseopts)->coderef2text($item);
-    my $pad = "\n" . (' ' x ($p->{_current_indent} + $i));
-    $sub    =~ s/\n/$pad/gse;
-    return $sub;
+
+######################################
+## Default filters
+######################################
+
+sub SCALAR {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    if (not defined $$item) {
+        $string .= colored('undef', $p->{color}->{'undef'});
+    }
+    elsif (Scalar::Util::looks_like_number($$item)) {
+        $string .= colored($$item, $p->{color}->{'number'});
+    }
+    else {
+        $string .= colored(qq["$$item"], $p->{color}->{'string'});
+    }
+
+    $p->{_tie} = ref tied $$item;
+
+    return $string;
 }
 
+
+sub ARRAY {
+    my ($item, $p) = @_;
+    my $string = '';
+    $p->{_depth}++;
+
+    if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
+        $string .= '[ ... ]';
+    }
+    else {
+        $string .= "[$BREAK";
+        $p->{_current_indent} += $p->{indent};
+
+        foreach my $i (0 .. $#{$item} ) {
+            $p->{name} .= "[$i]";
+
+            my $array_elem = $item->[$i];
+            $string .= (' ' x $p->{_current_indent});
+            if ($p->{'index'}) {
+                $string .= colored(
+                             sprintf("%-*s", 3 + length($#{$item}), "[$i]"),
+                             $p->{color}->{'array'}
+                       );
+            }
+
+            my $ref = ref $array_elem;
+
+            # scalar references should be re-referenced
+            # to gain a '\' sign in front of them
+            if (!$ref or $ref eq 'SCALAR') {
+                $string .= _p( \$array_elem, $p );
+            }
+            else {
+                $string .= _p( $array_elem, $p );
+            }
+            $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
+            my $size = 2 + length($i); # [10], [100], etc
+            substr $p->{name}, -$size, $size, '';
+        }
+        $p->{_current_indent} -= $p->{indent};
+        $string .= (' ' x $p->{_current_indent}) . "]";
+    }
+
+    $p->{_tie} = ref tied @$item;
+    $p->{_depth}--;
+
+    return $string;
+}
+
+
+sub REF {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    # look-ahead, add a '\' only if it's not an object
+    if (my $ref_ahead = ref $$item ) {
+        $string .= '\\ ' if grep { $_ eq $ref_ahead }
+            qw(SCALAR CODE Regexp ARRAY HASH GLOB REF);
+    }
+    $string .= _p($$item, $p);
+    return $string;
+}
+
+
+sub CODE {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    my $code = 'sub { ... }';
+    if ($p->{deparse}) {
+        $code = _deparse( $item, $p );
+    }
+    $string .= colored($code, $p->{color}->{'code'});
+    return $string;
+}
+
+
+sub HASH {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    $p->{_depth}++;
+
+    if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
+        $string .= '{ ... }';
+    }
+    else {
+        $string .= "{$BREAK";
+        $p->{_current_indent} += $p->{indent};
+
+        # length of the largest key is used for indenting
+        my $len = 0;
+        if ($p->{multiline}) {
+            foreach (keys %$item) {
+                my $l = length;
+                $len = $l if $l > $len;
+            }
+        }
+
+        my $total_keys = scalar keys %$item;
+        my @keys = ($p->{sort_keys} ? nsort keys %$item : keys %$item );
+        foreach my $key (@keys) {
+            $p->{name} .= "{$key}";
+            my $element = $item->{$key};
+
+            $string .= (' ' x $p->{_current_indent})
+                     . colored(
+                             sprintf("%-*s", $len, $key),
+                             $p->{color}->{'hash'}
+                       )
+                     . $p->{hash_separator}
+                     ;
+
+            my $ref = ref $element;
+            # scalar references should be re-referenced
+            # to gain a '\' sign in front of them
+            if (!$ref or $ref eq 'SCALAR') {
+                $string .= _p( \$element, $p );
+            }
+            else {
+                $string .= _p( $element, $p );
+            }
+            $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
+
+            my $size = 2 + length($key); # {foo}, {z}, etc
+            substr $p->{name}, -$size, $size, '';
+        }
+        $p->{_current_indent} -= $p->{indent};
+        $string .= (' ' x $p->{_current_indent}) . "}";
+    }
+
+    $p->{_tie} = ref tied %$item;
+    $p->{_depth}--;
+
+    return $string;
+}
+
+
+sub Regexp {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    my $val = "$item";
+    # a regex to parse a regex. Talk about full circle :)
+    # note: we are not validating anything, just grabbing modifiers
+    if ($val =~ m/\(\?\^?([uladxismpogce]*)(?:\-[uladxismpogce]+)?:(.*)\)/s) {
+        my ($modifiers, $val) = ($1, $2);
+        $string .= colored($val, $p->{color}->{'regex'});
+        if ($modifiers) {
+            $string .= "  (modifiers: $modifiers)";
+        }
+    }
+    else {
+        croak "Unrecognized regex $val. Please submit a bug report for Data::Printer.";
+    }
+    return $string;
+}
+
+
+sub GLOB {
+    my ($item, $p) = @_;
+    my $string = '';
+
+    $string .= colored("$$item", $p->{color}->{'glob'});
+
+    my $extra = '';
+
+    # unfortunately, some systems (like Win32) do not
+    # implement some of these flags (maybe not even
+    # fcntl() itself, so we must wrap it.
+    eval {
+        if (my $flags = fcntl($$item, F_GETFL, 0) ) {
+
+            $extra .= ($flags & O_WRONLY) ? 'write-only'
+                    : ($flags & O_RDWR)   ? 'read/write'
+                    : 'read-only'
+                    ;
+
+            my %flags = (
+                    'append'      => O_APPEND,
+                    'async'       => O_ASYNC,
+                    'create'      => O_CREAT,
+                    'truncate'    => O_TRUNC,
+                    'nonblocking' => O_NONBLOCK,
+            );
+
+            if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
+                $extra .= ", flags: @flags";
+            }
+            $extra .= ', ';
+        }
+    };
+    my @layers = ();
+    eval { @layers = PerlIO::get_layers $$item };
+    unless ($@) {
+        $extra .= "layers: @layers";
+    }
+    $string .= "  ($extra)" if $extra;
+
+    $p->{_tie} = ref tied *$$item;
+    return $string;
+}
+
+
 sub _class {
-    my ($ref, $item, $p) = @_;
+    my ($item, $p) = @_;
+    my $ref = ref $item;
 
     # if the user specified a method to use instead, we do that
     if ( $p->{class_method} and $item->can($p->{class_method}) ) {
@@ -541,6 +510,12 @@ sub _class {
     return $string;
 }
 
+
+
+######################################
+## Auxiliary (internal) subs
+######################################
+
 sub _show_methods {
     my ($ref, $meta, $p) = @_;
 
@@ -579,6 +554,94 @@ METHOD:
 
     return $string;
 }
+
+sub _deparse {
+    my ($item, $p) = @_;
+    require B::Deparse;
+    my $i = $p->{indent};
+    my $deparseopts = ["-sCi${i}v'Useless const omitted'"];
+
+    my $sub = 'sub ' . B::Deparse->new($deparseopts)->coderef2text($item);
+    my $pad = "\n" . (' ' x ($p->{_current_indent} + $i));
+    $sub    =~ s/\n/$pad/gse;
+    return $sub;
+}
+
+sub _get_info_message {
+    my $p = shift;
+    my @caller = caller 1;
+
+    my $message = $p->{caller_message};
+
+    $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
+    $message =~ s/\b__FILENAME__\b/$caller[1]/g;
+    $message =~ s/\b__LINE__\b/$caller[2]/g;
+
+    return colored($message, $p->{color}{caller_info}) . $BREAK;
+}
+
+
+sub _merge {
+    my $p = shift;
+    my $clone = clone $properties;
+
+    if ($p) {
+        foreach my $key (keys %$p) {
+            if ($key eq 'color' or $key eq 'colour') {
+                my $color = $p->{$key};
+                if (defined $color and not $color) {
+                    $clone->{color} = {};
+                }
+                else {
+                    foreach my $target ( keys %{$p->{$key}} ) {
+                        $clone->{color}->{$target} = $p->{$key}->{$target};
+                    }
+                }
+            }
+            elsif ($key eq 'class') {
+                foreach my $item ( keys %{$p->{class}} ) {
+                    $clone->{class}->{$item} = $p->{class}->{$item};
+                }
+            }
+            elsif ($key eq 'filters') {
+                my $val = $p->{$key};
+
+                foreach my $item (keys %$val) {
+                    my $filters = $val->{$item};
+
+                    # EXPERIMENTAL: filters in modules
+                    if ($item eq '-external') {
+                        my @external = ( ref($filters) ? @$filters : ($filters) );
+
+                        foreach my $class ( @external ) {
+                            my $module = "Data::Printer::Filter::$class";
+                            eval "use $module";
+                            if ($@) {
+                                warn "Error loading filter '$module': $@";
+                            }
+                            else {
+                                my %from_module = %{$module->_filter_list};
+                                foreach my $k (keys %from_module) {
+                                    unshift @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        my @filter_list = ( ref $filters eq 'CODE' ? ( $filters ) : @$filters );
+                        unshift @{ $clone->{filters}->{$item} }, @filter_list;
+                    }
+                }
+            }
+            else {
+                $clone->{$key} = $p->{$key};
+            }
+        }
+    }
+
+    return $clone;
+}
+
 
 1;
 __END__
@@ -786,6 +849,12 @@ just use the class' name, as shown above.
 
 As of version 0.13, you may also use the '-class' filter, which
 will be called for all non-perl types (objects).
+
+Your filters are supposed to return a defined value (usually, the
+string you want to print). If you don't, Data::Printer will
+let the next filter of that same type have a go, or just fallback
+to the defaults. You can also use an array reference to pass more
+than one filter for the same type or class.
 
 B<Note>: If you plan on calling C<p()> from I<within> an inline
 filter, please make sure you are passing only REFERENCES as

@@ -1,11 +1,20 @@
 Revision history for Data-Printer
 
-0.17    01/06/2011
+0.17
+    NEW FEATURES:
+        - filter fallback also for Perl types (RANDIR, GARU)
+        - no need to pass arrayref in -external filters
+          if you only have one
+
     BUG FIXES:
         - corrected filter order (should be LIFO, not FIFO)
         - fixed edge-case behavior of p() within standalone filters
         - make sure filter output is defined, not just true (RANDIR)
         - fixed filter tests for Date::Calc & Date::Pcalc (SUGYAN, GARU)
+
+    OTHER:
+        - more tests
+        - big internal refactoring
 
 0.16    31/05/2011
     BUG FIXES:
