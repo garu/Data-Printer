@@ -130,7 +130,7 @@ sub import {
 
 
 sub p (\[@$%&];%) {
-    croak 'When calling p() inside inline filters, please pass arguments as references'
+    croak 'When calling p() without prototypes, please pass arguments as references'
         unless ref $_[0];
 
     my ($item, %local_properties) = @_;
