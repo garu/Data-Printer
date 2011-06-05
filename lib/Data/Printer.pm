@@ -34,6 +34,7 @@ my $properties = {
     'deparse'        => 0,
     'hash_separator' => '   ',
     'show_tied'      => 1,
+    'use_prototypes' => 1,
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
@@ -121,15 +122,19 @@ sub import {
         $properties = _merge( $args );
     }
 
-    my $imported_method = $properties->{alias} || 'p';
+    my $exported = ($properties->{use_prototypes} ? \&p : \&np );
+    my $imported = $properties->{alias} || 'p';
     my $caller = caller;
     no strict 'refs';
-    *{"$caller\::$imported_method"} = \&p;
-
+    *{"$caller\::$imported"} = $exported;
 }
 
 
-sub p (\[@$%&];%) {
+# get it? get it? :)
+sub p (\[@$%&];%) { _data_printer(@_) }
+sub np            { _data_printer(@_) }
+
+sub _data_printer {
     croak 'When calling p() without prototypes, please pass arguments as references'
         unless ref $_[0];
 
@@ -569,7 +574,7 @@ sub _deparse {
 
 sub _get_info_message {
     my $p = shift;
-    my @caller = caller 1;
+    my @caller = caller 2;
 
     my $message = $p->{caller_message};
 
@@ -804,6 +809,7 @@ customization options available, as shown below (with default values):
       deparse        => 0,       # use B::Deparse to expand subrefs
       show_tied      => 1,       # expose tied() variables
       caller_info    => 0,       # include information on what's being printed
+      use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
 
       class_method   => '_data_printer', # make classes aware of Data::Printer
                                          # and able to dump themselves.
@@ -1016,13 +1022,23 @@ You can't pass more than one variable at a time.
    p($foo);       # right
    p($bar);       # right
 
-You are supposed to pass variables, not anonymous structures:
+The default mode is to use prototypes, in which you are supposed to pass
+variables, not anonymous structures:
 
    p( { foo => 'bar' } ); # wrong
 
    p %somehash;        # right
    p $hash_ref;        # also right
 
+To pass anonymous structures, set "use_prototypes" option to 0. But
+remember you'll have to pass your variables as references:
+
+   use Data::Printer use_prototypes => 0;
+
+   p( { foo => 'bar' } ); # was wrong, now is right.
+
+   p( %foo  ); # was right, but fails without prototypes
+   p( \%foo ); # do this instead
 
 If you are using inline filters, and calling p() (or whatever name you
 aliased it to) from inside those filters, you B<must> pass the arguments
@@ -1090,15 +1106,25 @@ structures, like:
 
   p { foo => $bar };   # this blows up, don't use
 
-and because of prototypes, you can't. If this is your case, you can just
-use C<&p()> instead of C<p()> to circumvent prototypes and pass an
-anonymous B<REFERENCE> as the first argument. Note that you I<will> have
-to enclose the call in parentheses:
+and because of prototypes, you can't. If this is your case, just
+set "use_prototypes" option to 0. Note, with this option,
+you B<will> have to pass your variables as references:
+
+  use Data::Printer use_prototypes => 0;
+
+   p { foo => 'bar' }; # doesn't blow up anymore, works just fine.
+
+   p %var;  # but now this blows up...
+   p \%var; # ...so do this instead
+
+In versions prior to 0.17, you could use C<&p()> instead of C<p()>
+to circumvent prototypes and pass elements (including anonymous variables)
+as B<REFERENCES>. This notation, however, requires enclosing parentheses:
 
   &p( { foo => $bar } );        # this is ok, use at will
   &p( \"DEBUGGING THIS BIT" );  # this works too
 
-Another (maybe easier) way is to create a very simple wrapper function:
+Or you could just create a very simple wrapper function:
 
   sub pp { p @_ };
 

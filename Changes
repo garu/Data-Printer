@@ -5,6 +5,10 @@ Revision history for Data-Printer
         - filter fallback also for Perl types (RANDIR, GARU)
         - no need to pass arrayref in -external filters
           if you only have one
+        - new "use_prototypes" option, defaults to 1. Set to 0
+          to stop using prototypes in p(), which will let you
+          do p( { foo => "bar" } ); but you'll have to pass
+          the data to be printed as a reference.
 
     BUG FIXES:
         - corrected filter order (should be LIFO, not FIFO)
