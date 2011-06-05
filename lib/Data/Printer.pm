@@ -959,26 +959,6 @@ alias to Data::Printer:
    use DDP;
    p %some_var;
 
-=head1 AUTOMATIC LOADING
-
-For even more faster debugging you can automatically add C<Data::Printer::p()>
-to every loaded module using this in your main program:
-
-    BEGIN {
-        {
-            no strict 'refs';
-            use Data::Printer;
-            foreach my $package ( keys %main:: ) {
-                my $alias = 'p';
-                *{ $package . $alias } = \&Data::Printer::p;
-            }
-        }
-    }
-
-B<WARNING> This will override all locally defined subroutines/methods that are
-named C<p>, if they exist, in every loaded module, so be sure to change C<$alias>
-to something custom.
-
 =head1 CALLER INFORMATION
 
 If you set caller_info to a true value, Data::Printer will prepend
@@ -1071,6 +1051,60 @@ will generate an exception for you with the following message:
 Another way to avoid this is to use the much more complete L<Data::Printer::Filter>
 interface for standalone filters.
 
+=head1 EXTRA TIPS
+
+=head2 Adding p() to all your loaded modules
+
+I<< (contributed by Árpád Szász) >>
+
+For even faster debugging you can automatically add Data::Printer's C<p()>
+function to every loaded module using this in your main program:
+
+    BEGIN {
+        {
+            use Data::Printer;
+            no strict 'refs';
+            foreach my $package ( keys %main:: ) {
+                my $alias = 'p';
+                *{ $package . $alias } = \&Data::Printer::p;
+            }
+        }
+    }
+
+B<WARNING> This will override all locally defined subroutines/methods that
+are named C<p>, if they exist, in every loaded module, so be sure to change
+C<$alias> to something custom.
+
+=head2 Circumventing prototypes
+
+The C<p()> function uses prototypes by default, allowing you to say:
+
+  p %var;
+
+instead of always having to pass references, like:
+
+  p \%var;
+
+There are cases, however, where you may want to pass anonymous
+structures, like:
+
+  p { foo => $bar };   # this blows up, don't use
+
+and because of prototypes, you can't. If this is your case, you can just
+use C<&p()> instead of C<p()> to circumvent prototypes and pass an
+anonymous B<REFERENCE> as the first argument. Note that you I<will> have
+to enclose the call in parentheses:
+
+  &p( { foo => $bar } );        # this is ok, use at will
+  &p( \"DEBUGGING THIS BIT" );  # this works too
+
+Another (maybe easier) way is to create a very simple wrapper function:
+
+  sub pp { p @_ };
+
+And use it just as you use C<p()>.
+
+
 =head1 BUGS
 
 If you find any, please file a bug report.
@@ -1102,9 +1136,13 @@ one way or the other. They are (alphabetically):
 
 =over 4
 
+=item * Árpád Szász
+
 =item * brian d foy
 
 =item * Chris Prather (perigrin)
+
+=item * Damien Krotkine (dams)
 
 =item * Eden Cardim (edenc)
 
