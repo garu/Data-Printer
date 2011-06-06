@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.17
+0.17    06/06/2011
     NEW FEATURES:
         - filter fallback also for Perl types (RANDIR, GARU)
         - no need to pass arrayref in -external filters
