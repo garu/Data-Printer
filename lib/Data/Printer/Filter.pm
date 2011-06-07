@@ -69,6 +69,10 @@ sub import {
 1;
 __END__
 
+=head1 NAME
+
+Data::Printer::Filter - Create powerful stand-alone filters for Data::Printer
+
 =head1 SYNOPSIS
 
 Create your filter module:
