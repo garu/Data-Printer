@@ -50,7 +50,8 @@ my $properties = {
         'code'        => 'green',
         'glob'        => 'bright_cyan',
         'repeated'    => 'white on_red',
-        'caller_info' => 'bright_cyan'
+        'caller_info' => 'bright_cyan',
+        'weak'        => 'cyan',
     },
     'class' => {
         inherited    => 'none',   # also 0, 'none', 'public' or 'private'
@@ -169,17 +170,23 @@ sub _data_printer {
 
 sub _p {
     my ($item, $p) = @_;
-    my $ref = ref $item;
+    my $ref = (defined $p->{_reftype} ? $p->{_reftype} : ref $item);
     my $tie;
 
     my $string = '';
 
     # Object's unique ID, avoiding circular structures
     my $id = Object::ID::object_id( $item );
-    return colored($p->{_seen}->{$id}, $p->{color}->{repeated}
-    ) if exists $p->{_seen}->{$id};
+    if ( exists $p->{_seen}->{$id} ) {
+        if ( not defined $p->{_reftype} ) {
+            return colored($p->{_seen}->{$id}, $p->{color}->{repeated});
+        }
+    }
+    else {
+        $p->{_seen}->{$id} = $p->{name};
+    }
 
-    $p->{_seen}->{$id} = $p->{name};
+    delete $p->{_reftype}; # abort override
 
     # globs don't play nice
     $ref = 'GLOB' if "$item" =~ /=GLOB\([^()]+\)$/;
@@ -271,6 +278,9 @@ sub ARRAY {
             else {
                 $string .= _p( $array_elem, $p );
             }
+            $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
+                if $ref and Scalar::Util::isweak($item->[$i]);
+
             $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
@@ -296,6 +306,7 @@ sub REF {
             qw(SCALAR CODE Regexp ARRAY HASH GLOB REF);
     }
     $string .= _p($$item, $p);
+    $string .= ' ' . colored('(weak)', $p->{color}->{'weak'}) if Scalar::Util::isweak($$item);
     return $string;
 }
 
@@ -358,6 +369,9 @@ sub HASH {
             else {
                 $string .= _p( $element, $p );
             }
+            $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
+                if $ref and Scalar::Util::isweak($item->{$key});
+
             $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
 
             my $size = 2 + length($key); # {foo}, {z}, etc
@@ -481,29 +495,11 @@ sub _class {
         $string .= _show_methods($ref, $meta, $p);
 
         if ( $p->{'class'}->{'internals'} ) {
-            my $realtype = Scalar::Util::reftype $item;
             $string .= (' ' x $p->{_current_indent})
                     . 'internals: ';
 
-            # Note: we can't do p($$item) directly
-            # or we'd fall in a deep recursion trap
-            if ($realtype eq 'HASH') {
-                my %realvalue = %$item;
-                $string .= _p(\%realvalue, $p);
-            }
-            elsif ($realtype eq 'ARRAY') {
-                my @realvalue = @$item;
-                $string .= _p(\@realvalue, $p);
-            }
-            elsif ($realtype eq 'CODE') {
-                my $realvalue = &$item;
-                $string .= _p(\$realvalue, $p);
-            }
-            # SCALAR and friends
-            else {
-                my $realvalue = $$item;
-                $string .= _p(\$realvalue, $p);
-            }
+            local $p->{_reftype} = Scalar::Util::reftype $item;
+            $string .= _p($item, $p);
             $string .= $BREAK;
         }
 
@@ -766,7 +762,8 @@ Note that both spellings ('color' and 'colour') will work.
         code        => 'green',         # code references
         glob        => 'bright_cyan',   # globs (usually file handles)
         repeated    => 'white on_red',  # references to seen values
-        caller_info => 'bright_cyan' # details on what's being printed
+        caller_info => 'bright_cyan',   # details on what's being printed
+        weak        => 'cyan'           # weak references
      },
    };
 
