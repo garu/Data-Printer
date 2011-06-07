@@ -8,6 +8,7 @@ Revision history for Data-Printer
 
     OTHER:
         - extra tip on unified dumping interfaces (cat|grep)
+        - extra tip on using Data::Printer with Devel::REPL
 
 0.17    06/06/2011
     NEW FEATURES:

@@ -1133,6 +1133,21 @@ Or you could just create a very simple wrapper function:
 
 And use it just as you use C<p()>.
 
+=head2 Using Data::Printer in a perl shell (REPL)
+
+Some people really enjoy using a REPL shell to quickly try Perl code. One
+of the most famous ones out there is L<Devel::REPL>. If you use it, now
+you can also see its output with Data::Printer!
+
+Just install L<Devel::REPL::Plugin::DataPrinter> and add the following
+line to your re.pl configuration file (usually ".re.pl/repl.rc" in your
+home dir):
+
+  load_plugin('DataPrinter');
+
+The next time you run C<re.pl>, it should dump all your REPL using
+Data::Printer!
+
 =head2 Unified interface for Data::Printer and other debug formatters
 
 I<< (contributed by Kevin McGrath) >>
