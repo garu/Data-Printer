@@ -1175,6 +1175,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Eden Cardim (edenc)
 
+=item * Elliot Shank (elliotjs)
+
 =item * Fernando Corrêa (SmokeMachine)
 
 =item * Kartik Thakore (kthakore)
