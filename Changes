@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.18
+0.18    07/06/2011
     NEW FEATURES:
         - toggle timezone display on DateTime filters (Elliot Shank)
         - showing weak references (RANDIR)
