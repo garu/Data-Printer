@@ -1133,6 +1133,27 @@ Or you could just create a very simple wrapper function:
 
 And use it just as you use C<p()>.
 
+=head2 Unified interface for Data::Printer and other debug formatters
+
+I<< (contributed by Kevin McGrath) >>
+
+If you are porting your code to use Data::Printer instead of
+Data::Dumper or similar, you can just replace:
+
+  use Data::Dumper;
+
+with:
+
+  use Data::Printer alias => 'Dumper';
+  # use Data::Dumper;
+
+making sure to provide Data::Printer with the proper alias for the
+previous dumping function.
+
+If, however, you want a really unified approach where you can easily
+flip between debugging outputs, use L<Any::Renderer> and its plugins,
+like L<< Any::Renderer::Data::Printer|https://github.com/kmcgrath/Any-Renderer-Data-Printer >>.
+
 
 =head1 BUGS
 
@@ -1183,6 +1204,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Fernando Corrêa (SmokeMachine)
 
 =item * Kartik Thakore (kthakore)
+
+=item * Kevin McGrath (catlgrep)
 
 =item * Kip Hampton (ubu)
 

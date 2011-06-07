@@ -6,6 +6,9 @@ Revision history for Data-Printer
         - showing weak references (RANDIR)
         - more concise output for empty structures (RANDIR)
 
+    OTHER:
+        - extra tip on unified dumping interfaces (cat|grep)
+
 0.17    06/06/2011
     NEW FEATURES:
         - filter fallback also for Perl types (RANDIR, GARU)
