@@ -31,14 +31,10 @@ $scalar = 7;
 is( p($scalar_ref), '\\ 7', 'simple numeric ref' );
 
 my @array = ();
-is( p(@array),
-'[
-]', 'empty array' );
+is( p(@array), '[]', 'empty array' );
 
 undef @array;
-is( p(@array),
-'[
-]', 'undefined array' );
+is( p(@array), '[]', 'undefined array' );
 
 @array = (1 .. 3);
 is( p(@array),
@@ -100,14 +96,10 @@ is( p(@array),
 ]', 'nested array');
 
 my %hash = ();
-is( p(%hash),
-'{
-}', 'empty hash');
+is( p(%hash), '{}', 'empty hash');
 
 undef %hash;
-is( p(%hash),
-'{
-}', 'undefined hash');
+is( p(%hash), '{}', 'undefined hash');
 
 # the "%hash = 1" code below is wrong and issues
 # an "odd number of elements in hash assignment"

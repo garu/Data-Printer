@@ -252,6 +252,9 @@ sub ARRAY {
     if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
         $string .= '[ ... ]';
     }
+    elsif (not @$item) {
+        $string .= '[]';
+    }
     else {
         $string .= "[$BREAK";
         $p->{_current_indent} += $p->{indent};
@@ -332,6 +335,9 @@ sub HASH {
 
     if ( $p->{max_depth} and $p->{_depth} > $p->{max_depth} ) {
         $string .= '{ ... }';
+    }
+    elsif (not keys %$item) {
+        $string .= '{}';
     }
     else {
         $string .= "{$BREAK";

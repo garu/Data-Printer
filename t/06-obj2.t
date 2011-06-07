@@ -35,8 +35,7 @@ is( p($array ),
 'FooArray  {
     public methods (2) : foo, new
     private methods (0)
-    internals: [
-    ]
+    internals: []
 }', 'testing blessed array' );
 
 SKIP: {
