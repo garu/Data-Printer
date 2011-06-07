@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+0.18
+    NEW FEATURES:
+        - toggle timezone display on DateTime filters (Elliot Shank)
+
 0.17    06/06/2011
     NEW FEATURES:
         - filter fallback also for Perl types (RANDIR, GARU)

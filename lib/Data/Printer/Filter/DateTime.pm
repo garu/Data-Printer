@@ -9,7 +9,12 @@ filter 'Time::Piece', sub {
 };
 
 filter 'DateTime', sub {
-    return _format( "$_[0]", @_ );
+    my ($obj, $p) = @_;
+    my $string = "$obj";
+    if ( not exists $p->{datetime}{show_timezone} or $p->{datetime}{show_timezone} ) {
+        $string .= ' [' . $obj->time_zone->name . ']';
+    }
+    return _format( $string, @_ );
 };
 
 filter 'DateTime::Incomplete', sub {
@@ -93,6 +98,7 @@ You can also setup color and display details:
       }
       datetime => {
           show_class_name => 1,  # default is 0
+          show_timezone   => 0,  # default is 1 (only works for DateTime objects)
       },
   };
 
