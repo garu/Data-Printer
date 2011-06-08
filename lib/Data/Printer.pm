@@ -1246,6 +1246,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Kip Hampton (ubu)
 
+=item * Mike Doherty (doherty)
+
 =item * Paul Evans (LeoNerd)
 
 =item * Sergey Aleynikov (randir)
