@@ -40,6 +40,60 @@ is( p($obj), 'Foo  {
     }
 }', 'testing objects' );
 
+is( p($obj, class => { parents => 0 }), 'Foo  {
+    Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (parents => 0)' );
+
+is( p($obj, class => { linear_isa => 0 }), 'Foo  {
+    Parents       Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (linear_isa => 0)' );
+
+is( p($obj, class => { show_methods => 'none' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    internals: {
+        test   42
+    }
+}', 'testing objects (no methods)' );
+
+is( p($obj, class => { show_methods => 'public' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    internals: {
+        test   42
+    }
+}', 'testing objects (only public methods)' );
+
+is( p($obj, class => { show_methods => 'private' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (only private methods)' );
+
+is( p($obj, class => { show_methods => 'all' }), 'Foo  {
+    Parents       Bar
+    Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (explicitly asking for all methods)' );
+
 is( p($obj, class => { internals => 0 } ), 
 'Foo  {
     Parents       Bar

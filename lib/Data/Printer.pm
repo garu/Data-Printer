@@ -54,11 +54,14 @@ my $properties = {
         'weak'        => 'cyan',
     },
     'class' => {
-        inherited    => 'none',   # also 0, 'none', 'public' or 'private'
+        inherited    => 'none',   # also 'all', 'public' or 'private'
+        parents      => 1,
+        linear_isa   => 1,
         expand       => 1,        # how many levels to expand. 0 for none, 'all' for all
         internals    => 1,
         export       => 1,
         sort_methods => 1,
+        show_methods => 'all',    # also 'none', 'public', 'private'
         _depth       => 0,        # used internally
     },
     'filters' => {
@@ -490,20 +493,25 @@ sub _class {
         my $meta = Class::MOP::Class->initialize($ref);
 
         if ( my @superclasses = $meta->superclasses ) {
-            $string .= (' ' x $p->{_current_indent})
-                    . 'Parents       '
-                    . join(', ', map { colored($_, $p->{color}->{'class'}) }
-                                 @superclasses
-                    ) . $BREAK;
+            if ($p->{class}{parents}) {
+                $string .= (' ' x $p->{_current_indent})
+                        . 'Parents       '
+                        . join(', ', map { colored($_, $p->{color}->{'class'}) }
+                                     @superclasses
+                        ) . $BREAK;
+            }
 
-            $string .= (' ' x $p->{_current_indent})
-                    . 'Linear @ISA   '
-                    . join(', ', map { colored( $_, $p->{color}->{'class'}) }
-                              $meta->linearized_isa
-                    ) . $BREAK;
+            if ($p->{class}{linear_isa}) {
+                $string .= (' ' x $p->{_current_indent})
+                        . 'Linear @ISA   '
+                        . join(', ', map { colored( $_, $p->{color}->{'class'}) }
+                                  $meta->linearized_isa
+                        ) . $BREAK;
+            }
         }
 
-        $string .= _show_methods($ref, $meta, $p);
+        $string .= _show_methods($ref, $meta, $p)
+            if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
 
         if ( $p->{'class'}->{'internals'} ) {
             $string .= (' ' x $p->{_current_indent})
@@ -553,7 +561,11 @@ METHOD:
     }
 
     # render our string doing a natural sort by method name
+    my $show_methods = $p->{class}{show_methods};
     foreach my $type (qw(public private)) {
+        next unless $show_methods eq 'all'
+                 or $show_methods eq $type;
+
         my @list = ($p->{class}{sort_methods} ? nsort @{$methods->{$type}} : @{$methods->{$type}});
 
         $string .= (' ' x $p->{_current_indent})
@@ -823,18 +835,23 @@ customization options available, as shown below (with default values):
                                          # and able to dump themselves.
 
       class => {
-          internals => 1,        # show internal data structures of classes
+          internals  => 1,       # show internal data structures of classes
 
-          inherited => 'none',   # show inherited methods,
+          inherited  => 'none',  # show inherited methods,
                                  # can also be 'all', 'private', or 'public'.
 
-          expand    => 1,        # how deep to traverse the object (in case
+          parents    => 1,       # show parents?
+          linear_isa => 1,       # show the entire @ISA, linearized
+
+          expand     => 1,       # how deep to traverse the object (in case
                                  # it contains other objects). Defaults to
                                  # 1, meaning expand only itself. Can be any
                                  # number, 0 for no class expansion, and 'all'
                                  # to expand everything.
 
-          sort_methods => 1      # sort public and private methods
+          sort_methods => 1,     # sort public and private methods
+
+          show_methods => 'all'  # method list. Also 'none', 'public', 'private'
       },
   };
 
