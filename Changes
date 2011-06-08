@@ -1,5 +1,17 @@
 Revision history for Data-Printer
 
+0.19    08/06/2011
+    NEW FEATURES:
+        - toggle 'parents' class display, activated by default (RANDIR)
+        - toggle 'show_methods' class display, activated by default (RANDIR, GARU)
+        - toggle 'linear_isa' class display, activated by default
+
+    BUG FIXES:
+        - specific class filters now fallback to generic -class
+          filters when used (RANDIR)
+        - show flags from handles even when not all flags are
+          implemented on the target system (DOHERTY, GARU)
+
 0.18    07/06/2011
     NEW FEATURES:
         - toggle timezone display on DateTime filters (Elliot Shank)
