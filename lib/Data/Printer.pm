@@ -429,28 +429,30 @@ sub GLOB {
     # unfortunately, some systems (like Win32) do not
     # implement some of these flags (maybe not even
     # fcntl() itself, so we must wrap it.
-    eval {
-        if (my $flags = fcntl($$item, F_GETFL, 0) ) {
+    my $flags;
+    eval { $flags = fcntl($$item, F_GETFL, 0) };
+    if ($flags) {
+        $extra .= ($flags & O_WRONLY) ? 'write-only'
+                : ($flags & O_RDWR)   ? 'read/write'
+                : 'read-only'
+                ;
 
-            $extra .= ($flags & O_WRONLY) ? 'write-only'
-                    : ($flags & O_RDWR)   ? 'read/write'
-                    : 'read-only'
-                    ;
+        # How to avoid croaking when the system
+        # doesn't implement one of those, without skipping
+        # the whole thing? Maybe there's a better way.
+        # Solaris, for example, doesn't have O_ASYNC :(
+        my %flags = ();
+        eval { $flags{'append'}      = O_APPEND   };
+        eval { $flags{'async'}       = O_ASYNC    };
+        eval { $flags{'create'}      = O_CREAT    };
+        eval { $flags{'truncate'}    = O_TRUNC    };
+        eval { $flags{'nonblocking'} = O_NONBLOCK };
 
-            my %flags = (
-                    'append'      => O_APPEND,
-                    'async'       => O_ASYNC,
-                    'create'      => O_CREAT,
-                    'truncate'    => O_TRUNC,
-                    'nonblocking' => O_NONBLOCK,
-            );
-
-            if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
-                $extra .= ", flags: @flags";
-            }
-            $extra .= ', ';
+        if (my @flags = grep { $flags & $flags{$_} } keys %flags) {
+            $extra .= ", flags: @flags";
         }
-    };
+        $extra .= ', ';
+    }
     my @layers = ();
     eval { @layers = PerlIO::get_layers $$item };
     unless ($@) {
