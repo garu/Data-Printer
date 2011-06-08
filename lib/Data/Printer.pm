@@ -193,15 +193,18 @@ sub _p {
 
 
     # filter item (if user set a filter for it)
+    my $found;
     if ( exists $p->{filters}->{$ref} ) {
         foreach my $filter ( @{ $p->{filters}->{$ref} } ) {
             if ( defined (my $result = $filter->($item, $p)) ) {
                 $string .= $result;
+                $found = 1;
                 last;
             }
         }
     }
-    else {
+
+    if (not $found) {
         # let '-class' filters have a go
         foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
             if ( defined (my $result = $filter->($item, $p)) ) {
