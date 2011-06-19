@@ -11,14 +11,14 @@ my $builder = Module::Build->new(
         'Test::More' => 0.88,
     },
     requires => {
-        'Term::ANSIColor' => 3.00,
-        'Scalar::Util'    => 1.23,
-        'Sort::Naturally' => 1.02,
-        'Class::MOP'      => 1.12,
+        'Term::ANSIColor' => 1.10, # ships with 5.8.8
+        'Scalar::Util'    => 0,
+        'Sort::Naturally' => 0,
+        'Class::MOP'      => 0.65, # introduces get_all_methods()
         'Carp'            => 0,
-        'Clone'           => 0.31,
-        'Object::ID'      => 0,
-        'File::HomeDir'   => 0.91,
+        'Clone'           => 0,
+        'Hash::FieldHash' => 0,
+        'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
         'Fcntl'           => 0,
     },
