@@ -1267,6 +1267,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Paul Evans (LeoNerd)
 
+=item * Sebastian Willing (Sewi)
+
 =item * Sergey Aleynikov (randir)
 
 =item * sugyan
