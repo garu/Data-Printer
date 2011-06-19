@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+0.20
+    OTHER:
+        * reduced some dependencies to make installation even easier.
+
 0.19    08/06/2011
     NEW FEATURES:
         - toggle 'parents' class display, activated by default (RANDIR)

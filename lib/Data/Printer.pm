@@ -7,7 +7,7 @@ use Sort::Naturally;
 use Class::MOP;
 use Carp qw(croak);
 use Clone qw(clone);
-require Object::ID;
+use Hash::FieldHash qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
 use Fcntl;
@@ -179,7 +179,7 @@ sub _p {
     my $string = '';
 
     # Object's unique ID, avoiding circular structures
-    my $id = Object::ID::object_id( $item );
+    my $id = _object_id( $item );
     if ( exists $p->{_seen}->{$id} ) {
         if ( not defined $p->{_reftype} ) {
             return colored($p->{_seen}->{$id}, $p->{color}->{repeated});
@@ -535,6 +535,23 @@ sub _class {
 ######################################
 ## Auxiliary (internal) subs
 ######################################
+
+# All glory to Vincent Pit for coming up with this implementation,
+# to Goro Fuji for Hash::FieldHash, and of course to Michael Schwern
+# and his "Object::ID", whose code is copied almost verbatim below.
+{
+    fieldhash my %IDs;
+
+    my $Last_ID = "a";
+    sub _object_id {
+        my $self = shift;
+
+        # This is 15% faster than ||=
+        return $IDs{$self} if exists $IDs{$self};
+        return $IDs{$self} = ++$Last_ID;
+    }
+}
+
 
 sub _show_methods {
     my ($ref, $meta, $p) = @_;
