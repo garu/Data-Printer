@@ -6,17 +6,17 @@ BEGIN {
 };
 
 package Foo;
-use Data::Printer { color => { number => 'green' } };
+use Data::Printer { colored => 1, color => { number => 'green' } };
 sub foo { p($_[0]) }
 
 package Bar;
-use Data::Printer { color => { number => 'yellow' } };
+use Data::Printer { colored => 1, color => { number => 'yellow' } };
 
 sub bar { p($_[0]) }
 
 package main;
 use Test::More;
-use Data::Printer { color => { number => 'blue' } };
+use Data::Printer { colored => 1, color => { number => 'blue' } };
 delete $ENV{ANSI_COLORS_DISABLED};
 
 my $data = 42;

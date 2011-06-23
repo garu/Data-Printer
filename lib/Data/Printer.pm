@@ -143,6 +143,7 @@ sub _data_printer {
         unless ref $_[0];
 
     my ($item, %local_properties) = @_;
+    local %ENV = %ENV;
 
     my $p = _merge(\%local_properties);
     unless ($p->{multiline}) {
@@ -151,8 +152,19 @@ sub _data_printer {
         $p->{'index'}  = 0;
     }
 
-    # colors only if we're not being piped
-    if ( !$p->{colored} or ($p->{colored} eq 'auto' and not -t *STDERR) ) {
+    # We disable colors if colored is set to false.
+    # If set to "auto", we disable colors if the user
+    # set ANSI_COLORS_DISABLED or if we're either
+    # returning the value (instead of printing) or
+    # being piped to another command.
+    if ( !$p->{colored}
+          or ($p->{colored} eq 'auto'
+              and (exists $ENV{ANSI_COLORS_DISABLED}
+                   or defined wantarray
+                   or not -t *STDERR
+                  )
+          )
+    ) {
         $ENV{ANSI_COLORS_DISABLED} = 1;
     }
     else {

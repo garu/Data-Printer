@@ -6,7 +6,7 @@ BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
     use File::HomeDir::Test; # avoid user's .dataprinter
     use_ok 'Term::ANSIColor';
-    use_ok 'Data::Printer';
+    use_ok 'Data::Printer', colored => 1;
 };
 
 my %hash = ( key => 'value' );
