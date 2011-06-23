@@ -1,6 +1,22 @@
 Revision history for Data-Printer
 
-0.20
+0.20    23/06/2011
+    CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
+        - respect ANSI_COLORS_DISABLED if colored => 'auto',
+          but force color codes if colored => 1.
+        - colored => 'auto' prints colored output only
+          in void mode, not when returning a string. In other
+          words, doing p($var) will show colors, but
+          my $out = p($var) will not (unless you force it
+          via colored => 1). This behavior differs from
+          previous versions, but is more consistent and
+          we consider the previous way to have been a bug.
+
+          Many thanks to SZABGAB, CSJEWELL and specially RANDIR
+          for detecting, analyzing and helping to come up with
+          a solution, initially addressed as a Microsoft Windows
+          issue (RT#68630).
+
     OTHER:
         - reduced some dependencies to make installation even easier.
 
