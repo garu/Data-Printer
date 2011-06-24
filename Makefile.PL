@@ -15,6 +15,7 @@ requires 'Hash::FieldHash' => 0;
 requires 'File::HomeDir'   => 0.91; # introduces File::HomeDir::Test
 requires 'File::Spec'      => 0;
 requires 'Fcntl'           => 0;
+requires 'Object::ID'      => 0;
 
 if ($^O =~ /Win32/i) {
     requires 'Win32::Console::ANSI' => 1.0;
