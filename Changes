@@ -1,5 +1,69 @@
 Revision history for Data-Printer
 
+0.20    23/06/2011
+    CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
+        - respect ANSI_COLORS_DISABLED if colored => 'auto',
+          but force color codes if colored => 1.
+        - colored => 'auto' prints colored output only
+          in void mode, not when returning a string. In other
+          words, doing p($var) will show colors, but
+          my $out = p($var) will not (unless you force it
+          via colored => 1). This behavior differs from
+          previous versions, but is more consistent and
+          we consider the previous way to have been a bug.
+
+          Many thanks to SZABGAB, CSJEWELL and specially RANDIR
+          for detecting, analyzing and helping to come up with
+          a solution, initially addressed as a Microsoft Windows
+          issue (RT#68630).
+
+    OTHER:
+        - reduced some dependencies to make installation even easier.
+
+0.19    08/06/2011
+    NEW FEATURES:
+        - toggle 'parents' class display, activated by default (RANDIR)
+        - toggle 'show_methods' class display, activated by default (RANDIR, GARU)
+        - toggle 'linear_isa' class display, activated by default
+
+    BUG FIXES:
+        - specific class filters now fallback to generic -class
+          filters when used (RANDIR)
+        - show flags from handles even when not all flags are
+          implemented on the target system (DOHERTY, GARU)
+
+0.18    07/06/2011
+    NEW FEATURES:
+        - toggle timezone display on DateTime filters (Elliot Shank)
+        - showing weak references (RANDIR)
+        - more concise output for empty structures (RANDIR)
+
+    OTHER:
+        - extra tip on unified dumping interfaces (cat|grep)
+        - extra tip on using Data::Printer with Devel::REPL
+
+0.17    06/06/2011
+    NEW FEATURES:
+        - filter fallback also for Perl types (RANDIR, GARU)
+        - no need to pass arrayref in -external filters
+          if you only have one.
+        - new "use_prototypes" option, defaults to 1. Set to 0
+          to stop using prototypes in p(), which will let you
+          do p( { foo => "bar" } ); but you'll have to pass
+          the data to be printed as a reference.
+
+    BUG FIXES:
+        - corrected filter order (should be LIFO, not FIFO)
+        - fixed edge-case behavior of p() within standalone filters
+        - make sure filter output is defined, not just true (RANDIR)
+        - fixed filter tests for Date::Calc & Date::Pcalc (SUGYAN, GARU)
+
+    OTHER:
+        - more tests
+        - big internal refactoring
+        - extra tips on circumveinting prototypes (DAMS, GARU)
+        - extra tips on loading p() across all loaded modules (Árpád Szász)
+
 0.16    31/05/2011
     BUG FIXES:
         - patch to make it work on 5.8.8 again (RANDIR)

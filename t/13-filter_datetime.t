@@ -56,11 +56,12 @@ SKIP: {
     my $d2 = DateTime->new( year => 1984, month => 11, day => 15 );
     my $diff = $d2 - $d1;
 
-    is( p($d1), '1981-09-29T00:00:00', 'DateTime' );
+    is( p($d1), '1981-09-29T00:00:00 [floating]', 'DateTime' );
+    is( p($d1, datetime => { show_timezone => 0 }), '1981-09-29T00:00:00', 'DateTime without TZ data' );
     is( p($diff), '3y 1m 16d 0h 0m 0s', 'DateTime::Duration' );
     my @list = ($d1, { foo => 1 });
     is( p(@list), '[
-    [0] 1981-09-29T00:00:00,
+    [0] 1981-09-29T00:00:00 [floating],
     [1] this is a hash
 ]', 'inline and class filters together (DateTime)'
     );
@@ -84,7 +85,7 @@ SKIP: {
     eval 'use Date::Calc::Object';
     skip 'Date::Calc::Object not available', 2 if $@;
 
-    my $d = Date::Calc::Object->localtime( [1234567890] );
+    my $d = Date::Calc::Object->localtime( 1234567890 );
     my $string = $d->string(2);
     is( p($d), $string, 'Date::Calc::Object' );
     my @list = ($d, { foo => 1 });
@@ -99,7 +100,7 @@ SKIP: {
     eval 'use Date::Pcalc::Object';
     skip 'Date::Pcalc::Object not available', 2 if $@;
 
-    my $d = Date::Pcalc::Object->localtime( [1234567890] );
+    my $d = Date::Pcalc::Object->localtime( 1234567890 );
     my $string = $d->string(2);
     is( p($d), $string, 'Date::Pcalc::Object' );
     my @list = ($d, { foo => 1 });

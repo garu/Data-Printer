@@ -15,12 +15,13 @@ sub import {
     my $filter = sub {
         my ($type, $code) = @_;
 
-        push @{ $_filters_for{$id}{$type} }, sub {
+        unshift @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $p) = @_;
 
             # send our closured %properties var instead
             # so newline(), indent(), etc can work it
             %properties = %{ clone $p };
+            delete $properties{filters}; # no need to rework filters
             $code->($item, \%properties);
         };
     };
@@ -47,13 +48,8 @@ sub import {
 
     my $imported = sub (\[@$%&];%) {
         my ($item, $p) = @_;
-
-        # TODO: make sure this actually works as expected
-        my %temp_p = %properties;
-        @temp_p{ keys %$p } = values %$p;
-
         require Data::Printer;
-        return Data::Printer::p( $item, %temp_p );
+        return Data::Printer::p( $item, %properties );
     };
 
     {
@@ -72,6 +68,10 @@ sub import {
 
 1;
 __END__
+
+=head1 NAME
+
+Data::Printer::Filter - Create powerful stand-alone filters for Data::Printer
 
 =head1 SYNOPSIS
 
@@ -158,12 +158,16 @@ labelled 'external'):
 
   use Data::Printer {
       filters => {
-          -external => [ 'MyFilter' ],
+          -external => 'MyFilter',
       },
   };
 
 This will load all filters defined by the C<Data::Printer::Filter::MyFilter>
 module.
+
+If there are more than one filter, use an array reference instead:
+
+  -external => [ 'MyFilter', 'MyOtherFilter' ]
 
 B<< IMPORTANT: THIS WAY OF LOADING EXTERNAL PLUGINS IS EXPERIMENTAL AND
 SUBJECT TO SUDDEN CHANGE! IF YOU CARE, AND/OR HAVE IDEAS ON A BETTER API,
@@ -290,7 +294,12 @@ For example:
   };
 
 Note that this "filter stack" is not possible on inline filters, since
-it's a hash and keys with the same name are overwritten.
+it's a hash and keys with the same name are overwritten. Instead, you
+can pass them as an array reference:
+
+  use Data::Printer filters => {
+      SCALAR => [ sub { ... }, sub { ... } ],
+  };
 
 
 =head1 SEE ALSO

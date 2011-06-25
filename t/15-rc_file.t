@@ -21,7 +21,7 @@ BEGIN {
     open my $fh, '>', $file
         or plan skip_all => "error opening .dataprinter: $!";
 
-    print {$fh} '{ color => { hash => "red" }, hash_separator => "  +  "}'
+    print {$fh} '{ colored => 1, color => { hash => "red" }, hash_separator => "  +  "}'
         or plan skip_all => "error writing to .dataprinter: $!";
 
     close $fh;

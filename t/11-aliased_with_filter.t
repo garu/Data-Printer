@@ -29,6 +29,6 @@ eval {
     my %hash = (1 => 2);
     Dumper(%hash);
 };
-like($@, qr/^\QWhen calling p() inside inline filters, please pass arguments as references\E/, 'proper exception');
+like($@, qr/^\QWhen calling p() without prototypes, please pass arguments as references\E/, 'proper exception');
 
 done_testing;
