@@ -1147,6 +1147,19 @@ B<WARNING> This will override all locally defined subroutines/methods that
 are named C<p>, if they exist, in every loaded module, so be sure to change
 C<$alias> to something custom.
 
+=head2 Using Data::Printer from the Perl debugger
+
+Add these lines to your C<.perldb> file:
+
+    $DB::alias{px} = 's/px/DB::px/';
+    sub px {
+        require Data::Printer;
+        print Data::Printer::p( \$_[0] );
+    }
+
+Now you can use C<px> inside the Perl debugger to dump expressions using
+Data::Printer.
+
 =head2 Circumventing prototypes
 
 The C<p()> function uses prototypes by default, allowing you to say:
