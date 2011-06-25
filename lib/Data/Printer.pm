@@ -1133,11 +1133,13 @@ function to every loaded module using this in your main program:
 
     BEGIN {
         {
-            use Data::Printer;
             no strict 'refs';
+            require Data::Printer;
+            my $alias = 'p';
             foreach my $package ( keys %main:: ) {
-                my $alias = 'p';
-                *{ $package . $alias } = \&Data::Printer::p;
+                if ( $package =~ m/::$/ ) {
+                    *{ $package . $alias } = \&Data::Printer::p;
+                }
             }
         }
     }
