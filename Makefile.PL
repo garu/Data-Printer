@@ -5,7 +5,7 @@ all_from 'lib/Data/Printer.pm';
 
 test_requires 'Test::More' => 0.88;
 
-requires 'Term::ANSIColor' => 1.10;  # ships with 5.8.8
+requires 'Term::ANSIColor' => 3.0;  # introduces 'bright_*' colors
 requires 'Scalar::Util'    => 0;
 requires 'Sort::Naturally' => 0;
 requires 'Class::MOP'      => 0.65; # introduces get_all_methods()
