@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.21    01/07/2011
+    BUG FIXES:
+        - removed legacy dependency on Object::ID
+        - increased Term::ANSIColor version (David Raab)
+        - switched to EU:MM to make people happy :)
+          (seriously though, M:I was being too clever
+           while resolving dependencies)
+    OTHER:
+        - adding bugtracker meta information
+
 0.20    23/06/2011
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
         - respect ANSI_COLORS_DISABLED if colored => 'auto',
