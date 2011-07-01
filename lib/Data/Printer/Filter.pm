@@ -2,13 +2,13 @@ package Data::Printer::Filter;
 use strict;
 use warnings;
 use Clone qw(clone);
-require Object::ID;
+require Data::Printer;
 
 my %_filters_for = ();
 
 sub import {
     my $caller = caller;
-    my $id = Object::ID::object_id( \$caller );
+    my $id = Data::Printer::_object_id( \$caller );
 
     my %properties = ();
 
