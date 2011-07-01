@@ -1,28 +1,43 @@
-use inc::Module::Install;
+use strict;
+use warnings;
+use ExtUtils::MakeMaker;
 
-name 'Data-Printer';
-all_from 'lib/Data/Printer.pm';
-
-test_requires 'Test::More' => 0.88;
-
-requires 'Term::ANSIColor' => 3.0;  # introduces 'bright_*' colors
-requires 'Scalar::Util'    => 0;
-requires 'Sort::Naturally' => 0;
-requires 'Class::MOP'      => 0.65; # introduces get_all_methods()
-requires 'Carp'            => 0;
-requires 'Clone'           => 0;
-requires 'Hash::FieldHash' => 0;
-requires 'File::HomeDir'   => 0.91; # introduces File::HomeDir::Test
-requires 'File::Spec'      => 0;
-requires 'Fcntl'           => 0;
-
-if ($^O =~ /Win32/i) {
-    requires 'Win32::Console::ANSI' => 1.0;
-}
-
-resources(
-    'license'    => 'http://dev.perl.org/licenses/',
-    'repository' => 'http://github.com/garu/Data-Printer/',
+my %options = (
+    NAME                => 'Data::Printer',
+    AUTHOR              => 'Breno G. de Oliveira <garu@cpan.org>',
+    VERSION_FROM        => 'lib/Data/Printer.pm',
+    ABSTRACT_FROM       => 'lib/Data/Printer.pm',
+    LICENSE             => 'perl',
+    PL_FILES            => {},
+    PREREQ_PM => {
+        'Test::More'      => 0.88,
+        'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
+        'Scalar::Util'    => 0,
+        'Sort::Naturally' => 0,
+        'Class::MOP'      => 0.65, # introduces get_all_methods()
+        'Carp'            => 0,
+        'Clone'           => 0,
+        'Hash::FieldHash' => 0,
+        'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
+        'File::Spec'      => 0,
+        'Fcntl'           => 0,
+    },
+    META_MERGE      => {
+        resources => {
+            license     =>      'http://dev.perl.org/licenses/',
+            bugtracker  =>      'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Printer',
+            repository  =>      'http://github.com/garu/Data-Printer',
+        },
+    },
+    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    clean               => { FILES => 'Data-Printer-*' },
 );
 
-WriteAll;
+
+if ($^O =~ /Win32/i) {
+    $options{PREREQ_PM}{'Win32::Console::ANSI'} = 1.0;
+}
+
+
+WriteMakefile( %options );
+
