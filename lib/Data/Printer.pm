@@ -746,10 +746,11 @@ printing it to STDERR, you can simply ask for a return value:
   # move to a string
   my $string = p(@some_array);
 
-  # output to STDOUT instead of STDERR
+  # output to STDOUT instead of STDERR;
+  # to have colors here, the option 'colored' must be set to true.
   print p(%some_hash);
 
-  # or even render as HTML
+  # or even render as HTML; see above for colors enabling hint
   use HTML::FromANSI;
   ansi2html( p($object) );
 
