@@ -1133,11 +1133,13 @@ function to every loaded module using this in your main program:
 
     BEGIN {
         {
-            use Data::Printer;
             no strict 'refs';
+            require Data::Printer;
+            my $alias = 'p';
             foreach my $package ( keys %main:: ) {
-                my $alias = 'p';
-                *{ $package . $alias } = \&Data::Printer::p;
+                if ( $package =~ m/::$/ ) {
+                    *{ $package . $alias } = \&Data::Printer::p;
+                }
             }
         }
     }
@@ -1145,6 +1147,20 @@ function to every loaded module using this in your main program:
 B<WARNING> This will override all locally defined subroutines/methods that
 are named C<p>, if they exist, in every loaded module, so be sure to change
 C<$alias> to something custom.
+
+=head2 Using Data::Printer from the Perl debugger
+
+Add these lines to your C<.perldb> file:
+
+    $DB::alias{px} = 's/px/DB::px/';
+    sub px {
+        my $expr = shift;
+        require Data::Printer;
+        print Data::Printer::p($expr);
+    }
+
+Now, inside the Perl debugger, you can pass as reference to C<px> expressions
+to be dumped using Data::Printer.
 
 =head2 Circumventing prototypes
 
