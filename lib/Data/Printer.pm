@@ -862,7 +862,9 @@ customization options available, as shown below (with default values):
       max_depth      => 0,       # how deep to traverse the data (0 for all)
       sort_keys      => 1,       # sort hash keys
       deparse        => 0,       # use B::Deparse to expand subrefs
-      show_tied      => 1,       # expose tied() variables
+      show_tied      => 1,       # expose tied variables
+      show_tainted   => 1,       # expose tainted variables
+
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
 
