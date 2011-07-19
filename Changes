@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.22    19/07/2011
+    NEW FEATURES:
+        - display taint information via the 'show_tainted'
+          display customization (default true)
+        - control weak information display via 'show_weak'
+          customization (default true)
+    OTHER:
+        - updated documentation
+        - more extra tips
+
 0.21    01/07/2011
     BUG FIXES:
         - removed legacy dependency on Object::ID
