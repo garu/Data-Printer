@@ -926,7 +926,7 @@ customization options available, as shown below (with default values):
       multiline      => 1,       # display in multiple lines (see note below)
       max_depth      => 0,       # how deep to traverse the data (0 for all)
       sort_keys      => 1,       # sort hash keys
-      deparse        => 0,       # use B::Deparse to expand subrefs
+      deparse        => 0,       # use B::Deparse to expand (expose) subroutines
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
