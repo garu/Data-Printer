@@ -7,8 +7,8 @@ Revision history for Data-Printer
         - control weak information display via 'show_weak'
           customization (default true)
     OTHER:
-        - updated documentation
-        - more extra tips
+        - major documentation overhaul and update
+        - more extra tips (MST, HANEKOMU)
 
 0.21    01/07/2011
     BUG FIXES:
