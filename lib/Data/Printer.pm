@@ -34,6 +34,7 @@ my $properties = {
     'deparse'        => 0,
     'hash_separator' => '   ',
     'show_tied'      => 1,
+    'show_tainted'   => 1,
     'use_prototypes' => 1,
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
@@ -52,6 +53,7 @@ my $properties = {
         'repeated'    => 'white on_red',
         'caller_info' => 'bright_cyan',
         'weak'        => 'cyan',
+        'tainted'     => 'red',
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
@@ -255,6 +257,9 @@ sub SCALAR {
     else {
         $string .= colored(qq["$$item"], $p->{color}->{'string'});
     }
+
+    $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
+        if $p->{show_tainted} and Scalar::Util::tainted($$item);
 
     $p->{_tie} = ref tied $$item;
 
