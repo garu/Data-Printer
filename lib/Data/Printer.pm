@@ -704,20 +704,22 @@ sub _merge {
 1;
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 Data::Printer - colored pretty-print of Perl data structures and objects
 
 =head1 SYNOPSIS
 
+Want to see what's inside a variable in a complete, colored
+and human-friendly way?
+
   use Data::Printer;   # or just "use DDP" for short
-
-  my @array = qw(a b);
-  $array[3] = 'c';
   
-  p @array;  # no need to pass references!
+  p @array;            # no need to pass references
 
-Code above will show this (with colored output):
+Code above might output something like this (with colors!):
 
    [
        [0] "a",
@@ -726,7 +728,7 @@ Code above will show this (with colored output):
        [3] "c",
    ]
 
-You can also inspect Objects:
+You can also inspect objects:
 
     my $obj = SomeClass->new;
 
@@ -743,24 +745,20 @@ Which might give you something like:
          _something => 42,
       }
   }
- 
 
-If for some reason you want to mangle with the output string instead of
-printing it to STDERR, you can simply ask for a return value:
+Data::Printer is fully customizable. If you want to change how things
+are displayed, or even its standard behavior. Take a look at the
+L<< available customizations|/"CUSTOMIZATION" >>. Once you figure out
+your own preferences, create a
+L<< configuration file|/"CONFIGURATION FILE (RUN CONTROL)" >> for
+yourself and Data::Printer will automatically use it!
 
-  # move to a string
-  my $string = p(@some_array);
+That's about it :) For more information, including feature set,
+how to create filters, and general tips, just keep reading :)
 
-  # output to STDOUT instead of STDERR;
-  # to have colors here, the option 'colored' must be set to true.
-  print p(%some_hash);
-
-  # or even render as HTML; see above for colors enabling hint
-  use HTML::FromANSI;
-  ansi2html( p($object) );
-
-Finally, you can set all options during initialization, including
-coloring, identation and filters!
+Oh, if you are just experimenting and/or don't want to use a
+configuration file, you can set all options during initialization,
+including coloring, identation and filters!
 
   use Data::Printer {
       color => {
@@ -773,15 +771,37 @@ coloring, identation and filters!
       },
   };
 
-You can ommit the first {} block and just initialize it with a
-regular hash, if it makes things easier to read:
+The first C<{}> block is just syntax sugar, you can safely ommit it
+if it makes things easier to read:
+
+  use DDP colored => 1;
 
   use Data::Printer  deparse => 1, sort_keys => 0;
 
-And if you like your setup better than the defaults, just put them in
-a 'C<.dataprinter>' file in your home dir and don't repeat yourself
-ever again :)
 
+=head1 FEATURES
+
+Here's what Data::Printer has to offer to Perl developers, out of the box:
+
+=over 4
+
+=item * Very sane defaults (I hope!)
+
+=item * Highly customizable (in case you disagree with me :)
+
+=item * Colored output by default
+
+=item * Human-friendly output, with array index and custom separators
+
+=item * Full object dumps including methods, inheritance and internals
+
+=item * Exposes extra information such as tainted data and weak references
+
+=item * Ability to easily create filters for objects and regular structures
+
+=item * Ability to load settings from a C<.dataprinter> file so you don't have to write anything other than "use DDP;" in your code!
+
+=back
 
 =head1 RATIONALE
 
@@ -803,7 +823,35 @@ If you want to serialize/store/restore Perl data structures,
 this module will NOT help you. Try L<Storable>, L<Data::Dumper>,
 L<JSON>, or whatever. CPAN is full of such solutions!
 
-=head1 COLORS
+=head1 THE p() FUNCTION
+
+Once you load Data::Printer, the C<p()> function will be imported
+into your namespace and available to you. It will pretty-print
+into STDERR whatever variabe you pass to it.
+
+If for whatever reason you want to mangle with the output string
+instead of printing it to STDERR, you can simply ask for a return
+value:
+
+  # move to a string
+  my $string = p @some_array;
+
+  # output to STDOUT instead of STDERR;
+  print p(%some_hash);
+
+Note that, in this case, Data::Printer will not colorize the
+returned string unless you explicitly set the C<colored> option to 1:
+
+  print p(%some_hash, colored => 1); # now with colors!
+
+You can - and should - of course, set this during you "C<use>" call:
+
+  use Data::Printer colored => 1;
+  print p( %some_hash );  # will be colored
+
+Or by adding the setting to your C<.dataprinter> file.
+
+=head1 COLORS AND COLORIZATION
 
 Below are all the available colorizations and their default values.
 Note that both spellings ('color' and 'colour') will work.
@@ -821,13 +869,25 @@ Note that both spellings ('color' and 'colour') will work.
         glob        => 'bright_cyan',   # globs (usually file handles)
         repeated    => 'white on_red',  # references to seen values
         caller_info => 'bright_cyan',   # details on what's being printed
-        weak        => 'cyan'           # weak references
+        weak        => 'cyan',          # weak references
+        tainted     => 'red',           # tainted content
      },
    };
 
 Don't fancy colors? Disable them with:
 
   use Data::Printer colored => 0;
+
+By default, 'colored' is set to C<"auto">, which means Data::Printer
+will colorize only when not being used to return the dump string,
+nor when STDERR is being piped. If you're not seeing colors, try
+forcing it with:
+
+  use Data::Printer colored => 1;
+
+Also worth noticing that Data::Printer I<will> honor the
+C<ANSI_COLORS_DISABLED> environment variable unless you force a
+colored output by setting 'colored' to 1.
 
 Remember to put your preferred settings in the C<.dataprinter> file
 so you never have to type them at all!
@@ -857,6 +917,7 @@ customization options available, as shown below (with default values):
       name           => 'var',   # name to display on cyclic references
       indent         => 4,       # how many spaces in each indent
       hash_separator => '   ',   # what separates keys from values
+      colored        => 'auto',  # colorize output (1 for always, 0 for never)
       index          => 1,       # display array indices
       multiline      => 1,       # display in multiple lines (see note below)
       max_depth      => 0,       # how deep to traverse the data (0 for all)
@@ -996,7 +1057,7 @@ This way, instead of doing something like:
      },
    };
 
-You can create a .dataprinter file like this:
+You can create a .dataprinter file that looks like this:
 
    {
      colour => {
@@ -1010,7 +1071,9 @@ You can create a .dataprinter file like this:
      },
    };
 
-and from then on all you have to do while debugging scripts is:
+Note that all we did was remove the "use Data::Printer" bit when
+writing the C<.dataprinter> file. From then on all you have to do
+while debugging scripts is:
 
   use Data::Printer;
 
@@ -1021,7 +1084,7 @@ and it will load your custom settings every time :)
 
 You're likely to add/remove Data::Printer from source code being
 developed and debugged all the time, and typing it might feel too
-long. Because of this the 'DDP' package is provided as a shorter
+long. Because of this, the 'DDP' package is provided as a shorter
 alias to Data::Printer:
 
    use DDP;
@@ -1124,50 +1187,12 @@ itself loads, so the filter does not see the function prototype. As a way
 to avoid unpleasant surprises, if you forget to pass a reference, Data::Printer
 will generate an exception for you with the following message:
 
-    'If you call p() inside a filter, please pass arguments as references'
+    'When calling p() without prototypes, please pass arguments as references'
 
 Another way to avoid this is to use the much more complete L<Data::Printer::Filter>
 interface for standalone filters.
 
 =head1 EXTRA TIPS
-
-=head2 Adding p() to all your loaded modules
-
-I<< (contributed by Árpád Szász) >>
-
-For even faster debugging you can automatically add Data::Printer's C<p()>
-function to every loaded module using this in your main program:
-
-    BEGIN {
-        {
-            no strict 'refs';
-            require Data::Printer;
-            my $alias = 'p';
-            foreach my $package ( keys %main:: ) {
-                if ( $package =~ m/::$/ ) {
-                    *{ $package . $alias } = \&Data::Printer::p;
-                }
-            }
-        }
-    }
-
-B<WARNING> This will override all locally defined subroutines/methods that
-are named C<p>, if they exist, in every loaded module, so be sure to change
-C<$alias> to something custom.
-
-=head2 Using Data::Printer from the Perl debugger
-
-Add these lines to your C<.perldb> file:
-
-    $DB::alias{px} = 's/px/DB::px/';
-    sub px {
-        my $expr = shift;
-        require Data::Printer;
-        print Data::Printer::p($expr);
-    }
-
-Now, inside the Perl debugger, you can pass as reference to C<px> expressions
-to be dumped using Data::Printer.
 
 =head2 Circumventing prototypes
 
@@ -1195,7 +1220,11 @@ you B<will> have to pass your variables as references:
    p %var;  # but now this blows up...
    p \%var; # ...so do this instead
 
-In versions prior to 0.17, you could use C<&p()> instead of C<p()>
+   p [ $foo, $bar, \@baz ]; # this way you can even pass
+                            # several variables at once
+
+Versions prior to 0.17 don't have the "use_prototypes" option. If
+you're stuck in an older version you can write C<&p()> instead of C<p()>
 to circumvent prototypes and pass elements (including anonymous variables)
 as B<REFERENCES>. This notation, however, requires enclosing parentheses:
 
@@ -1207,6 +1236,93 @@ Or you could just create a very simple wrapper function:
   sub pp { p @_ };
 
 And use it just as you use C<p()>.
+
+
+=head2 Using p() in some/all of your loaded modules
+
+I<< (contributed by Matt Trout) >>
+
+While debugging your software, you may want to use Data::Printer in
+some or all loaded modules and not bother having to load it in
+each and every one of them. To do this, in any module loaded by
+C<myapp.pl>, simply write:
+
+  ::p( @myvar );  # note the '::' in front of p()
+
+Then call your program like:
+
+  perl -MDDP myapp.pl
+
+This also has the great advantage that if you leave one p() call
+in by accident, it will fail without the -M, making it easier to spot :)
+
+If you really want to have p() imported into your loaded
+modules, use the next tip instead.
+
+=head2 Adding p() to all your loaded modules
+
+I<< (contributed by Árpád Szász) >>
+
+If you wish to automatically add Data::Printer's C<p()> function to
+every loaded module in you app, you can do something like this to
+your main program:
+
+    BEGIN {
+        {
+            no strict 'refs';
+            require Data::Printer;
+            my $alias = 'p';
+            foreach my $package ( keys %main:: ) {
+                if ( $package =~ m/::$/ ) {
+                    *{ $package . $alias } = \&Data::Printer::p;
+                }
+            }
+        }
+    }
+
+B<WARNING> This will override all locally defined subroutines/methods that
+are named C<p>, if they exist, in every loaded module. If you already
+have a subroutine named 'C<p()>', be sure to change C<$alias> to
+something custom.
+
+If you rather avoid namespace manipulation altogether, use the previous
+tip instead.
+
+=head2 Using Data::Printer from the Perl debugger
+
+I<< (contributed by Árpád Szász and Marcel Grünauer) >>
+
+With L<DB::Pluggable>, you can easily set the perl debugger to use
+Data::Printer to print variable information, replacing the debugger's
+standard C<p()> function. All you have to do is add these lines to
+your C<.perldb> file:
+
+  use DB::Pluggable;
+  DB::Pluggable->run_with_config( \'[DataPrinter]' );  # note the '\'
+
+Then call the perl debugger as you normally would:
+
+  perl -d myapp.pl
+
+Now Data::Printer's C<p()> command will be used instead of the debugger's!
+
+See L<perldebug> for more information on how to use the perl debugger, and
+L<DB::Pluggable> for extra functionality and other plugins.
+
+If you can't or don't wish to use DB::Pluggable, or simply want to keep
+the debugger's C<p()> function and add an extended version using
+Data::Printer (let's call it C<px()> for instance), you can add these
+lines to your C<.perldb> file instead:
+
+    $DB::alias{px} = 's/px/DB::px/';
+    sub px {
+        my $expr = shift;
+        require Data::Printer;
+        print Data::Printer::p($expr);
+    }
+
+Now, inside the Perl debugger, you can pass as reference to C<px> expressions
+to be dumped using Data::Printer.
 
 =head2 Using Data::Printer in a perl shell (REPL)
 
@@ -1222,6 +1338,19 @@ home dir):
 
 The next time you run C<re.pl>, it should dump all your REPL using
 Data::Printer!
+
+=head2 Easily rendering Data::Printer's output as HTML
+
+To turn Data::Printer's output into HTML, you can do something like:
+
+  use HTML::FromANSI;
+  use Data::Printer;
+  
+  my $html_output = ansi2html( p($object, colored => 1) );
+
+In the example above, the C<$html_output> variable contains the
+HTML escaped output of C<p($object)>, so you can print it for
+later inspection or render it (if it's a web app).
 
 =head2 Unified interface for Data::Printer and other debug formatters
 
@@ -1320,6 +1449,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Tatsuhiko Miyagawa (miyagawa)
 
 =item * Torsten Raudssus (Getty)
+
+=item * Wesley Dal`Col (blabos)
 
 =back
 
