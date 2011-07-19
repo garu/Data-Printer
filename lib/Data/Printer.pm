@@ -35,6 +35,7 @@ my $properties = {
     'hash_separator' => '   ',
     'show_tied'      => 1,
     'show_tainted'   => 1,
+    'show_weak'      => 1,
     'use_prototypes' => 1,
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
@@ -305,7 +306,7 @@ sub ARRAY {
                 $string .= _p( $array_elem, $p );
             }
             $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
-                if $ref and Scalar::Util::isweak($item->[$i]);
+                if $ref and Scalar::Util::isweak($item->[$i]) and $p->{show_weak};
 
             $string .= ($i == $#{$item} ? '' : ',') . $BREAK;
             my $size = 2 + length($i); # [10], [100], etc
@@ -332,7 +333,10 @@ sub REF {
             qw(SCALAR CODE Regexp ARRAY HASH GLOB REF);
     }
     $string .= _p($$item, $p);
-    $string .= ' ' . colored('(weak)', $p->{color}->{'weak'}) if Scalar::Util::isweak($$item);
+
+    $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
+        if Scalar::Util::isweak($$item) and $p->{show_weak};
+
     return $string;
 }
 
@@ -399,7 +403,7 @@ sub HASH {
                 $string .= _p( $element, $p );
             }
             $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
-                if $ref and Scalar::Util::isweak($item->{$key});
+                if $ref and Scalar::Util::isweak($item->{$key}) and $p->{show_weak};
 
             $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
 
@@ -925,6 +929,7 @@ customization options available, as shown below (with default values):
       deparse        => 0,       # use B::Deparse to expand subrefs
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
+      show_weak      => 1,       # expose weak references
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
