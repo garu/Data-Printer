@@ -51,7 +51,7 @@ SKIP: {
         unless open $var, '+>>', $filename;
 
     like p($var), qr{read/write}, 'read/write handle';
-    like p($var), qr/flags: append/, 'append flag';
+    like p($var), qr/flags:[^,]+append/, 'append flag';
 
     close $var;
 
