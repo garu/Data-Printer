@@ -1245,7 +1245,7 @@ And use it just as you use C<p()>.
 
 =head2 Using p() in some/all of your loaded modules
 
-I<< (contributed by Matt Trout) >>
+I<< (contributed by Matt S. Trout (mst)) >>
 
 While debugging your software, you may want to use Data::Printer in
 some or all loaded modules and not bother having to load it in
@@ -1295,7 +1295,7 @@ tip instead.
 
 =head2 Using Data::Printer from the Perl debugger
 
-I<< (contributed by Árpád Szász and Marcel Grünauer) >>
+I<< (contributed by Árpád Szász and Marcel Grünauer (hanekomu)) >>
 
 With L<DB::Pluggable>, you can easily set the perl debugger to use
 Data::Printer to print variable information, replacing the debugger's
@@ -1359,7 +1359,7 @@ later inspection or render it (if it's a web app).
 
 =head2 Unified interface for Data::Printer and other debug formatters
 
-I<< (contributed by Kevin McGrath) >>
+I<< (contributed by Kevin McGrath (catlgrep)) >>
 
 If you are porting your code to use Data::Printer instead of
 Data::Dumper or similar, you can just replace:
@@ -1439,11 +1439,13 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Marcel Grünauer (hanekomu)
 
-=item * Matt Trout (mst)
+=item * Matt S. Trout (mst)
 
 =item * Mike Doherty (doherty)
 
 =item * Paul Evans (LeoNerd)
+
+=item * Przemysław Wesołek (jest)
 
 =item * Sebastian Willing (Sewi)
 
