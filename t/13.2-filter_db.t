@@ -39,37 +39,40 @@ is( p($dbh), 'DBM Database Handle (connected) {
 
 is( p($sth), 'CREATE TABLE foo ( bar TEXT, baz TEXT )', 'STH output' );
 
-$sth->execute;
+SKIP: {
+    eval { $sth->execute };
+    skip 'error running query', 5 if $@;
 
-is( p($sth), 'CREATE TABLE foo ( bar TEXT, baz TEXT )', 'STH output' );
+    is( p($sth), 'CREATE TABLE foo ( bar TEXT, baz TEXT )', 'STH output' );
 
-my $sth2 = $dbh->prepare('SELECT * FROM foo WHERE bar = ?');
-is( p($dbh), 'DBM Database Handle (connected) {
+    my $sth2 = $dbh->prepare('SELECT * FROM foo WHERE bar = ?');
+    is( p($dbh), 'DBM Database Handle (connected) {
     Auto Commit: 1
     Statement Handles: 2 (0 active)
     Last Statement: SELECT * FROM foo WHERE bar = ?
 }', 'DBH output (after new statement)'
-);
+    );
 
-$sth2->execute(42);
-is( p($sth2), 'SELECT * FROM foo WHERE bar = ?  (bindings unavailable)', 'STH-2 output' );
+    $sth2->execute(42);
+    is( p($sth2), 'SELECT * FROM foo WHERE bar = ?  (bindings unavailable)', 'STH-2 output' );
 
-is( p($dbh), 'DBM Database Handle (connected) {
+    is( p($dbh), 'DBM Database Handle (connected) {
     Auto Commit: 1
     Statement Handles: 2 (1 active)
     Last Statement: SELECT * FROM foo WHERE bar = ?
 }', 'DBH output (after executing new statement)'
-);
+    );
 
-undef $sth;
+    undef $sth;
 
-$dbh->disconnect;
-is( p($dbh), 'DBM Database Handle (disconnected) {
+    $dbh->disconnect;
+    is( p($dbh), 'DBM Database Handle (disconnected) {
     Auto Commit: 1
     Statement Handles: 1 (1 active)
     Last Statement: SELECT * FROM foo WHERE bar = ?
 }', 'DBH output (after disconnecting)'
-);
+    );
+};
 
 cleanup();
 
