@@ -1378,6 +1378,40 @@ If, however, you want a really unified approach where you can easily
 flip between debugging outputs, use L<Any::Renderer> and its plugins,
 like L<< Any::Renderer::Data::Printer|https://github.com/kmcgrath/Any-Renderer-Data-Printer >>.
 
+=head2 Printing stack traces with arguments expanded using Data::Printer
+
+I<< (contributed by Sergey Aleynikov (randir)) >>
+
+There are times where viewing the current state of a variable is not
+enough, and you want/need to see a full stack trace of a function call.
+
+The L<Devel::PrettyTrace> module uses Data::Printer to provide you just
+that. It exports a C<bt()> function that pretty-prints detailed information
+on each function in your stack, making it easier to spot any issues!
+
+=head2 Troubleshooting apps in real time without changing a single line of your code
+
+I<< (contributed by Marcel Grünauer (hanekomu)) >>
+
+L<dip> is a dynamic instrumentation framework for troubleshooting Perl
+programs, similar to L<DTrace|http://opensolaris.org/os/community/dtrace/>.
+In a nutshell, C<dip> lets you create probes for certain conditions
+in your application that, once met, will perform a specific action. Since
+it uses Aspect-oriented programming, it's very lightweight and you only
+pay for what you use.
+
+C<dip> can be very useful since it allows you to debug your software
+without changing a single line of your original code. And Data::Printer
+comes bundled with it, so you can use the C<p()> function to view your
+data structures too!
+
+   # Print a stack trace every time the name is changed,
+   # except when reading from the database.
+   dip -e 'before { print longmess(p $_->{args}[1]) if $_->{args}[1] }
+     call "MyObj::name" & !cflow("MyObj::read")' myapp.pl
+
+You can check you L<dip>'s own documentation for more information and options.
+
 
 =head1 BUGS
 
