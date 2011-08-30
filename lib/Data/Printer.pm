@@ -37,6 +37,7 @@ my $properties = {
     'show_tainted'   => 1,
     'show_weak'      => 1,
     'use_prototypes' => 1,
+    'return_value'   => 'dump',       # also 'void' or 'pass'
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
@@ -137,9 +138,56 @@ sub import {
 }
 
 
-# get it? get it? :)
-sub p (\[@$%&];%) { _data_printer(@_) }
-sub np            { _data_printer(@_) }
+sub p (\[@$%&];%) {
+    return _print_and_return( $_[0], _data_printer(@_) );
+}
+
+# np() is a p() clone without prototypes.
+# Just like regular Data::Dumper, this version
+# expects a reference as its first argument.
+# We make a single exception for when we only
+# get one argument, in which case we ref it
+# for the user and keep going.
+sub np  {
+    my $item = shift;
+
+    if (!ref $item && @_ == 0) {
+        my $item_value = $item;
+        $item = \$item_value;
+    }
+
+    return _print_and_return( $item, _data_printer($item, @_) );
+}
+
+sub _print_and_return {
+    my ($item, $dump, $p) = @_;
+
+    if ( $p->{return_value} eq 'pass' ) {
+        print STDERR $dump . $/;
+
+        my $ref = ref $item;
+        if ($ref eq 'ARRAY') {
+            return @{ $item };
+        }
+        elsif ($ref eq 'HASH') {
+            return %{ $item };
+        }
+        elsif ( grep { $ref eq $_ } qw(REF SCALAR CODE Regexp GLOB) ) {
+            return $$item;
+        }
+        else {
+            return $item;
+        }
+    }
+    elsif ( $p->{return_value} eq 'void' ) {
+        print STDERR $dump . $/;
+        return;
+    }
+    else {
+        print STDERR $dump . $/ unless defined wantarray;
+        return $dump;
+    }
+}
 
 sub _data_printer {
     croak 'When calling p() without prototypes, please pass arguments as references'
@@ -181,8 +229,7 @@ sub _data_printer {
     }
 
     $out .= _p( $item, $p );
-    print STDERR  $out . $/ unless defined wantarray;
-    return $out;
+    return ($out, $p);
 }
 
 
@@ -833,6 +880,8 @@ Once you load Data::Printer, the C<p()> function will be imported
 into your namespace and available to you. It will pretty-print
 into STDERR whatever variabe you pass to it.
 
+=head2 Return Value
+
 If for whatever reason you want to mangle with the output string
 instead of printing it to STDERR, you can simply ask for a return
 value:
@@ -854,6 +903,30 @@ You can - and should - of course, set this during you "C<use>" call:
   print p( %some_hash );  # will be colored
 
 Or by adding the setting to your C<.dataprinter> file.
+
+As most of Data::Printer, the return value is also configurable. You
+do this by setting the C<return_value> option. There are three options
+available:
+
+=over 4
+
+=item * C<'dump'> (default):
+
+    p %var;               # prints the dump to STDERR (void context)
+    my $string = p %var;  # returns the dump *without* printing
+
+=item * C<'void'>:
+
+    p %var;               # prints the dump to STDERR, never returns.
+    my $string = p %var;  # $string is undef. Data still printed in STDERR
+
+
+=item * C<'pass'>:
+
+    p %var;               # prints the dump to STDERR, returns %var
+    my %copy = p %var;    # %copy = %var. Data still printed in STDERR
+
+=back
 
 =head1 COLORS AND COLORIZATION
 
@@ -933,6 +1006,7 @@ customization options available, as shown below (with default values):
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
+      return_value   => 'dump',  # what should p() return? See 'Return Value' above.
 
       class_method   => '_data_printer', # make classes aware of Data::Printer
                                          # and able to dump themselves.
@@ -1241,6 +1315,47 @@ Or you could just create a very simple wrapper function:
   sub pp { p @_ };
 
 And use it just as you use C<p()>.
+
+=head2 Minding the return value of p()
+
+I<< (contributed by Matt S. Trout (mst)) >>
+
+There is a reason why explicit return statements are recommended unless
+you know what you're doing. By default, Data::Printer's return value
+depends on how it was called. When not in void context, it returns the
+serialized form of the dump.
+
+It's tempting to trust your own p() calls with that approach, but if
+this is your I<last> statement in a function, you should keep in mind
+your debugging code will behave differently depending on how your
+function was called!
+
+To prevent that, set the C<return_value> property to either 'void'
+or 'pass'. You won't be able to retrieve the dumped string but, hey,
+who does that anyway :)
+
+Assuming you have set the pass-through ('pass') property in your
+C<.dataprinter> file, another stunningly useful thing you can do with it
+is change code that says:
+
+   return $obj->foo;
+
+with:
+
+   use DDP;
+
+   return p $obj->foo;
+
+You can even add it to chained calls if you wish to see the dump of
+a particular state, changing this:
+
+   $obj->foo->bar->baz;
+
+to:
+
+   $obj->foo->DDP::p->bar->baz
+
+And things will "Just Work".
 
 
 =head2 Using p() in some/all of your loaded modules
