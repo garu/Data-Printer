@@ -1,6 +1,7 @@
 package DDP;
+use Data::Printer;
+
 BEGIN {
-    require Data::Printer;
     push @ISA, 'Data::Printer';
     our $VERSION = $Data::Printer::VERSION;
 }
