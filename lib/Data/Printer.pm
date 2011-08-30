@@ -804,8 +804,9 @@ your own preferences, create a
 L<< configuration file|/"CONFIGURATION FILE (RUN CONTROL)" >> for
 yourself and Data::Printer will automatically use it!
 
-That's about it :) For more information, including feature set,
-how to create filters, and general tips, just keep reading :)
+B<< That's about it! Feel free to stop reading now and start dumping
+your data structures! For more information, including feature set,
+how to create filters, and general tips, just keep reading :) >>
 
 Oh, if you are just experimenting and/or don't want to use a
 configuration file, you can set all options during initialization,
