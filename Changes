@@ -1,5 +1,19 @@
 Revision history for Data-Printer
 
+0.23
+    NEW FEATURES:
+        - control the return value with the 'return_value'
+          property. This can be set to 'void', 'dump', and
+          'pass' (for pass-through). Default is 'dump',
+          which behaves exactly like previous versions. Note
+          that, as usual, the 'dump' mode will only print
+          the dump if called in void context. Otherwise, it
+          will only return it. (MST, GARU)
+
+    OTHER:
+        - more extra tips (HANEKOMU, RANDIR, MST)
+        - updated documentation
+
 0.22    19/07/2011
     NEW FEATURES:
         - display taint information via the 'show_tainted'
