@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.23
+0.23    30/08/2011
     NEW FEATURES:
         - control the return value with the 'return_value'
           property. This can be set to 'void', 'dump', and
