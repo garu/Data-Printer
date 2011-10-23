@@ -4,7 +4,6 @@ use warnings;
 use Term::ANSIColor;
 use Scalar::Util;
 use Sort::Naturally;
-use Class::MOP;
 use Carp qw(croak);
 use Clone qw(clone);
 use Hash::FieldHash qw(fieldhash);
@@ -566,6 +565,7 @@ sub _class {
 
         $p->{_current_indent} += $p->{indent};
 
+        require Class::MOP;
         my $meta = Class::MOP::Class->initialize($ref);
 
         if ( my @superclasses = $meta->superclasses ) {
