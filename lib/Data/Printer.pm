@@ -66,6 +66,7 @@ my $properties = {
         export       => 1,
         sort_methods => 1,
         show_methods => 'all',    # also 'none', 'public', 'private'
+        show_reftype => 0,
         _depth       => 0,        # used internally
     },
     'filters' => {
@@ -550,6 +551,13 @@ sub _class {
     $p->{class}{_depth}++;
 
     $string .= colored($ref, $p->{color}->{'class'});
+
+    if ( $p->{class}{show_reftype} ) {
+        $string .= ' (' . colored(
+            Scalar::Util::reftype($item),
+            $p->{color}->{'class'}
+        ) . ')';
+    }
 
     if ($p->{class}{expand} eq 'all'
         or $p->{class}{expand} >= $p->{class}{_depth}
