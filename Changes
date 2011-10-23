@@ -2,6 +2,7 @@ Revision history for Data-Printer
 
 0.24
     NEW FEATURES:
+        - link to the external URI filter (by SYP)
         - display object's reference type (Denis Howe)
 
 0.23    30/08/2011

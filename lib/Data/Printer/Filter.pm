@@ -265,6 +265,12 @@ L<Data::Printer::Filter::DateTime> pretty-prints several date
 and time objects (not just DateTime) for you on the fly, including
 duration/delta objects!
 
+=head2 URIs
+
+L<Data::Printer::Filter::URI> filters through several L<URI> manipulation
+classes and displays the URI as a colored string. A very nice addition
+by Stanislaw Pusep (SYP).
+
 =head1 USING MORE THAN ONE FILTER FOR THE SAME TYPE/CLASS
 
 As of version 0.13, standalone filters let you stack together
