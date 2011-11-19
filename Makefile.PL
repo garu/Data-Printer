@@ -14,7 +14,8 @@ my %options = (
         'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
         'Scalar::Util'    => 0,
         'Sort::Naturally' => 0,
-        'Class::MOP'      => 0.65, # introduces get_all_methods()
+        'Class::MOP'      => 0.81, # get_all_methods() is introduced in 0.65,
+                                   # but ActivePerl complains about < 0.81
         'Carp'            => 0,
         'Clone'           => 0,
         'Hash::FieldHash' => 0,
