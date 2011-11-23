@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+0.26    23/11/2011
+    BUG FIXES:
+        - colored => 'auto' properly detects terminals again
+
 0.25    20/11/2011
     BUG FIXES:
         - Increased version requirement for Test::Pod to 1.41 (Fitz Elliott)
