@@ -139,7 +139,7 @@ sub import {
 
 
 sub p (\[@$%&];%) {
-    return _print_and_return( $_[0], _data_printer(@_) );
+    return _print_and_return( $_[0], _data_printer(!!defined wantarray, @_) );
 }
 
 # np() is a p() clone without prototypes.
@@ -156,7 +156,7 @@ sub np  {
         $item = \$item_value;
     }
 
-    return _print_and_return( $item, _data_printer($item, @_) );
+    return _print_and_return( $item, _data_printer(!!defined wantarray, $item, @_) );
 }
 
 sub _print_and_return {
@@ -190,6 +190,8 @@ sub _print_and_return {
 }
 
 sub _data_printer {
+    my $wantarray = shift;
+
     croak 'When calling p() without prototypes, please pass arguments as references'
         unless ref $_[0];
 
@@ -211,7 +213,7 @@ sub _data_printer {
     if ( !$p->{colored}
           or ($p->{colored} eq 'auto'
               and (exists $ENV{ANSI_COLORS_DISABLED}
-                   or defined wantarray
+                   or $wantarray
                    or not -t *STDERR
                   )
           )
