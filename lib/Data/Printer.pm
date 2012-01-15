@@ -303,6 +303,7 @@ sub SCALAR {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
+        $$item =~ s/\0/\\0/g;
         $string .= colored(qq["$$item"], $p->{color}->{'string'});
     }
 
