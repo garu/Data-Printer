@@ -1618,6 +1618,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Tatsuhiko Miyagawa (miyagawa)
 
+=item * Tim Heaney (oylenshpeegul)
+
 =item * Torsten Raudssus (Getty)
 
 =item * Wesley Dal`Col (blabos)
