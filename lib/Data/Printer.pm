@@ -1500,7 +1500,7 @@ previous dumping function.
 
 If, however, you want a really unified approach where you can easily
 flip between debugging outputs, use L<Any::Renderer> and its plugins,
-like L<< Any::Renderer::Data::Printer|https://github.com/kmcgrath/Any-Renderer-Data-Printer >>.
+like L<Any::Renderer::Data::Printer>.
 
 =head2 Printing stack traces with arguments expanded using Data::Printer
 
