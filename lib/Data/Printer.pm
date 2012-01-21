@@ -1571,6 +1571,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =over 4
 
+=item * Allan Whiteford
+
 =item * Árpád Szász
 
 =item * brian d foy
