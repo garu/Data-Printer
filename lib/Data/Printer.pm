@@ -36,6 +36,7 @@ my $properties = {
     'show_tainted'   => 1,
     'show_weak'      => 1,
     'use_prototypes' => 1,
+    'output'         => 'stderr',
     'return_value'   => 'dump',       # also 'void' or 'pass'
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
@@ -79,6 +80,7 @@ my $properties = {
         -class => [ \&_class ],
     },
 
+    _output          => *STDERR,     # used internally
     _current_indent  => 0,           # used internally
     _linebreak       => \$BREAK,     # used internally
     _seen            => {},          # used internally
@@ -163,7 +165,7 @@ sub _print_and_return {
     my ($item, $dump, $p) = @_;
 
     if ( $p->{return_value} eq 'pass' ) {
-        print STDERR $dump . $/;
+        print { $p->{_output} } $dump . $/;
 
         my $ref = ref $item;
         if ($ref eq 'ARRAY') {
@@ -180,11 +182,11 @@ sub _print_and_return {
         }
     }
     elsif ( $p->{return_value} eq 'void' ) {
-        print STDERR $dump . $/;
+        print { $p->{_output} } $dump . $/;
         return;
     }
     else {
-        print STDERR $dump . $/ unless defined wantarray;
+        print { $p->{_output} } $dump . $/ unless defined wantarray;
         return $dump;
     }
 }
@@ -214,7 +216,7 @@ sub _data_printer {
           or ($p->{colored} eq 'auto'
               and (exists $ENV{ANSI_COLORS_DISABLED}
                    or $wantarray
-                   or not -t *STDERR
+                   or not -t $p->{_output}
                   )
           )
     ) {
@@ -753,6 +755,43 @@ sub _merge {
                     }
                 }
             }
+            elsif ($key eq 'output') {
+                my $out = $p->{output};
+                my $ref = ref $out;
+
+                $clone->{output} = $out;
+
+                my %output_target = (
+                     stdout => *STDOUT,
+                     stderr => *STDERR,
+                );
+
+                my $error;
+                if (!$ref and exists $output_target{ lc $out }) {
+                    $clone->{_output} = $output_target{ lc $out };
+                }
+                elsif ( ( $ref and $ref eq 'GLOB')
+                     or (!$ref and \$out =~ /GLOB\([^()]+\)$/)
+                ) {
+                    $clone->{_output} = $out;
+                }
+                elsif ( !$ref or $ref eq 'SCALAR' ) {
+                    if( open my $fh, '>>', $out ) {
+                        $clone->{_output} = $fh;
+                    }
+                    else {
+                        $error = 1;
+                    }
+                }
+                else {
+                    $error = 1;
+                }
+
+                if ($error) {
+                    Carp::carp 'Error opening custom output handle.';
+                    $clone->{_output} = $output_target{ 'stderr' };
+                }
+            }
             else {
                 $clone->{$key} = $p->{$key};
             }
@@ -890,12 +929,12 @@ L<JSON>, or whatever. CPAN is full of such solutions!
 
 Once you load Data::Printer, the C<p()> function will be imported
 into your namespace and available to you. It will pretty-print
-into STDERR whatever variabe you pass to it.
+into STDERR (or any other output target) whatever variabe you pass to it.
 
 =head2 Return Value
 
 If for whatever reason you want to mangle with the output string
-instead of printing it to STDERR, you can simply ask for a return
+instead of printing it, you can simply ask for a return
 value:
 
   # move to a string
@@ -969,8 +1008,8 @@ Don't fancy colors? Disable them with:
 
 By default, 'colored' is set to C<"auto">, which means Data::Printer
 will colorize only when not being used to return the dump string,
-nor when STDERR is being piped. If you're not seeing colors, try
-forcing it with:
+nor when the output (default: STDERR) is being piped. If you're not
+seeing colors, try forcing it with:
 
   use Data::Printer colored => 1;
 
