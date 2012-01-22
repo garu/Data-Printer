@@ -18,6 +18,12 @@ is( p($scalar_ref), '\\ "test"', 'scalar ref' );
 my $refref = \$scalar_ref;
 is( p($refref), '\\ \\ "test"', 'reference of reference');
 
+$scalar = "\0";
+is( p($scalar), '"\0"', 'handling the null character' );
+
+$scalar = "\0foo\0bar \0 baz\0";
+is( p($scalar), '"\0foo\0bar \0 baz\0"', 'handling several null characters' );
+
 $scalar = 42;
 is( p($scalar), '42', 'simple numeric scalar' );
 
