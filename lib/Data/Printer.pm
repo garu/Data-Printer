@@ -307,8 +307,9 @@ sub SCALAR {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
-        $$item =~ s/\0/\\0/g;
-        $string .= colored(qq["$$item"], $p->{color}->{'string'});
+        my $val = $$item;
+        $val =~ s/\0/\\0/g;
+        $string .= colored(qq["$val"], $p->{color}->{'string'});
     }
 
     $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
