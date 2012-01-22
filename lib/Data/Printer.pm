@@ -932,6 +932,26 @@ Once you load Data::Printer, the C<p()> function will be imported
 into your namespace and available to you. It will pretty-print
 into STDERR (or any other output target) whatever variabe you pass to it.
 
+=head2 Changing output targets
+
+By default, C<p()> will be set to use STDERR. As of version 0.27, you
+can set up the 'output' property so Data::Printer outputs to
+several different places:
+
+=over 4
+
+=item * C<< output => 'stderr' >> - Standard error. Same as *STDERR
+
+=item * C<< output => 'stdout' >> - Standard output. Same as *STDOUT
+
+=item * C<< output => $filename >> - Appends to filename.
+
+=item * C<< output => $file_handle >> - Appends to opened handle
+
+=item * C<< output => \$scalar >> - Appends to that variable's content
+
+=back
+
 =head2 Return Value
 
 If for whatever reason you want to mangle with the output string
@@ -1059,6 +1079,8 @@ customization options available, as shown below (with default values):
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
       return_value   => 'dump',  # what should p() return? See 'Return Value' above.
+      output         => 'stderr',# where to print the output. See
+                                 # 'Changing output targets' above.
 
       class_method   => '_data_printer', # make classes aware of Data::Printer
                                          # and able to dump themselves.
