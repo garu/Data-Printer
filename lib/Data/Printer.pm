@@ -258,7 +258,7 @@ sub _p {
     delete $p->{_reftype}; # abort override
 
     # globs don't play nice
-    $ref = 'GLOB' if "$item" =~ /=GLOB\([^()]+\)$/;
+    $ref = 'GLOB' if "$item" =~ /GLOB\([^()]+\)$/;
 
 
     # filter item (if user set a filter for it)
