@@ -1625,6 +1625,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Damien Krotkine (dams)
 
+=item * Denis Howe
+
 =item * Dotan Dimet
 
 =item * Eden Cardim (edenc)
@@ -1632,6 +1634,12 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Elliot Shank (elliotjs)
 
 =item * Fernando Corrêa (SmokeMachine)
+
+=item * Fitz Elliott
+
+=item * J Mash
+
+=item * Jesse Luehrs (doy)
 
 =item * Kartik Thakore (kthakore)
 
