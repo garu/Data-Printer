@@ -1,5 +1,19 @@
 Revision history for Data-Printer
 
+0.27    22/01/2012
+    BUG FIXES:
+        - properly escape nulls in strings (oylenshpeegul)
+
+    NEW FEATURES:
+        - control the output target with the 'output' property.
+          It can be set to 'stdout', 'stderr', a file name,
+          a file handle or even a scalar reference! Default, as
+          usual, is 'stderr'
+
+    OTHER:
+        - added tests for auto-coloring (DOY)
+        - updated link to Any::Renderer::Data::Printer (Allan Whiteford)
+
 0.26    23/11/2011
     BUG FIXES:
         - colored => 'auto' properly detects terminals again
