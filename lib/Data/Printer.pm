@@ -35,6 +35,7 @@ my $properties = {
     'show_tied'      => 1,
     'show_tainted'   => 1,
     'show_weak'      => 1,
+    'escape_chars'   => 1,
     'use_prototypes' => 1,
     'output'         => 'stderr',
     'return_value'   => 'dump',       # also 'void' or 'pass'
@@ -56,6 +57,7 @@ my $properties = {
         'caller_info' => 'bright_cyan',
         'weak'        => 'cyan',
         'tainted'     => 'red',
+        'escaped'     => 'bright_red',
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
@@ -307,8 +309,29 @@ sub SCALAR {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
-        my $val = $$item;
-        $val =~ s/\0/\\0/g;
+        my $str_color = color($p->{color}{string} );
+        my $esc_color = color($p->{color}{escaped});
+
+        # always escape the null character
+        my $val  = $$item;
+        my $null = $esc_color . '\0' . $str_color;
+        $val =~ s/\0/$null/g;
+
+        unless ($p->{escape_chars}) {
+            my %escaped = (
+                    "\n" => $esc_color . '\n' . $str_color,
+                    "\r" => $esc_color . '\r' . $str_color,
+                    "\t" => $esc_color . '\t' . $str_color,
+                    "\f" => $esc_color . '\f' . $str_color,
+                    "\b" => $esc_color . '\b' . $str_color,
+                    "\a" => $esc_color . '\a' . $str_color,
+                    "\e" => $esc_color . '\e' . $str_color,
+            );
+            foreach my $k ( keys %escaped ) {
+                my $esc = $escaped{$k};
+                $val =~ s/$k/$esc/g;
+            }
+        }
         $string .= colored(qq["$val"], $p->{color}->{'string'});
     }
 
@@ -1020,6 +1043,7 @@ Note that both spellings ('color' and 'colour') will work.
         caller_info => 'bright_cyan',   # details on what's being printed
         weak        => 'cyan',          # weak references
         tainted     => 'red',           # tainted content
+        escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
      },
    };
 
@@ -1075,6 +1099,7 @@ customization options available, as shown below (with default values):
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
+      escape_chars   => 0,       # escape non-printable chars (\n, \t, etc)
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
