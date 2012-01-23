@@ -1,5 +1,17 @@
 Revision history for Data-Printer
 
+0.28    2012-01-23
+    NEW FEATURES:
+        - new 'escape_chars' property to show '\t', '\n'
+          escaped (default is 1, meaning escape, which
+          will render the actual character instead). Note that
+          the '\0' special character is never escaped.
+        - new 'escaped' colour, defaults to bright red.
+
+    OTHER:
+        - fixed Changes file for compliance against latest
+          CPAN::Changes specification
+
 0.27    2012-01-22
     BUG FIXES:
         - properly escape nulls in strings (oylenshpeegul)
