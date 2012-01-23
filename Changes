@@ -1,6 +1,6 @@
 Revision history for Data-Printer
 
-0.27    22/01/2012
+0.27    2012-01-22
     BUG FIXES:
         - properly escape nulls in strings (oylenshpeegul)
 
@@ -14,11 +14,11 @@ Revision history for Data-Printer
         - added tests for auto-coloring (DOY)
         - updated link to Any::Renderer::Data::Printer (Allan Whiteford)
 
-0.26    23/11/2011
+0.26    2011-11-23
     BUG FIXES:
         - colored => 'auto' properly detects terminals again
 
-0.25    20/11/2011
+0.25    2011-11-20
     BUG FIXES:
         - Increased version requirement for Test::Pod to 1.41 (Fitz Elliott)
         - Updated tests to handle newer Class::MOP installations (J Mash)
@@ -28,7 +28,7 @@ Revision history for Data-Printer
         - Updated Class::MOP version requirement to 0.81 since
           ActiveState was complaining about ancient versions.
 
-0.24    23/10/2011
+0.24    2011-10-23
     NEW FEATURES:
         - link to the external URI filter (by SYP)
         - display object's reference type (Denis Howe)
@@ -36,7 +36,7 @@ Revision history for Data-Printer
     OTHER:
         - only load Class::MOP when inspecting objects.
 
-0.23    30/08/2011
+0.23    2011-08-30
     NEW FEATURES:
         - control the return value with the 'return_value'
           property. This can be set to 'void', 'dump', and
@@ -50,7 +50,7 @@ Revision history for Data-Printer
         - more extra tips (HANEKOMU, RANDIR, MST)
         - updated documentation
 
-0.22    19/07/2011
+0.22    2011-07-19
     NEW FEATURES:
         - display taint information via the 'show_tainted'
           display customization (default true)
@@ -60,7 +60,7 @@ Revision history for Data-Printer
         - major documentation overhaul and update
         - more extra tips (MST, HANEKOMU)
 
-0.21    01/07/2011
+0.21    2011-07-01
     BUG FIXES:
         - removed legacy dependency on Object::ID
         - increased Term::ANSIColor version (David Raab)
@@ -70,7 +70,7 @@ Revision history for Data-Printer
     OTHER:
         - adding bugtracker meta information
 
-0.20    23/06/2011
+0.20    2011-06-23
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
         - respect ANSI_COLORS_DISABLED if colored => 'auto',
           but force color codes if colored => 1.
@@ -90,7 +90,7 @@ Revision history for Data-Printer
     OTHER:
         - reduced some dependencies to make installation even easier.
 
-0.19    08/06/2011
+0.19    2011-06-08
     NEW FEATURES:
         - toggle 'parents' class display, activated by default (RANDIR)
         - toggle 'show_methods' class display, activated by default (RANDIR, GARU)
@@ -102,7 +102,7 @@ Revision history for Data-Printer
         - show flags from handles even when not all flags are
           implemented on the target system (DOHERTY, GARU)
 
-0.18    07/06/2011
+0.18    2011-06-07
     NEW FEATURES:
         - toggle timezone display on DateTime filters (Elliot Shank)
         - showing weak references (RANDIR)
@@ -112,7 +112,7 @@ Revision history for Data-Printer
         - extra tip on unified dumping interfaces (cat|grep)
         - extra tip on using Data::Printer with Devel::REPL
 
-0.17    06/06/2011
+0.17    2011-06-06
     NEW FEATURES:
         - filter fallback also for Perl types (RANDIR, GARU)
         - no need to pass arrayref in -external filters
@@ -134,16 +134,16 @@ Revision history for Data-Printer
         - extra tips on circumveinting prototypes (DAMS, GARU)
         - extra tips on loading p() across all loaded modules (Árpád Szász)
 
-0.16    31/05/2011
+0.16    2011-05-31
     BUG FIXES:
         - patch to make it work on 5.8.8 again (RANDIR)
 
-0.15    30/05/2011
+0.15    2011-05-30
     OTHERS:
         - updating filters docs
         - adding default color for DateTime filter
 
-0.14    30/05/2011
+0.14    2011-05-30
     NEW FEATURES:
         - allowing 'colored' display customization to control colored
           output. Default is 'auto', showing colors only when
@@ -157,7 +157,7 @@ Revision history for Data-Printer
     BUG FIXES:
         - Skipping calls to fcntl() in systems that don't support it.
 
-0.13    24/05/2011
+0.13    2011-05-24
     CHANGES THAT ***BREAK*** BACKWARDS COMPATIBILITY:
         - 'external' is now called '-external' to avoid name clash
           with a potential "external.pm" class;
@@ -185,11 +185,11 @@ Revision history for Data-Printer
         - improved test suite
         - improved documentation
 
-0.12    03/05/2011
+0.12    2011-05-03
     BUG FIXES:
         - fixed failing filter test due to timezone/epoch issues
 
-0.11    03/05/2011
+0.11    2011-05-03
     NEW FEATURES:
         - allowing 'sort_keys' display customization (default true)
         - allowing 'sort_methods' class display customization (default true)
@@ -206,7 +206,7 @@ Revision history for Data-Printer
         - improved documentation, including how to turn output to HTML
         - some internal refactorings
 
-0.10    18/04/2011
+0.10    2011-04-18
     NEW FEATURES:
         - allowing toggle for array indices
         - allowing 'multiline' display customization
@@ -223,7 +223,7 @@ Revision history for Data-Printer
           improved readability.
         - improved test suite
 
-0.09    13/04/2011
+0.09    2011-04-13
     NEW FEATURES:
         - allowing for 'internals' display customization
 
@@ -231,37 +231,37 @@ Revision history for Data-Printer
         - improving test suite
         - improving documentation
 
-0.08    11/04/2011
+0.08    2011-04-11
     BUG FIXES:
         - improving test suite (was still failing on NetBSD)
         - Improved handling of extended regexps (thanks Getty for reporting)
 
-0.07    02/04/2011
+0.07    2011-04-02
     BUG FIXES:
         - Making sure File::HomeDir is 0.91 or higher
         - Making tests stricter, since they were failing on Win32
 
-0.06    31/03/2011
+0.06    2011-03-31
     BUG FIXES:
         - if you want to call p() from within a filter, the
           argument to p() must be passed as a *reference*. This
           is now enforced to avoid users shooting themselves in the foot.
         - more tests added
 
-0.05    23/03/2011
+0.05    2011-03-23
     NEW FEATURES:
         - local configuration file support ($HOME/.dataprinter)
         - you can now alias p() to whatever name you like
 
-0.04    21/02/2011
+0.04    2011-02-21
     NEW FEATURE (or BUGFIX depending on how you look at it):
         - supporting the new (5.13.6) perl regex modifiers syntax
 
-0.03    14/02/2011
+0.03    2011-02-14
     BUG FIXES:
         - reseting colors before starting
 
-0.02    13/02/2011
+0.02    2011-02-13
 
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
         - d() function removed. You can now call p($var) in void context to print,
@@ -283,6 +283,6 @@ Revision history for Data-Printer
         - more tests added.
 
 
-0.01    20/01/2011
+0.01    2011-01-20
         - First version, released on an unsuspecting world.
 
