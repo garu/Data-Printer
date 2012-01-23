@@ -13,9 +13,10 @@ use Data::Printer {
     'index'          => 0,
     'hash_separator' => ' => ',
     'max_depth'      => 2,
+    'escape_chars'   => 0,
 };
 
-my $data = [ 1, 2, { foo => 3, bar => { 1 => 2}, baz => [0, 1]  } ];
+my $data = [ 1, 2, { foo => 3, bar => { 1 => 2}, baz => [0, 1]  }, "\0\n\f\t\bmeep\b\t\f\n\0" ];
 push @$data, $data->[2];
 
 is( p($data), '\\ [
@@ -26,6 +27,7 @@ is( p($data), '\\ [
     baz => [ ... ],
     foo => 3
   },
+  "\0\n\f\t\bmeep\b\t\f\n\0",
   TEST[2]
 ]', 'customization' );
 

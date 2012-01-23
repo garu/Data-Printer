@@ -24,6 +24,11 @@ is( p($scalar), '"\0"', 'handling the null character' );
 $scalar = "\0foo\0bar \0 baz\0";
 is( p($scalar), '"\0foo\0bar \0 baz\0"', 'handling several null characters' );
 
+$scalar = "\0foo\n\0bar\0 baz\n\0";
+is( p($scalar), '"\0foo
+\0bar\0 baz
+\0"', 'null characters in newlines' );
+
 $scalar = 42;
 is( p($scalar), '42', 'simple numeric scalar' );
 
