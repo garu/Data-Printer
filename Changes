@@ -1,5 +1,16 @@
 Revision history for Data-Printer
 
+0.29    2012-01-25
+    NEW FEATURES:
+        - custom rc file names via the new 'rc_file' property
+          (many thanks to Maxim Vuets for the idea and the
+           original implementation)
+
+    BUG FIXES:
+        - fixed unescaped null character during colored output
+          (reported by bowtie++)
+
+
 0.28    2012-01-23
     NEW FEATURES:
         - new 'escape_chars' property to show '\t', '\n'
