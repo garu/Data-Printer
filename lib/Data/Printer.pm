@@ -309,13 +309,10 @@ sub SCALAR {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
+        my $val       = $$item;
         my $str_color = color($p->{color}{string} );
         my $esc_color = color($p->{color}{escaped});
 
-        # always escape the null character
-        my $val  = $$item;
-        my $null = $esc_color . '\0' . $str_color;
-        $val =~ s/\0/$null/g;
 
         unless ($p->{escape_chars}) {
             my %escaped = (
@@ -332,6 +329,11 @@ sub SCALAR {
                 $val =~ s/$k/$esc/g;
             }
         }
+
+        # always escape the null character
+        my $null = $esc_color . '\0' . $str_color;
+        $val =~ s/\0/$null/g;
+
         $string .= colored(qq["$val"], $p->{color}->{'string'});
     }
 
