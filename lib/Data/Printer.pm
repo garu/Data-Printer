@@ -1262,6 +1262,15 @@ while debugging scripts is:
 
 and it will load your custom settings every time :)
 
+=head2 Loading RC files in custom locations
+
+If your RC file is somewhere other than C<.dataprinter> in your home
+dir, you can load whichever file you want via the C<'rc_file'> parameter:
+
+  use Data::Printer rc_file => '/path/to/my/rcfile.conf';
+
+You can even set this to undef or to a non-existing file to disable your
+RC file at will.
 
 =head1 THE "DDP" PACKAGE ALIAS
 
