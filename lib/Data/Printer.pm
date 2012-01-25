@@ -1706,6 +1706,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Matt S. Trout (mst)
 
+=item * Maxim Vuets
+
 =item * Mike Doherty (doherty)
 
 =item * Paul Evans (LeoNerd)
