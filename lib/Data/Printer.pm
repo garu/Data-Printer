@@ -103,10 +103,11 @@ sub import {
     # the RC file overrides the defaults,
     # (and we load it only once)
     unless( exists $properties->{_initialized} ) {
-        my $file = File::Spec->catfile(
-            File::HomeDir->my_home,
-            '.dataprinter'
-        );
+        my $file = ( $args && exists $args->{rc_file} )
+                 ? $args->{rc_file}
+                 : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter')
+                 ;
+
         if (-e $file) {
             if ( open my $fh, '<', $file ) {
                 my $rc_data;
