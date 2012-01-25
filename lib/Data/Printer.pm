@@ -96,6 +96,8 @@ sub import {
     my $args;
     if (scalar @_) {
         $args = @_ == 1 ? shift : {@_};
+        croak 'Data::Printer can receive either a hash or a hash reference.'
+            unless ref $args and ref $args eq 'HASH';
     }
 
     # the RC file overrides the defaults,
@@ -130,7 +132,7 @@ sub import {
     }
 
     # and 'use' arguments override the RC file
-    if (ref $args and ref $args eq 'HASH') {
+    if ($args) {
         $properties = _merge( $args );
     }
 
