@@ -1693,6 +1693,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Kartik Thakore (kthakore)
 
+=item * Kevin Dawson (bowtie)
+
 =item * Kevin McGrath (catlgrep)
 
 =item * Kip Hampton (ubu)
