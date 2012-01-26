@@ -21,6 +21,7 @@ my %options = (
         'Hash::FieldHash' => 0,
         'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
+        'File::Temp'      => 0,
         'Fcntl'           => 0,
     },
     META_MERGE      => {
