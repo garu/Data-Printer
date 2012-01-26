@@ -1675,6 +1675,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Allan Whiteford
 
+=item * Andy Bach
+
 =item * Árpád Szász
 
 =item * brian d foy
