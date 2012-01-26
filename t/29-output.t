@@ -67,7 +67,7 @@ my $fh = tempfile;
      p $item, output => $fh;
 });
 
-$fh->seek( 0, SEEK_SET );
+seek( $fh, 0, SEEK_SET );
 my $buffer = do { local $/; <$fh> };
 
 is $buffer, $item . $/, 'redirected output to a file handle';
