@@ -83,4 +83,46 @@ is(
      'testing escape sequence for ' . $mixed->{unescaped}
 );
 
+my %hash_with_escaped_keys = (
+     '  '   => 1,
+);
+
+my %other = (
+     ' b '  => 2,
+     "\n"   => 3,
+);
+
+is(
+    p( %hash_with_escaped_keys ),
+       color('reset') . "{$/    "
+     . q[']
+     . colored('  ', 'magenta')
+     . q[']
+     . '   '
+     . colored(1, 'bright_blue')
+     . "$/}",
+     'testing hash key with spaces'
+);
+
+%hash_with_escaped_keys = (
+    "\n" => 1,
+);
+
+is(
+    p( %hash_with_escaped_keys ),
+       color('reset') . "{$/    "
+     . q[']
+     . color('magenta')
+     . color('bright_red')
+     . '\n'
+     . color('magenta')
+     . color('reset')
+     . q[']
+     . '   '
+     . colored(1, 'bright_blue')
+     . "$/}",
+     'testing escaped hash keys'
+);
+
+
 done_testing;
