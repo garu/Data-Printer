@@ -87,11 +87,6 @@ my %hash_with_escaped_keys = (
      '  '   => 1,
 );
 
-my %other = (
-     ' b '  => 2,
-     "\n"   => 3,
-);
-
 is(
     p( %hash_with_escaped_keys ),
        color('reset') . "{$/    "
@@ -124,5 +119,20 @@ is(
      'testing escaped hash keys'
 );
 
+%hash_with_escaped_keys = (
+    '' => 1,
+);
+
+is(
+    p( %hash_with_escaped_keys ),
+       color('reset') . "{$/    "
+     . q[']
+     . colored('', 'magenta')
+     . q[']
+     . '   '
+     . colored(1, 'bright_blue')
+     . "$/}",
+     'quoting empty hash key'
+);
 
 done_testing;

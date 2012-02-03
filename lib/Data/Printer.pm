@@ -479,7 +479,11 @@ sub HASH {
 
             # wrap in uncolored single quotes if there's
             # any space or escaped characters
-            if ( $new_key ne $key or $key_string =~ /\s|\n|\t|\r/ ) {
+            if (
+                   $key eq q()
+                or $new_key ne $key
+                or $key_string =~ /\s|\n|\t|\r/
+            ) {
                 $key_string = qq['$key_string'];
             }
 
