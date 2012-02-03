@@ -1118,7 +1118,7 @@ customization options available, as shown below (with default values):
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
-      escape_chars   => 0,       # escape non-printable chars (\n, \t, etc)
+      escape_chars   => 1,       # print non-printable chars (\n, \t, etc)
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
