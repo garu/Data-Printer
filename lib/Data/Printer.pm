@@ -312,30 +312,7 @@ sub SCALAR {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
-        my $val       = $$item;
-        my $str_color = color($p->{color}{string} );
-        my $esc_color = color($p->{color}{escaped});
-
-
-        unless ($p->{escape_chars}) {
-            my %escaped = (
-                    "\n" => $esc_color . '\n' . $str_color,
-                    "\r" => $esc_color . '\r' . $str_color,
-                    "\t" => $esc_color . '\t' . $str_color,
-                    "\f" => $esc_color . '\f' . $str_color,
-                    "\b" => $esc_color . '\b' . $str_color,
-                    "\a" => $esc_color . '\a' . $str_color,
-                    "\e" => $esc_color . '\e' . $str_color,
-            );
-            foreach my $k ( keys %escaped ) {
-                my $esc = $escaped{$k};
-                $val =~ s/$k/$esc/g;
-            }
-        }
-
-        # always escape the null character
-        my $null = $esc_color . '\0' . $str_color;
-        $val =~ s/\0/$null/g;
+        my $val = _escape_chars($$item, $p->{color}{string}, $p);
 
         $string .= colored(qq["$val"], $p->{color}->{'string'});
     }
@@ -346,6 +323,34 @@ sub SCALAR {
     $p->{_tie} = ref tied $$item;
 
     return $string;
+}
+
+sub _escape_chars {
+    my ($str, $orig_color, $p) = @_;
+
+    $orig_color   = color( $orig_color );
+    my $esc_color = color( $p->{color}{escaped} );
+
+    unless ( $p->{escape_chars} ) {
+        my %escaped = (
+            "\n" => $esc_color . '\n' . $orig_color,
+            "\r" => $esc_color . '\r' . $orig_color,
+            "\t" => $esc_color . '\t' . $orig_color,
+            "\f" => $esc_color . '\f' . $orig_color,
+            "\b" => $esc_color . '\b' . $orig_color,
+            "\a" => $esc_color . '\a' . $orig_color,
+            "\e" => $esc_color . '\e' . $orig_color,
+        );
+        foreach my $k ( keys %escaped ) {
+            my $esc = $escaped{$k};
+            $str =~ s/$k/$esc/g;
+        }
+    }
+    # always escape the null character
+    my $null = $esc_color . '\0' . $orig_color;
+    $str =~ s/\0/$null/g;
+
+    return $str;
 }
 
 
@@ -466,11 +471,20 @@ sub HASH {
             $p->{name} .= "{$key}";
             my $element = $item->{$key};
 
+            my $new_key = _escape_chars($key, $p->{color}{hash}, $p);
+            my $key_string = colored(
+                $new_key,
+                $p->{color}->{'hash'}
+            );
+
+            # wrap in uncolored single quotes if there's
+            # any space or escaped characters
+            if ( $new_key ne $key or $key_string =~ /\s|\n|\t|\r/ ) {
+                $key_string = qq['$key_string'];
+            }
+
             $string .= (' ' x $p->{_current_indent})
-                     . colored(
-                             sprintf("%-*s", $len, $key),
-                             $p->{color}->{'hash'}
-                       )
+                     . sprintf("%-*s", $len, $key_string)
                      . $p->{hash_separator}
                      ;
 
