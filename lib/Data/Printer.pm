@@ -474,7 +474,7 @@ sub HASH {
             my $new_key = _escape_chars($key, $p->{color}{hash}, $p);
             my $key_string = colored(
                 $new_key,
-                $p->{color}->{'hash'}
+                $p->{color}->{hash}
             );
 
             # wrap in uncolored single quotes if there's
