@@ -35,7 +35,8 @@ my $properties = {
     'show_tied'      => 1,
     'show_tainted'   => 1,
     'show_weak'      => 1,
-    'escape_chars'   => 1,
+    #'escape_chars'   => 1, ### <== DEPRECATED!!!
+    'print_escapes'  => 0,
     'use_prototypes' => 1,
     'output'         => 'stderr',
     'return_value'   => 'dump',       # also 'void' or 'pass'
@@ -331,7 +332,13 @@ sub _escape_chars {
     $orig_color   = color( $orig_color );
     my $esc_color = color( $p->{color}{escaped} );
 
-    unless ( $p->{escape_chars} ) {
+    my $escape_chars = 1;
+    if (exists $p->{escape_chars}) {
+        warn q('escape_chars' is deprecated!);
+        $escape_chars = $p->{escape_chars};
+    }
+
+    if ($p->{print_escapes} || !$escape_chars) {
         my %escaped = (
             "\n" => $esc_color . '\n' . $orig_color,
             "\r" => $esc_color . '\r' . $orig_color,
@@ -1122,7 +1129,7 @@ customization options available, as shown below (with default values):
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
-      escape_chars   => 1,       # print non-printable chars (\n, \t, etc)
+      print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
@@ -1155,6 +1162,15 @@ customization options available, as shown below (with default values):
   };
 
 Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
+
+=head3 WARNING: C<escape_chars> is **deprecated**:
+
+In versions 0.28 and 0.29 there was a property called 'escape_chars' that
+was replaced by 'print_escapes' to avoid ambiguity. The old name was
+confusing because 'escape' could be interpreted as a noun or as an adjective.
+
+It will still work until version 0.32, but wil trigger a warning so you
+can update your code and/or RC file. Please use 'print_escapes' instead. Thanks!
 
 
 =head1 FILTERS

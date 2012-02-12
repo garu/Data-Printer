@@ -2,22 +2,14 @@ use strict;
 use warnings;
 use Test::More;
 
-
-##############################
-### DEPRECATED!!!!!!!!!!!! ###
-##############################
-
-###########################################
-### PLEASE USE 'print_escapes' instead! ###
-###########################################
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
     use_ok (
         'Data::Printer',
-            colored      => 1,
-            escape_chars => 0,
+            colored       => 1,
+            print_escapes => 1,
     );
 };
 
@@ -142,5 +134,22 @@ is(
      . "$/}",
      'quoting empty hash key'
 );
+
+%hash_with_escaped_keys = (
+     "\t"   => 1,
+);
+
+is(
+    p( %hash_with_escaped_keys, print_escapes => 0 ),
+       color('reset') . "{$/    "
+     . q[']
+     . colored("\t", 'magenta')
+     . q[']
+     . '   '
+     . colored(1, 'bright_blue')
+     . "$/}",
+     'testing hash key with spaces (print_escapes => 0)'
+);
+
 
 done_testing;
