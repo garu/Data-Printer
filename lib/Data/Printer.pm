@@ -37,6 +37,7 @@ my $properties = {
     'show_weak'      => 1,
     #'escape_chars'   => 1, ### <== DEPRECATED!!!
     'print_escapes'  => 0,
+    'quote_keys'     => 'auto',
     'use_prototypes' => 1,
     'output'         => 'stderr',
     'return_value'   => 'dump',       # also 'void' or 'pass'
@@ -486,10 +487,15 @@ sub HASH {
 
             # wrap in uncolored single quotes if there's
             # any space or escaped characters
-            if (
-                   $key eq q()
-                or $new_key ne $key
-                or $key_string =~ /\s|\n|\t|\r/
+            if ( $p->{quote_keys}
+                  and (
+                        $p->{quote_keys} ne 'auto'
+                        or (
+                             $key eq q()
+                             or $new_key ne $key
+                             or $key_string =~ /\s|\n|\t|\r/
+                        )
+                  )
             ) {
                 $key_string = qq['$key_string'];
             }
@@ -1130,6 +1136,8 @@ customization options available, as shown below (with default values):
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
+      quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
+                                 # 'auto' will quote when key is empty/space-only.
 
       caller_info    => 0,       # include information on what's being printed
       use_prototypes => 1,       # allow p(%foo), but prevent anonymous data
