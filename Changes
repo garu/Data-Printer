@@ -1,5 +1,31 @@
 Revision history for Data-Printer
 
+0.30    2012-02-13
+    CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
+        - 'escape_chars' was renamed 'print_escapes' to
+          avoid ambiguity. The old name will work until
+          v0.32, but will trigger a warning so you can
+          update your code. Sorry for the inconvenience,
+          the previous name was hard to figure out because
+          'escape' could be interpreted as a noun or as
+          an adjective (perigrin++ for suggesting the new
+          name).
+
+    NEW FEATURES:
+        - in hashes, surround key names with quotes if they
+          contain spaces (feature request by Maxim Vuets)
+        - escape_chars also works for hash keys now.
+        - new 'quote_keys' property to add quotes in hash
+          keys. Defaults to 'auto' which means it will
+          quote keys containing spaces (and empty keys)
+    BUG FIXES:
+        - fixed temporary file handling during tests. Thanks
+          Andy Bach for reporting and providing a patch.
+
+    OTHER:
+        - added documentation for the new 'rc_file' feature
+          introduced in the previous version.
+
 0.29    2012-01-25
     NEW FEATURES:
         - custom rc file names via the new 'rc_file' property
