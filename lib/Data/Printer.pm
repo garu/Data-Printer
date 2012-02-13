@@ -335,7 +335,7 @@ sub _escape_chars {
 
     my $escape_chars = 1;
     if (exists $p->{escape_chars}) {
-        warn q('escape_chars' is deprecated!);
+        Carp::carp q('escape_chars' is deprecated!);
         $escape_chars = $p->{escape_chars};
     }
 
