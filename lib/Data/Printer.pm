@@ -1,7 +1,7 @@
 package Data::Printer;
 use strict;
 use warnings;
-use Term::ANSIColor;
+use Term::ANSIColor qw(color colored colorstrip);
 use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
@@ -464,44 +464,55 @@ sub HASH {
         $string .= "{$BREAK";
         $p->{_current_indent} += $p->{indent};
 
-        # length of the largest key is used for indenting
-        my $len = 0;
-        if ($p->{multiline}) {
-            foreach (keys %$item) {
-                my $l = length;
+        my $total_keys  = scalar keys %$item;
+        my $len         = 0;
+        my $multiline   = $p->{multiline};
+        my $hash_color  = $p->{color}{hash};
+        my $quote_keys  = $p->{quote_keys};
+
+        my @keys = ();
+
+        # first pass, preparing keys to display (and getting largest key size)
+        foreach my $key ($p->{sort_keys} ? nsort keys %$item : keys %$item ) {
+            my $new_key = _escape_chars($key, $hash_color, $p);
+            my $colored = colored( $new_key, $hash_color );
+
+            # wrap in uncolored single quotes if there's
+            # any space or escaped characters
+            if ( $quote_keys
+                  and (
+                        $quote_keys ne 'auto'
+                        or (
+                             $key eq q()
+                             or $new_key ne $key
+                             or $new_key =~ /\s|\n|\t|\r/
+                        )
+                  )
+            ) {
+                $colored = qq['$colored'];
+            }
+
+            push @keys, {
+                raw     => $key,
+                colored => $colored,
+            };
+
+            # length of the largest key is used for indenting
+            if ($multiline) {
+                my $l = length colorstrip($colored);
                 $len = $l if $l > $len;
             }
         }
 
-        my $total_keys = scalar keys %$item;
-        my @keys = ($p->{sort_keys} ? nsort keys %$item : keys %$item );
+        # second pass, traversing and rendering
         foreach my $key (@keys) {
-            $p->{name} .= "{$key}";
-            my $element = $item->{$key};
-
-            my $new_key = _escape_chars($key, $p->{color}{hash}, $p);
-            my $key_string = colored(
-                $new_key,
-                $p->{color}->{hash}
-            );
-
-            # wrap in uncolored single quotes if there's
-            # any space or escaped characters
-            if ( $p->{quote_keys}
-                  and (
-                        $p->{quote_keys} ne 'auto'
-                        or (
-                             $key eq q()
-                             or $new_key ne $key
-                             or $key_string =~ /\s|\n|\t|\r/
-                        )
-                  )
-            ) {
-                $key_string = qq['$key_string'];
-            }
+            my $raw_key     = $key->{raw};
+            my $colored_key = $key->{colored};
+            my $element     = $item->{$raw_key};
+            $p->{name}     .= "{$raw_key}";
 
             $string .= (' ' x $p->{_current_indent})
-                     . sprintf("%-*s", $len, $key_string)
+                     . sprintf("%-*s", $len, $colored_key)
                      . $p->{hash_separator}
                      ;
 
@@ -514,12 +525,15 @@ sub HASH {
             else {
                 $string .= _p( $element, $p );
             }
+
             $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
-                if $ref and Scalar::Util::isweak($item->{$key}) and $p->{show_weak};
+                if $ref
+                  and $p->{show_weak}
+                  and Scalar::Util::isweak($item->{$raw_key});
 
             $string .= (--$total_keys == 0 ? '' : ',') . $BREAK;
 
-            my $size = 2 + length($key); # {foo}, {z}, etc
+            my $size = 2 + length($raw_key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
         }
         $p->{_current_indent} -= $p->{indent};

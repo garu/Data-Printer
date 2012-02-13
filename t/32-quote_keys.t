@@ -20,7 +20,7 @@ is(
    p(%hash),
    "{
     ''   1,
-    a   1
+    a    1
 }",
     'auto quote_keys (implicit)'
 );
@@ -29,7 +29,7 @@ is(
    p(%hash, quote_keys => 'auto'),
    "{
     ''   1,
-    a   1
+    a    1
 }",
     'auto quote_keys (explicit)'
 );
@@ -37,7 +37,7 @@ is(
 is(
    p(%hash, quote_keys => 1),
    "{
-    ''   1,
+    ''    1,
     'a'   1
 }",
     'quote_keys active'
