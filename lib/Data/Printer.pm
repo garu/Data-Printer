@@ -64,7 +64,7 @@ my $properties = {
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
         parents      => 1,
-        linear_isa   => 1,
+        linear_isa   => 'auto',
         expand       => 1,        # how many levels to expand. 0 for none, 'all' for all
         internals    => 1,
         export       => 1,
@@ -656,7 +656,13 @@ sub _class {
                         ) . $BREAK;
             }
 
-            if ($p->{class}{linear_isa}) {
+            if ( $p->{class}{linear_isa} and
+                  (
+                    ($p->{class}{linear_isa} eq 'auto' and @superclasses > 1)
+                    or
+                    ($p->{class}{linear_isa} ne 'auto')
+                  )
+            ) {
                 $string .= (' ' x $p->{_current_indent})
                         . 'Linear @ISA   '
                         . join(', ', map { colored( $_, $p->{color}->{'class'}) }
@@ -1168,8 +1174,10 @@ customization options available, as shown below (with default values):
           inherited  => 'none',  # show inherited methods,
                                  # can also be 'all', 'private', or 'public'.
 
-          parents    => 1,       # show parents?
-          linear_isa => 1,       # show the entire @ISA, linearized
+          parents    => 1,       # show parents, if there are any
+          linear_isa => 'auto',  # show the entire @ISA, linearized, whenever
+                                 # the object has more than one parent. Can
+                                 # also be set to 1 (always show) or 0 (never).
 
           expand     => 1,       # how deep to traverse the object (in case
                                  # it contains other objects). Defaults to
