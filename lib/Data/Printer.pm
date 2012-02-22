@@ -50,6 +50,7 @@ my $properties = {
         'number'      => 'bright_blue',
         'string'      => 'bright_yellow',
         'class'       => 'bright_green',
+        'method'      => 'bright_green',
         'undef'       => 'bright_red',
         'hash'        => 'magenta',
         'regex'       => 'yellow',
@@ -749,7 +750,7 @@ METHOD:
         $string .= (' ' x $p->{_current_indent})
                  . "$type methods (" . scalar @list . ')'
                  . (@list ? ' : ' : '')
-                 . join(', ', map { colored($_, $p->{color}->{class}) }
+                 . join(', ', map { colored($_, $p->{color}->{method}) }
                               @list
                    ) . $BREAK;
     }
@@ -1090,6 +1091,7 @@ Note that both spellings ('color' and 'colour') will work.
         number      => 'bright_blue',   # numbers
         string      => 'bright_yellow', # strings
         class       => 'bright_green',  # class names
+        method      => 'bright_green',  # method names
         undef       => 'bright_red',    # the 'undef' value
         hash        => 'magenta',       # hash keys
         regex       => 'yellow',        # regular expressions
