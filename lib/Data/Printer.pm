@@ -106,37 +106,7 @@ sub import {
     # the RC file overrides the defaults,
     # (and we load it only once)
     unless( exists $properties->{_initialized} ) {
-        my $file = ( $args && exists $args->{rc_file} )
-                 ? $args->{rc_file}
-                 : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter')
-                 ;
-
-        if (-e $file) {
-            if ( open my $fh, '<', $file ) {
-                my $rc_data;
-                { local $/; $rc_data = <$fh> }
-                close $fh;
-
-                if( Scalar::Util::tainted( $rc_data ) ) {
-                    warn "taint mode on: skipping rc file '$file'.\n";
-                }
-                else {
-                    my $config = eval $rc_data;
-                    if ( $@ ) {
-                        warn "Error loading $file: $@\n";
-                    }
-                    elsif (!ref $config or ref $config ne 'HASH') {
-                        warn "Error loading $file: config file must return a hash reference\n";
-                    }
-                    else {
-                        $properties = _merge( $config );
-                    }
-                }
-            }
-            else {
-                warn "error opening '$file': $!\n";
-            }
-        }
+        _load_rc_file($args);
         $properties->{_initialized} = 1;
     }
 
@@ -888,6 +858,67 @@ sub _merge {
 }
 
 
+sub _load_rc_file {
+    my $args = shift;
+    my $file = ( $args && exists $args->{rc_file} )
+             ? $args->{rc_file}
+             : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter')
+             ;
+
+    return unless -e $file;
+
+    my $mode = (stat $file )[2];
+    if ($mode & 0020 || $mode & 0002) {
+        warn "rc file '$file' must NOT be writeable to other users. Skipping.\n";
+        return;
+    }
+
+    if ( -l $file || (!-f _) || -p _ || -S _ || -b _ || -c _ ) {
+        warn "rc file '$file' doesn't look like a plain file. Skipping.\n";
+        return;
+    }
+
+    unless (-o $file) {
+        warn "rc file '$file' must be owned by your (effective) user. Skipping.\n";
+        return;
+    }
+
+    if ( open my $fh, '<', $file ) {
+        my $rc_data;
+        { local $/; $rc_data = <$fh> }
+        close $fh;
+
+        if( Scalar::Util::tainted( $rc_data ) ) {
+            if ( $args && exists $args->{allow_tainted}
+                     && $args->{allow_tainted}
+            ) {
+                warn "WARNING: Reading tainted file '$file' due to user override.\n";
+                $rc_data =~ /(.+)/; # very bad idea - god help you
+                $rc_data = $1;
+            }
+            else {
+                warn "taint mode on: skipping rc file '$file'.\n";
+                return;
+            }
+        }
+
+        my $config = eval $rc_data;
+        if ( $@ ) {
+            warn "Error loading $file: $@\n";
+        }
+        elsif (!ref $config or ref $config ne 'HASH') {
+            warn "Error loading $file: config file must return a hash reference\n";
+        }
+        else {
+            $properties = _merge( $config );
+        }
+    }
+    else {
+        warn "error opening '$file': $!\n";
+    }
+}
+
+
 1;
 __END__
 
@@ -1342,6 +1373,45 @@ dir, you can load whichever file you want via the C<'rc_file'> parameter:
 
 You can even set this to undef or to a non-existing file to disable your
 RC file at will.
+
+=head2 RC File Security
+
+The C<.dataprinter> RC file is nothing but a Perl hash that
+gets C<eval>'d back into the code. This means that whatever
+is in your RC file B<will be interpreted by perl at runtime>.
+This can be quite worrying if you're not the one in control
+of the RC file.
+
+For this reason, Data::Printer takes extra precaution before
+loading the file:
+
+=over 4
+
+=item * The file has to be in your home directory unless you
+specifically point elsewhere via the 'C<rc_file>' property;
+
+=item * The file B<must> be a plain file, never a symbolic
+link, named pipe or socket;
+
+=item * The file B<must> be owned by you (i.e. the effective
+user id that ran the script using Data::Printer);
+
+=item * The file B<must> be read-only for everyone but your user.
+This usually means permissions C<0644>, C<0640> or C<0600> in
+Unix-like systems;
+
+=item * The file will B<NOT> be loaded in Taint mode, unless
+you specifically load Data::Printer with the 'allow_tainted'
+option set to true. And even if you do that, Data::Printer
+will still issue a warning before loading the file. But
+seriously, don't do that.
+
+=back
+
+Failure to comply with the security rules above will result in
+the RC file not being loaded (likely with a warning on what went
+wrong).
+
 
 =head1 THE "DDP" PACKAGE ALIAS
 

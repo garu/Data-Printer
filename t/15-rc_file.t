@@ -18,6 +18,7 @@ BEGIN {
     if (-e $file) {
         plan skip_all => 'File .dataprinter should not be in test homedir';
     }
+    umask 0022;
     open my $fh, '>', $file
         or plan skip_all => "error opening .dataprinter: $!";
 
