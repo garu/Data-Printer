@@ -117,15 +117,20 @@ sub import {
                 { local $/; $rc_data = <$fh> }
                 close $fh;
 
-                my $config = eval $rc_data;
-                if ( $@ ) {
-                    warn "Error loading $file: $@\n";
-                }
-                elsif (!ref $config or ref $config ne 'HASH') {
-                    warn "Error loading $file: config file must return a hash reference\n";
+                if( Scalar::Util::tainted( $rc_data ) ) {
+                    warn "taint mode on: skipping rc file '$file'.\n";
                 }
                 else {
-                    $properties = _merge( $config );
+                    my $config = eval $rc_data;
+                    if ( $@ ) {
+                        warn "Error loading $file: $@\n";
+                    }
+                    elsif (!ref $config or ref $config ne 'HASH') {
+                        warn "Error loading $file: config file must return a hash reference\n";
+                    }
+                    else {
+                        $properties = _merge( $config );
+                    }
                 }
             }
             else {
