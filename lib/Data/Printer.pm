@@ -888,7 +888,7 @@ sub _load_rc_file {
         { local $/; $rc_data = <$fh> }
         close $fh;
 
-        if( Scalar::Util::tainted( $rc_data ) ) {
+        if( ${^TAINT} != 0 ) {
             if ( $args && exists $args->{allow_tainted}
                      && $args->{allow_tainted}
             ) {
