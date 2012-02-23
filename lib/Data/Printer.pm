@@ -1378,7 +1378,7 @@ RC file at will.
 
 The C<.dataprinter> RC file is nothing but a Perl hash that
 gets C<eval>'d back into the code. This means that whatever
-is in your RC file B<will be interpreted by perl at runtime>.
+is in your RC file B<WILL BE INTERPRETED BY PERL AT RUNTIME>.
 This can be quite worrying if you're not the one in control
 of the RC file.
 
