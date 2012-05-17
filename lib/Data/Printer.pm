@@ -859,11 +859,11 @@ sub _merge {
 
 
 sub _load_rc_file {
-    my $args = shift;
-    my $file = ( $args && exists $args->{rc_file} )
-             ? $args->{rc_file}
-             : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter')
-             ;
+    my $args = shift || {};
+
+    my $file = exists $args->{rc_file}    ? $args->{rc_file}
+             : exists $ENV{DATAPRINTERRC} ? $ENV{DATAPRINTERRC}
+             : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter');
 
     return unless -e $file;
 
@@ -889,9 +889,7 @@ sub _load_rc_file {
         close $fh;
 
         if( ${^TAINT} != 0 ) {
-            if ( $args && exists $args->{allow_tainted}
-                     && $args->{allow_tainted}
-            ) {
+            if ( $args->{allow_tainted} ) {
                 warn "WARNING: Reading tainted file '$file' due to user override.\n";
                 $rc_data =~ /(.+)/; # very bad idea - god help you
                 $rc_data = $1;
