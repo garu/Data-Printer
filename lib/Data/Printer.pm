@@ -620,7 +620,11 @@ sub _class {
 
         $p->{_current_indent} += $p->{indent};
 
-        require MRO::Compat;
+        if ($] >= 5.010) {
+            require mro;
+        } else {
+            require MRO::Compat;
+        }
         require Package::Stash;
 
         my $stash = Package::Stash->new($ref);
