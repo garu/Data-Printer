@@ -620,10 +620,14 @@ sub _class {
 
         $p->{_current_indent} += $p->{indent};
 
+        require MRO::Compat;
+        require Package::Stash;
         require Class::MOP;
         my $meta = Class::MOP::Class->initialize($ref);
 
-        if ( my @superclasses = $meta->superclasses ) {
+        my $stash = Package::Stash->new($ref);
+
+        if ( my @superclasses = @{$stash->get_symbol('@ISA')} ) {
             if ($p->{class}{parents}) {
                 $string .= (' ' x $p->{_current_indent})
                         . 'Parents       '
@@ -642,7 +646,7 @@ sub _class {
                 $string .= (' ' x $p->{_current_indent})
                         . 'Linear @ISA   '
                         . join(', ', map { colored( $_, $p->{color}->{'class'}) }
-                                  $meta->linearized_isa
+                                  @{mro::get_linear_isa($ref)}
                         ) . $BREAK;
             }
         }
