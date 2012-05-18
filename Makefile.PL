@@ -14,15 +14,20 @@ my %options = (
         'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
         'Scalar::Util'    => 0,
         'Sort::Naturally' => 0,
-        'Class::MOP'      => 0.81, # get_all_methods() is introduced in 0.65,
-                                   # but ActivePerl complains about < 0.81
+        'Package::Stash'  => 0.30,
         'Carp'            => 0,
-        'Clone'           => 0,
-        'Hash::FieldHash' => 0,
+        'Clone::PP'       => 0,
         'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
+        ($] >= 5.010
+            ? () 
+            : (
+                'MRO::Compat' => 0.09,
+                'Hash::Util::FieldHash::Compat' => 0.03,
+              )
+        ),
     },
     META_MERGE      => {
         resources => {
