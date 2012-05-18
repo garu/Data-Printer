@@ -17,12 +17,17 @@ my %options = (
         'Package::Stash'  => 0.30,
         'Carp'            => 0,
         'Clone::PP'       => 0,
-        'Hash::FieldHash' => 0,
         'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
-        ($] >= 5.010 ? () : ('MRO::Compat' => 0.09)),
+        ($] >= 5.010
+            ? () 
+            : (
+                'MRO::Compat' => 0.09,
+                'Hash::Util::FieldHash::Compat' => 0.03,
+              )
+        ),
     },
     META_MERGE      => {
         resources => {
