@@ -622,12 +622,10 @@ sub _class {
 
         require MRO::Compat;
         require Package::Stash;
-        require Class::MOP;
-        my $meta = Class::MOP::Class->initialize($ref);
 
         my $stash = Package::Stash->new($ref);
 
-        if ( my @superclasses = @{$stash->get_symbol('@ISA')} ) {
+        if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
             if ($p->{class}{parents}) {
                 $string .= (' ' x $p->{_current_indent})
                         . 'Parents       '
@@ -651,7 +649,7 @@ sub _class {
             }
         }
 
-        $string .= _show_methods($ref, $meta, $p)
+        $string .= _show_methods($ref, $p)
             if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
 
         if ( $p->{'class'}->{'internals'} ) {
@@ -695,7 +693,7 @@ sub _class {
 
 
 sub _show_methods {
-    my ($ref, $meta, $p) = @_;
+    my ($ref, $p) = @_;
 
     my $string = '';
     my $methods = {
@@ -704,15 +702,40 @@ sub _show_methods {
     };
     my $inherited = $p->{class}{inherited} || 'none';
 
+    require B;
+
+    my $methods_of = sub {
+        my ($name) = @_;
+        map {
+            my $m;
+            if ($_
+                and $m = B::svref_2object($_)
+                and $m->isa('B::CV')
+                and not $m->GV->isa('B::Special')
+            ) {
+                [ $m->GV->STASH->NAME, $m->GV->NAME ]
+            } else {
+                ()
+            }
+        } values %{Package::Stash->new($name)->get_all_symbols('CODE')}
+    };
+
+    my %seen_method_name;
+
 METHOD:
-    foreach my $method ($meta->get_all_methods) {
-        my $method_string = $method->name;
+    foreach my $method (
+        map $methods_of->($_), @{mro::get_linear_isa($ref)}, 'UNIVERSAL'
+    ) {
+        my ($package_string, $method_string) = @$method;
+
+        next METHOD if $seen_method_name{$method_string}++;
+
         my $type = substr($method_string, 0, 1) eq '_' ? 'private' : 'public';
 
-        if ($method->package_name ne $ref) {
+        if ($package_string ne $ref) {
             next METHOD unless $inherited ne 'none'
                            and ($inherited eq 'all' or $type eq $inherited);
-            $method_string .= ' (' . $method->package_name . ')';
+            $method_string .= ' (' . $package_string . ')';
         }
 
         push @{ $methods->{$type} }, $method_string;
