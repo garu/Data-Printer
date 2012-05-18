@@ -5,7 +5,7 @@ use Term::ANSIColor qw(color colored colorstrip);
 use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
-use Clone qw(clone);
+use Clone::PP qw(clone);
 use Hash::FieldHash qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
