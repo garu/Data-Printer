@@ -1372,6 +1372,10 @@ dir, you can load whichever file you want via the C<'rc_file'> parameter:
 You can even set this to undef or to a non-existing file to disable your
 RC file at will.
 
+The RC file location can also be specified with the C<DATAPRINTERRC>
+environment variable. Using C<rc_file> in code will override the environment
+variable.
+
 =head2 RC File Security
 
 The C<.dataprinter> RC file is nothing but a Perl hash that
@@ -1386,7 +1390,8 @@ loading the file:
 =over 4
 
 =item * The file has to be in your home directory unless you
-specifically point elsewhere via the 'C<rc_file>' property;
+specifically point elsewhere via the 'C<rc_file>' property or
+the DATAPRINTERRC environment variable;
 
 =item * The file B<must> be a plain file, never a symbolic
 link, named pipe or socket;
