@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 BEGIN {
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use Term::ANSIColor;
 };

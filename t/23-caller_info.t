@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 BEGIN {
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use Term::ANSIColor;
 };
@@ -13,7 +14,7 @@ sub _get_path { my (undef, $filename) =caller; return $filename }
 my $filepath = _get_path();
 
 my $var = [ 1, { foo => 'bar' } ];
-is p($var), "Printing in line 16 of $filepath:
+is p($var), "Printing in line " . __LINE__ . " of $filepath:
 \\ [
     [0] 1,
     [1] {
@@ -27,12 +28,12 @@ is p($var, caller_message => 'also, a __PACKAGE__'),
 3', 'output with custom caller message';
 
 is p($var, colored => 1), color('reset')
- . colored("Printing in line 29 of $filepath:", 'bright_cyan')
+ . colored("Printing in line " . (__LINE__ - 1) . " of $filepath:", 'bright_cyan')
  . "\n" . colored($var, 'bright_blue')
  , 'colored caller message';
 
 is p( $var, colored => 1, color => { caller_info => 'red' } ), color('reset')
- . colored("Printing in line 34 of $filepath:", 'red')
+ . colored("Printing in line " . (__LINE__ - 1) . " of $filepath:", 'red')
  . "\n" . colored($var, 'bright_blue')
  , 'custom colored caller message';
 
