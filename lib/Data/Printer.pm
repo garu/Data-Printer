@@ -145,6 +145,22 @@ sub np  {
     return _print_and_return( $item, _data_printer(!!defined wantarray, $item, @_) );
 }
 
+# quick way to test one's palette
+sub sample() {
+    my %sample = (
+        number => 123.456,
+        string => 'a string',
+        array => [ 'foo', 6 ],
+        hash => {
+            foo => 'bar',
+            baz => 789,
+        },
+        regexp => qr/foo.*bar/,
+        glob => \*STDOUT,
+    );
+    p %sample;
+}
+
 sub _print_and_return {
     my ($item, $dump, $p) = @_;
 
@@ -1815,6 +1831,14 @@ data structures too!
      call "MyObj::name" & !cflow("MyObj::read")' myapp.pl
 
 You can check you L<dip>'s own documentation for more information and options.
+
+=head2 Sample output for color fine-tuning
+
+The un-exported function C<sample()> is available to quickly test
+color schemes.  It can be be used from within a script, or directly
+from the shell:
+
+    $ perl -MData::Printer -eData::Printer::sample
 
 
 =head1 BUGS
