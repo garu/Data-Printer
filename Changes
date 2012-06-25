@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+    NEW FEATURES:
+        - Replacement of dependencies to permit pure perl operation:
+            Class::MOP is replaced with mro and Package::Stash
+            Clone is replaced with Clone::PP
+            Hash::FieldHash is replaced with Hash::Util::FieldHash
+          Note that if <5.10 is detected, Data::Printer also requires:
+            MRO::Compat to provide mro
+            Hash::Util::FieldHash::Compat to provide Hash::Util::FieldHash
+          As a result, Data::Printer should now be fatpackable (cpan:MSTROUT)
+
 0.30    2012-02-13
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
         - 'escape_chars' was renamed 'print_escapes' to
