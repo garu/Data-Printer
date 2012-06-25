@@ -891,11 +891,11 @@ sub _merge {
 
 
 sub _load_rc_file {
-    my $args = shift;
-    my $file = ( $args && exists $args->{rc_file} )
-             ? $args->{rc_file}
-             : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter')
-             ;
+    my $args = shift || {};
+
+    my $file = exists $args->{rc_file}    ? $args->{rc_file}
+             : exists $ENV{DATAPRINTERRC} ? $ENV{DATAPRINTERRC}
+             : File::Spec->catfile(File::HomeDir->my_home,'.dataprinter');
 
     return unless -e $file;
 
@@ -921,9 +921,7 @@ sub _load_rc_file {
         close $fh;
 
         if( ${^TAINT} != 0 ) {
-            if ( $args && exists $args->{allow_tainted}
-                     && $args->{allow_tainted}
-            ) {
+            if ( $args->{allow_tainted} ) {
                 warn "WARNING: Reading tainted file '$file' due to user override.\n";
                 $rc_data =~ /(.+)/; # very bad idea - god help you
                 $rc_data = $1;
@@ -1406,6 +1404,10 @@ dir, you can load whichever file you want via the C<'rc_file'> parameter:
 You can even set this to undef or to a non-existing file to disable your
 RC file at will.
 
+The RC file location can also be specified with the C<DATAPRINTERRC>
+environment variable. Using C<rc_file> in code will override the environment
+variable.
+
 =head2 RC File Security
 
 The C<.dataprinter> RC file is nothing but a Perl hash that
@@ -1420,7 +1422,8 @@ loading the file:
 =over 4
 
 =item * The file has to be in your home directory unless you
-specifically point elsewhere via the 'C<rc_file>' property;
+specifically point elsewhere via the 'C<rc_file>' property or
+the DATAPRINTERRC environment variable;
 
 =item * The file B<must> be a plain file, never a symbolic
 link, named pipe or socket;

@@ -4,6 +4,7 @@ use Test::More;
 
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
     use_ok ('Scalar::Util', qw(weaken));
