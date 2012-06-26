@@ -8,7 +8,7 @@ BEGIN {
 };
 
 package Foo;
-sub bar  { "I exist with " . scalar @_ . " argument" }
+sub bar  { "I exist with " . scalar @_ . " arguments" }
 sub _moo { }
 sub new  { bless {}, shift }
 
@@ -21,4 +21,4 @@ use Data::Printer class_method => 'bar';
 
 my $obj = Foo->new;
 
-is p($obj), 'I exist with 1 argument', 'printing object via class_method "bar()"';
+is p($obj), 'I exist with 2 arguments', 'printing object via class_method "bar()"';
