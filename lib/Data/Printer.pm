@@ -1888,6 +1888,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Jesse Luehrs (doy)
 
+=item * Joel Berger (jberger)
+
 =item * Kartik Thakore (kthakore)
 
 =item * Kevin Dawson (bowtie)
