@@ -145,22 +145,6 @@ sub np  {
     return _print_and_return( $item, _data_printer(!!defined wantarray, $item, @_) );
 }
 
-# quick way to test one's palette
-sub sample() {
-    my %sample = (
-        number => 123.456,
-        string => 'a string',
-        array => [ 'foo', 6 ],
-        hash => {
-            foo => 'bar',
-            baz => 789,
-        },
-        regexp => qr/foo.*bar/,
-        glob => \*STDOUT,
-    );
-    p %sample;
-}
-
 sub _print_and_return {
     my ($item, $dump, $p) = @_;
 
@@ -1834,11 +1818,10 @@ You can check you L<dip>'s own documentation for more information and options.
 
 =head2 Sample output for color fine-tuning
 
-The un-exported function C<sample()> is available to quickly test
-color schemes.  It can be be used from within a script, or directly
-from the shell:
+I<< (contributed by Yanick Champoux (yanick)) >>
 
-    $ perl -MData::Printer -eData::Printer::sample
+The "examples/try_me.pl" file included in this distribution has a sample
+dump with a complex data structure to let you quickly test color schemes.
 
 
 =head1 BUGS
@@ -1938,6 +1921,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Torsten Raudssus (Getty)
 
 =item * Wesley Dal`Col (blabos)
+
+=item * Yanick Champoux (yanick)
 
 =back
 
