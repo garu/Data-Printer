@@ -102,7 +102,7 @@ Create your filter module:
 
       return $ref->some_method;   # or whatever
 
-      # see L</HELPER FUNCTIONS> below for
+      # see 'HELPER FUNCTIONS' below for
       # customization options, including
       # proper indentation.
   }
