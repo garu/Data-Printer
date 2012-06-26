@@ -1,7 +1,7 @@
 package Data::Printer::Filter;
 use strict;
 use warnings;
-use Clone qw(clone);
+use Clone::PP qw(clone);
 require Data::Printer;
 
 my %_filters_for = ();
