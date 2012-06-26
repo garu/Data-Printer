@@ -597,9 +597,8 @@ sub _class {
     my $ref = ref $item;
 
     # if the user specified a method to use instead, we do that
-    if ( $p->{class_method} and $item->can($p->{class_method}) ) {
-        my $method = $p->{class_method};
-        return $item->$method;
+    if ( $p->{class_method} and my $method = $item->can($p->{class_method}) ) {
+        return $method->($item, $p);
     }
 
     my $string = '';
