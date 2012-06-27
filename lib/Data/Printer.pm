@@ -24,7 +24,6 @@ BEGIN {
 
 # defaults
 my $BREAK = "\n";
-my $COMMA = ',';
 my $properties = {
     'name'           => 'var',
     'indent'         => 4,
@@ -34,13 +33,14 @@ my $properties = {
     'sort_keys'      => 1,
     'deparse'        => 0,
     'hash_separator' => '   ',
+    'separator'      => ',',
+    'end_separator'  => '',
     'show_tied'      => 1,
     'show_tainted'   => 1,
     'show_weak'      => 1,
     #'escape_chars'   => 1, ### <== DEPRECATED!!!
     'print_escapes'  => 0,
     'quote_keys'     => 'auto',
-    'end_comma'      => 0,
     'use_prototypes' => 1,
     'output'         => 'stderr',
     'return_value'   => 'dump',       # also 'void' or 'pass'
@@ -91,7 +91,6 @@ my $properties = {
     _output          => *STDERR,     # used internally
     _current_indent  => 0,           # used internally
     _linebreak       => \$BREAK,     # used internally
-    _end_symbol      => '',          # used internally
     _seen            => {},          # used internally
     _depth           => 0,           # used internally
     _tie             => 0,           # used internally
@@ -117,10 +116,6 @@ sub import {
     # and 'use' arguments override the RC file
     if ($args) {
         $properties = _merge( $args );
-    }
-
-    if ($properties->{end_comma}) {
-        $properties->{_end_symbol} = $COMMA;
     }
 
     my $exported = ($properties->{use_prototypes} ? \&p : \&np );
@@ -386,7 +381,7 @@ sub ARRAY {
             $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
                 if $ref and Scalar::Util::isweak($item->[$i]) and $p->{show_weak};
 
-            $string .= ($i == $#{$item} ? $p->{_end_symbol} : $COMMA) . $BREAK;
+            $string .= ($i == $#{$item} ? $p->{end_separator} : $p->{separator}) . $BREAK;
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
         }
@@ -515,7 +510,8 @@ sub HASH {
                   and $p->{show_weak}
                   and Scalar::Util::isweak($item->{$raw_key});
 
-            $string .= (--$total_keys == 0 ? $p->{_end_symbol} : $COMMA) . $BREAK;
+            $string .= (--$total_keys == 0 ? $p->{end_separator} : $p->{separator})
+                    . $BREAK;
 
             my $size = 2 + length($raw_key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
