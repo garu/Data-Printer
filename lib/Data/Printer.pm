@@ -1888,6 +1888,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Fitz Elliott
 
+=item * Ivan Bessarabov (bessarabv)
+
 =item * J Mash
 
 =item * Jesse Luehrs (doy)
