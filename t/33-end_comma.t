@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer end_separator => ',', separator => '--';
+use Data::Printer end_separator => 1, separator => '--';
 
 my $structure = [
     1,
@@ -26,12 +26,13 @@ my $end_comma_output = '\ [
     [2] {
         a           1--
         b           2--
-        long_line   3,
-    },
+        long_line   3--
+    }--
 ]';
 
 is(
     p($structure),
     $end_comma_output,
-    "Got correct structure with end_separator => ',' and separator => '--'",
+    "Got correct structure with end_separator => 1 and separator => '--'",
 );
+

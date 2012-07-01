@@ -34,7 +34,7 @@ my $properties = {
     'deparse'        => 0,
     'hash_separator' => '   ',
     'separator'      => ',',
-    'end_separator'  => '',
+    'end_separator'  => 0,
     'show_tied'      => 1,
     'show_tainted'   => 1,
     'show_weak'      => 1,
@@ -381,7 +381,11 @@ sub ARRAY {
             $string .= ' ' . colored('(weak)', $p->{color}->{'weak'})
                 if $ref and Scalar::Util::isweak($item->[$i]) and $p->{show_weak};
 
-            $string .= ($i == $#{$item} ? $p->{end_separator} : $p->{separator}) . $BREAK;
+            $string .= $p->{separator}
+              if $i < $#{$item} || $p->{end_separator};
+
+            $string .= $BREAK;
+
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
         }
@@ -510,8 +514,10 @@ sub HASH {
                   and $p->{show_weak}
                   and Scalar::Util::isweak($item->{$raw_key});
 
-            $string .= (--$total_keys == 0 ? $p->{end_separator} : $p->{separator})
-                    . $BREAK;
+            $string .= $p->{separator}
+              if --$total_keys > 0 || $p->{end_separator};
+
+            $string .= $BREAK;
 
             my $size = 2 + length($raw_key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
@@ -1228,7 +1234,8 @@ customization options available, as shown below (with default values):
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
-      end_comma      => 0,       # print comma after last element in hash and array.
+      separator      => ',',     # uses ',' to separate array/hash elements
+      end_separator  => 0,       # prints the separator after last element in array/hash.
                                  # the default is 0 that means not to print
 
       caller_info    => 0,       # include information on what's being printed
