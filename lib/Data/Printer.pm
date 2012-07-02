@@ -931,7 +931,7 @@ sub _load_rc_file {
         if( ${^TAINT} != 0 ) {
             if ( $args->{allow_tainted} ) {
                 warn "WARNING: Reading tainted file '$file' due to user override.\n";
-                $rc_data =~ /(.+)/; # very bad idea - god help you
+                $rc_data =~ /(.+)/s; # very bad idea - god help you
                 $rc_data = $1;
             }
             else {
