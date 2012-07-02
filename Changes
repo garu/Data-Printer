@@ -1,6 +1,31 @@
 Revision history for Data-Printer
 
+0.30_01   2012-07-02
+    CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
+        - linear_isa option is now set to 'auto' by default (see below)
+
     NEW FEATURES:
+        - linear_isa can now be set to 'auto', in which case
+          it will show the @ISA only if the object has more than
+          one parent. Other values are 0 (never show) and 1 (always show)
+        - new "Digest" filter bundle, for MD5, SHA and other Digest objects!
+        - separate colours for classes and methods (feature request
+          by Ivan Bessarabov)
+        - environment variable DATAPRINTERRC overrides .dataprinter
+          and lets you pick different RCs at will (Stephen Thirlwall)
+        - new option 'separator' lets you pick a custom separator
+          for array/hash elements, including none (''). Default is ','.
+        - new option 'end_separator' can be set to 1 to show the last
+          item of an array or hash with a separator (Ivan Bessarabov)
+        - DateTime filter bundle now also handles DateTime::TimeZone
+          objects (RT#77755)
+
+    BUG FIXES:
+        - RC file now works under taint mode, with restrictions
+          (feature request by Rob Hoelz)
+        - class_method call now includes properties hashref (Joel Berger)
+
+    OTHER:
         - Replacement of dependencies to permit pure perl operation:
             Class::MOP is replaced with mro and Package::Stash
             Clone is replaced with Clone::PP
@@ -9,6 +34,9 @@ Revision history for Data-Printer
             MRO::Compat to provide mro
             Hash::Util::FieldHash::Compat to provide Hash::Util::FieldHash
           As a result, Data::Printer should now be fatpackable (cpan:MSTROUT)
+        - new /examples dir, with a sample file to let you easily try
+          different color schemes (Yanick Champoux)
+        - pod coverage tests (developer only)
 
 0.30    2012-02-13
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
@@ -28,6 +56,7 @@ Revision history for Data-Printer
         - new 'quote_keys' property to add quotes in hash
           keys. Defaults to 'auto' which means it will
           quote keys containing spaces (and empty keys)
+
     BUG FIXES:
         - fixed temporary file handling during tests. Thanks
           Andy Bach for reporting and providing a patch.
