@@ -69,6 +69,22 @@ SKIP: {
 };
 
 SKIP: {
+    eval 'use DateTime::TimeZone';
+    skip 'DateTime::TimeZone not available', 2 if $@;
+
+    my $d = DateTime::TimeZone->new( name => 'America/Sao_Paulo' );
+    is( p($d), 'America/Sao_Paulo', 'DateTime::TimeZone' );
+    my @list = ($d, { foo => 1 });
+    is( p(@list), '[
+    [0] America/Sao_Paulo,
+    [1] this is a hash
+]', 'inline and class filters together (DateTime::TimeZone)'
+    );
+};
+
+
+
+SKIP: {
     eval 'use DateTime::Incomplete';
     skip 'DateTime::Incomplete not available', 2 if $@;
 

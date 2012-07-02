@@ -17,6 +17,18 @@ filter 'DateTime', sub {
     return _format( $string, @_ );
 };
 
+# DateTime::TimeZone filters
+filter '-class' => sub {
+    my ($obj, $properties) = @_;
+
+    if ( $obj->isa('DateTime::TimeZone' ) ) {
+        return $obj->name;
+    }
+    else {
+        return;
+    }
+};
+
 filter 'DateTime::Incomplete', sub {
     return _format( $_[0]->iso8601, @_ );
 };
