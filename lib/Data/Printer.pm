@@ -1923,6 +1923,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Przemysław Wesołek (jest)
 
+=item * Rob Hoelz (hoelzro)
+
 =item * Sebastian Willing (Sewi)
 
 =item * Sergey Aleynikov (randir)
