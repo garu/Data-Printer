@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.30_02   2012-07-02
+    BUG FIXES:
+        - RC file under taint mode should be properly parsed now.
+
+    OTHER:
+        - Rob Hoeltz and Stephen Thirlwall added to the
+          contributors list. Thanks guys!
+
 0.30_01   2012-07-02
     CHANGES THAT BREAK BACKWARDS COMPATIBILITY:
         - linear_isa option is now set to 'auto' by default (see below)
