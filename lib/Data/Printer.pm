@@ -1927,6 +1927,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Sergey Aleynikov (randir)
 
+=item * Stephen Thirlwall (sdt)
+
 =item * sugyan
 
 =item * Tatsuhiko Miyagawa (miyagawa)
