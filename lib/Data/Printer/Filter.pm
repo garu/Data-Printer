@@ -105,7 +105,7 @@ Create your filter module:
       # see 'HELPER FUNCTIONS' below for
       # customization options, including
       # proper indentation.
-  }
+  };
 
   1;
 
