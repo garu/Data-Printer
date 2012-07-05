@@ -67,6 +67,7 @@ my $properties = {
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
+        universal    => 1,
         parents      => 1,
         linear_isa   => 'auto',
         expand       => 1,        # how many levels to expand. 0 for none, 'all' for all
@@ -737,7 +738,8 @@ sub _show_methods {
 
 METHOD:
     foreach my $method (
-        map $methods_of->($_), @{mro::get_linear_isa($ref)}, 'UNIVERSAL'
+        map $methods_of->($_), @{mro::get_linear_isa($ref)},
+                               $p->{class}{universal} ? 'UNIVERSAL' : ()
     ) {
         my ($package_string, $method_string) = @$method;
 
@@ -1252,6 +1254,8 @@ customization options available, as shown below (with default values):
 
           inherited  => 'none',  # show inherited methods,
                                  # can also be 'all', 'private', or 'public'.
+
+          universal  => 1,       # include UNIVERSAL methods in inheritance list
 
           parents    => 1,       # show parents, if there are any
           linear_isa => 'auto',  # show the entire @ISA, linearized, whenever

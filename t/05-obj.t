@@ -44,10 +44,6 @@ package main;
 use Test::More;
 use Data::Printer;
 
-my $old_MOP = 0;
-eval 'use Class::MOP 2.0300';
-$old_MOP = 1 if $@;
-
 my $obj = Foo->new;
 
 is( p($obj), 'Foo  {
@@ -125,29 +121,42 @@ is( p($obj, class => { inherited => 0 }), 'Foo  {
     }
 }', 'testing objects (inherited => 0)' );
 
-my $public = $old_MOP
-           ? 'public methods (5) : bar (Bar), baz, borg, foo, new'
-           : 'public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)'
-           ;
 
 is( p($obj, class => { inherited => 'all' }), "Foo  {
     Parents       Bar
-    $public
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
     private methods (2) : _moo (Bar), _other
     internals: {
         test   42
     }
 }", 'testing objects (inherited => "all")' );
 
+is( p($obj, class => { inherited => 'all', universal => 0 }), "Foo  {
+    Parents       Bar
+    public methods (5) : bar (Bar), baz, borg, foo, new
+    private methods (2) : _moo (Bar), _other
+    internals: {
+        test   42
+    }
+}", 'testing objects (inherited => "all", universal => 0)' );
 
 is( p($obj, class => { inherited => 'public' }), "Foo  {
     Parents       Bar
-    $public
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
     private methods (1) : _other
     internals: {
         test   42
     }
 }", 'testing objects (inherited => "public")' );
+
+is( p($obj, class => { inherited => 'public', universal => 0 }), "Foo  {
+    Parents       Bar
+    public methods (5) : bar (Bar), baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}", 'testing objects (inherited => "public", universal => 0)' );
 
 is( p($obj, class => { inherited => 'private' }), 'Foo  {
     Parents       Bar
