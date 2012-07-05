@@ -13,6 +13,7 @@ my %options = (
         'Test::More'      => 0.88,
         'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
         'Scalar::Util'    => 0,
+        'version'         => 0.77, # handling VSTRINGS
         'Sort::Naturally' => 0,
         'Package::Stash'  => 0.30,
         'Carp'            => 0,
