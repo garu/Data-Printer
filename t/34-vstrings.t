@@ -13,7 +13,7 @@ BEGIN {
 
 my $scalar = v1.2.3;
 eval {
-    like( p($scalar), qr/^VSTRING/, "VSTRINGs" );
+    is( p($scalar), 'v1.2.3', "VSTRINGs" );
 };
 if ($@) {
     fail( "VSTRINGs" );

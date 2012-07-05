@@ -11,6 +11,7 @@ use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
 use Fcntl;
+use version 0.77 ();
 
 our $VERSION = '0.30_01';
 
@@ -59,6 +60,7 @@ my $properties = {
         'regex'       => 'yellow',
         'code'        => 'green',
         'glob'        => 'bright_cyan',
+        'vstring'     => 'bright_blue',
         'repeated'    => 'white on_red',
         'caller_info' => 'bright_cyan',
         'weak'        => 'cyan',
@@ -78,14 +80,15 @@ my $properties = {
         _depth       => 0,        # used internally
     },
     'filters' => {
-        SCALAR => [ \&SCALAR ],
-        ARRAY  => [ \&ARRAY  ],
-        HASH   => [ \&HASH   ],
-        REF    => [ \&REF    ],
-        CODE   => [ \&CODE   ],
-        GLOB   => [ \&GLOB   ],
-        Regexp => [ \&Regexp ],
-        -class => [ \&_class ],
+        SCALAR => [ \&SCALAR  ],
+        ARRAY  => [ \&ARRAY   ],
+        HASH   => [ \&HASH    ],
+        REF    => [ \&REF     ],
+        CODE   => [ \&CODE    ],
+        GLOB   => [ \&GLOB    ],
+        VSTRING=> [ \&VSTRING ],
+        Regexp => [ \&Regexp  ],
+        -class => [ \&_class  ],
     },
 
     _output          => *STDERR,     # used internally
@@ -160,7 +163,7 @@ sub _print_and_return {
         elsif ($ref eq 'HASH') {
             return %{ $item };
         }
-        elsif ( grep { $ref eq $_ } qw(REF SCALAR CODE Regexp GLOB) ) {
+        elsif ( grep { $ref eq $_ } qw(REF SCALAR CODE Regexp GLOB VSTRING) ) {
             return $$item;
         }
         else {
@@ -550,6 +553,13 @@ sub Regexp {
     else {
         croak "Unrecognized regex $val. Please submit a bug report for Data::Printer.";
     }
+    return $string;
+}
+
+sub VSTRING {
+    my ($item, $p) = @_;
+    my $string = '';
+    $string .= colored(version->declare($$item)->normal, $p->{color}->{'vstring'});
     return $string;
 }
 
