@@ -606,7 +606,7 @@ sub _class {
     my $ref = ref $item;
 
     # if the user specified a method to use instead, we do that
-    if ( $p->{class_method} and my $method = $item->can($p->{class_method}) ) {
+    if ( $p->{class_method} and Scalar::Util::blessed($item) and my $method = $item->can($p->{class_method}) ) {
         return $method->($item, $p);
     }
 
