@@ -99,6 +99,7 @@ or, in your C<.dataprinter> file:
   {
     filters => {
       -external => [ 'DB' ],
+    },
   };
 
 
