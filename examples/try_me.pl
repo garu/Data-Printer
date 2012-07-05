@@ -26,7 +26,7 @@ my %sample = (
     foo => 'bar',
     baz => 789,
   },
-  regexp => qr/foo.*bar/,
+  regexp => qr/foo.*bar/i,
   glob   => \*STDOUT,
   code   => sub { return 42 },
   class  => $obj,
