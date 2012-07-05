@@ -38,6 +38,7 @@ my $properties = {
     'show_tied'      => 1,
     'show_tainted'   => 1,
     'show_weak'      => 1,
+    'show_readonly'  => 0,
     #'escape_chars'   => 1, ### <== DEPRECATED!!!
     'print_escapes'  => 0,
     'quote_keys'     => 'auto',
@@ -303,6 +304,10 @@ sub SCALAR {
         if $p->{show_tainted} and Scalar::Util::tainted($$item);
 
     $p->{_tie} = ref tied $$item;
+
+    if ($p->{show_readonly} and &Internals::SvREADONLY( $item )) {
+        $string .= ' (read-only)';
+    }
 
     return $string;
 }
