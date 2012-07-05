@@ -1,5 +1,22 @@
 Revision history for Data-Printer
 
+0.30_03   2012-07-05
+    NEW FEATURES:
+        - new class property 'universal', letting you choose whether
+          to include UNIVERSAL methods during inheritance display
+          or not (default is 1, meaning to show).
+        - support for VSTRINGs (Rebecca Turner)
+
+    NEW ***EXPERIMENTAL*** FEATURES:
+        - new 'show_readonly' property, off by default, to show
+          variables marked as read-only
+          (scalars only for now, patches welcome!)
+
+    BUG FIXES:
+        - fixed issue with t/05-obj.t
+        - minor pod fixes (Rebecca Turner, myself)
+        - Protect against unknown core data types that don't implement "can" (Rebecca Turner)
+
 0.30_02   2012-07-02
     BUG FIXES:
         - RC file under taint mode should be properly parsed now.
