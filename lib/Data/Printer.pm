@@ -67,6 +67,7 @@ my $properties = {
         'weak'        => 'cyan',
         'tainted'     => 'red',
         'escaped'     => 'bright_red',
+        'unknown'     => 'bright_yellow on_blue',
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
@@ -82,15 +83,16 @@ my $properties = {
         _depth       => 0,        # used internally
     },
     'filters' => {
-        SCALAR => [ \&SCALAR  ],
-        ARRAY  => [ \&ARRAY   ],
-        HASH   => [ \&HASH    ],
-        REF    => [ \&REF     ],
-        CODE   => [ \&CODE    ],
-        GLOB   => [ \&GLOB    ],
-        VSTRING=> [ \&VSTRING ],
-        Regexp => [ \&Regexp  ],
-        -class => [ \&_class  ],
+        SCALAR  => [ \&SCALAR ],
+        ARRAY   => [ \&ARRAY  ],
+        HASH    => [ \&HASH   ],
+        REF     => [ \&REF    ],
+        CODE    => [ \&CODE   ],
+        GLOB    => [ \&GLOB   ],
+        VSTRING => [ \&VSTRING ],
+        Regexp  => [ \&Regexp ],
+        -unknown=> [ \&_unknown ],
+        -class  => [ \&_class ],
     },
 
     _output          => *STDERR,     # used internally
@@ -264,9 +266,21 @@ sub _p {
         }
     }
 
-    if (not $found) {
+    if (Scalar::Util::blessed($item) and not $found) {
         # let '-class' filters have a go
         foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
+            if ( defined (my $result = $filter->($item, $p)) ) {
+                $string .= $result;
+                $found = 1;
+                last;
+            }
+        }
+    }
+    
+    if ( not $found ) {
+        # if it's not a class and not a known core type, we must be in
+        # a future perl with some type we're unaware of
+        foreach my $filter ( @{ $p->{filters}->{'-unknown'} } ) {
             if ( defined (my $result = $filter->($item, $p)) ) {
                 $string .= $result;
                 last;
@@ -617,12 +631,21 @@ sub GLOB {
 }
 
 
+sub _unknown {
+    my($item, $p) = @_;
+    my $ref = ref $item;
+    
+    my $string = '';
+    $string = colored($ref, $p->{color}->{'unknown'});
+    return $string;
+}
+
 sub _class {
     my ($item, $p) = @_;
     my $ref = ref $item;
 
     # if the user specified a method to use instead, we do that
-    if ( $p->{class_method} and Scalar::Util::blessed($item) and my $method = $item->can($p->{class_method}) ) {
+    if ( $p->{class_method} and my $method = $item->can($p->{class_method}) ) {
         return $method->($item, $p);
     }
 
