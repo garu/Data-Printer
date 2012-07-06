@@ -3,6 +3,7 @@ use warnings;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
@@ -50,5 +51,11 @@ is( p($code),
 
 };
 
+is( p($scalar, class => { show_reftype => 1 } ),
+   'FooScalar (SCALAR)  {
+    public methods (2) : foo, new
+    private methods (0)
+    internals: 42
+}', 'testing blessed scalar with reftype' );
 
 done_testing;

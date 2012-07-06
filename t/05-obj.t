@@ -3,6 +3,7 @@ use warnings;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
@@ -24,6 +25,21 @@ sub _other { }
 
 1;
 
+package Baz;
+sub bar { 42 }
+
+1;
+
+package Meep;
+our @ISA = qw(Foo Baz);
+
+1;
+
+package ParentLess;
+sub new    { bless {}, shift }
+
+1;
+
 package main;
 use Test::More;
 use Data::Printer;
@@ -32,7 +48,6 @@ my $obj = Foo->new;
 
 is( p($obj), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
@@ -40,8 +55,17 @@ is( p($obj), 'Foo  {
     }
 }', 'testing objects' );
 
-is( p($obj, class => { parents => 0 }), 'Foo  {
+is( p($obj, class => { linear_isa => 1 }), 'Foo  {
+    Parents       Bar
     Linear @ISA   Foo, Bar
+    public methods (4) : baz, borg, foo, new
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}', 'testing objects, forcing linear @ISA' );
+
+is( p($obj, class => { parents => 0 }), 'Foo  {
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
@@ -49,18 +73,8 @@ is( p($obj, class => { parents => 0 }), 'Foo  {
     }
 }', 'testing objects (parents => 0)' );
 
-is( p($obj, class => { linear_isa => 0 }), 'Foo  {
-    Parents       Bar
-    public methods (4) : baz, borg, foo, new
-    private methods (1) : _other
-    internals: {
-        test   42
-    }
-}', 'testing objects (linear_isa => 0)' );
-
 is( p($obj, class => { show_methods => 'none' }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     internals: {
         test   42
     }
@@ -68,7 +82,6 @@ is( p($obj, class => { show_methods => 'none' }), 'Foo  {
 
 is( p($obj, class => { show_methods => 'public' }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     internals: {
         test   42
@@ -77,7 +90,6 @@ is( p($obj, class => { show_methods => 'public' }), 'Foo  {
 
 is( p($obj, class => { show_methods => 'private' }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     private methods (1) : _other
     internals: {
         test   42
@@ -86,7 +98,6 @@ is( p($obj, class => { show_methods => 'private' }), 'Foo  {
 
 is( p($obj, class => { show_methods => 'all' }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
@@ -97,14 +108,12 @@ is( p($obj, class => { show_methods => 'all' }), 'Foo  {
 is( p($obj, class => { internals => 0 } ), 
 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
 }', 'testing objects (no internals)' );
 
 is( p($obj, class => { inherited => 0 }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
@@ -113,29 +122,44 @@ is( p($obj, class => { inherited => 0 }), 'Foo  {
 }', 'testing objects (inherited => 0)' );
 
 
-is( p($obj, class => { inherited => 'all' }), 'Foo  {
+is( p($obj, class => { inherited => 'all' }), "Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
+    private methods (2) : _moo (Bar), _other
+    internals: {
+        test   42
+    }
+}", 'testing objects (inherited => "all")' );
+
+is( p($obj, class => { inherited => 'all', universal => 0 }), "Foo  {
+    Parents       Bar
     public methods (5) : bar (Bar), baz, borg, foo, new
     private methods (2) : _moo (Bar), _other
     internals: {
         test   42
     }
-}', 'testing objects (inherited => "all")' );
+}", 'testing objects (inherited => "all", universal => 0)' );
 
-is( p($obj, class => { inherited => 'public' }), 'Foo  {
+is( p($obj, class => { inherited => 'public' }), "Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
+    private methods (1) : _other
+    internals: {
+        test   42
+    }
+}", 'testing objects (inherited => "public")' );
+
+is( p($obj, class => { inherited => 'public', universal => 0 }), "Foo  {
+    Parents       Bar
     public methods (5) : bar (Bar), baz, borg, foo, new
     private methods (1) : _other
     internals: {
         test   42
     }
-}', 'testing objects (inherited => "public")' );
+}", 'testing objects (inherited => "public", universal => 0)' );
 
 is( p($obj, class => { inherited => 'private' }), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (2) : _moo (Bar), _other
     internals: {
@@ -150,7 +174,6 @@ $obj->borg( Foo->new );
 
 is( p($obj), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
@@ -161,13 +184,11 @@ is( p($obj), 'Foo  {
 
 is( p($obj, class => { expand => 'all'} ), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar
     public methods (4) : baz, borg, foo, new
     private methods (1) : _other
     internals: {
         borg   Foo  {
             Parents       Bar
-            Linear @ISA   Foo, Bar
             public methods (4) : baz, borg, foo, new
             private methods (1) : _other
             internals: {
@@ -178,6 +199,42 @@ is( p($obj, class => { expand => 'all'} ), 'Foo  {
     }
 }', 'testing nested objects with expansion' );
 
+my $obj_with_isa = Meep->new;
 
+is( p($obj_with_isa), 'Meep  {
+    Parents       Foo, Baz
+    Linear @ISA   Meep, Foo, Bar, Baz
+    public methods (0)
+    private methods (0)
+    internals: {
+        test   42
+    }
+}', 'testing objects with @ISA' );
+
+is( p($obj_with_isa, class => { linear_isa => 0 }), 'Meep  {
+    Parents       Foo, Baz
+    public methods (0)
+    private methods (0)
+    internals: {
+        test   42
+    }
+}', 'testing objects with @ISA, opting out the @ISA' );
+
+is( p($obj_with_isa, class => { linear_isa => 0 }), 'Meep  {
+    Parents       Foo, Baz
+    public methods (0)
+    private methods (0)
+    internals: {
+        test   42
+    }
+}', 'testing objects with @ISA' );
+
+my $parentless = ParentLess->new;
+
+is( p($parentless), 'ParentLess  {
+    public methods (1) : new
+    private methods (0)
+    internals: {}
+}', 'testing parentless object' );
 
 done_testing;

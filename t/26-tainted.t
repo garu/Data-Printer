@@ -14,6 +14,7 @@ BEGIN {
         unless tainted($path);
 
     delete $ENV{ANSI_COLORS_DISABLED};
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
     use_ok ('Data::Printer', colored => 1);

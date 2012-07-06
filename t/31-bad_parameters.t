@@ -8,14 +8,10 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer { alias => 'Dumper' };
+eval 'use Data::Printer 0.1';
+ok !$@, 'could load with version number';
 
-my $scalar = 'test';
-is( Dumper($scalar), '"test"', 'aliasing p()' );
-
-eval {
-    p( $scalar );
-};
-ok($@, 'aliased Data::Printer does not export p()');
+eval 'use Data::Printer qw(meep)';
+like $@, qr/either a hash/, 'croaked with proper error message';
 
 done_testing;

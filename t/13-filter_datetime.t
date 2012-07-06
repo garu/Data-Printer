@@ -6,6 +6,7 @@ my $has_timepiece;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
 
     # Time::Piece is only able to overload
@@ -66,6 +67,22 @@ SKIP: {
 ]', 'inline and class filters together (DateTime)'
     );
 };
+
+SKIP: {
+    eval 'use DateTime::TimeZone';
+    skip 'DateTime::TimeZone not available', 2 if $@;
+
+    my $d = DateTime::TimeZone->new( name => 'America/Sao_Paulo' );
+    is( p($d), 'America/Sao_Paulo', 'DateTime::TimeZone' );
+    my @list = ($d, { foo => 1 });
+    is( p(@list), '[
+    [0] America/Sao_Paulo,
+    [1] this is a hash
+]', 'inline and class filters together (DateTime::TimeZone)'
+    );
+};
+
+
 
 SKIP: {
     eval 'use DateTime::Incomplete';

@@ -1,7 +1,7 @@
 package Data::Printer::Filter;
 use strict;
 use warnings;
-use Clone qw(clone);
+use Clone::PP qw(clone);
 require Data::Printer;
 
 my %_filters_for = ();
@@ -102,10 +102,10 @@ Create your filter module:
 
       return $ref->some_method;   # or whatever
 
-      # see L</HELPER FUNCTIONS> below for
+      # see 'HELPER FUNCTIONS' below for
       # customization options, including
       # proper indentation.
-  }
+  };
 
   1;
 
@@ -264,6 +264,12 @@ far only DBI is covered, but more to come!
 L<Data::Printer::Filter::DateTime> pretty-prints several date
 and time objects (not just DateTime) for you on the fly, including
 duration/delta objects!
+
+=head2 URIs
+
+L<Data::Printer::Filter::URI> filters through several L<URI> manipulation
+classes and displays the URI as a colored string. A very nice addition
+by Stanislaw Pusep (SYP).
 
 =head1 USING MORE THAN ONE FILTER FOR THE SAME TYPE/CLASS
 

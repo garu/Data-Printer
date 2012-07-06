@@ -14,6 +14,7 @@ package main;
 use Test::More;
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 

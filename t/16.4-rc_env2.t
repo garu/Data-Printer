@@ -5,7 +5,6 @@ use Test::More;
 my $file;
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
-    delete $ENV{DATAPRINTERRC};
     use_ok ('Term::ANSIColor');
     use_ok ('File::HomeDir::Test');
     use_ok ('File::HomeDir');
@@ -13,24 +12,25 @@ BEGIN {
 
     $file = File::Spec->catfile(
             File::HomeDir->my_home,
-            '.dataprinter'
+            '.customrc'
     );
 
     if (-e $file) {
-        plan skip_all => 'File .dataprinter should not be in test homedir';
+        plan skip_all => 'File .customrc should not be in test homedir';
     }
     umask 0022;
     open my $fh, '>', $file
-        or plan skip_all => "error opening .dataprinter: $!";
+        or plan skip_all => "error opening .customrc: $!";
 
     print {$fh} '{ colored => 1, color => { hash => "red" }, hash_separator => "  +  "}'
-        or plan skip_all => "error writing to .dataprinter: $!";
+        or plan skip_all => "error writing to .customrc: $!";
 
     close $fh;
 
-    # file created and in place, let's load up our
-    # module and see if it overrides the default conf
-    # with our .dataprinter RC file
+    $ENV{DATAPRINTERRC} = $file;
+
+    # file created and in place, check that the explicit configuration below
+    # overrides the custom rc file
     use_ok ('Data::Printer', {
                 color => {
                     hash => 'blue'
@@ -42,11 +42,11 @@ BEGIN {
 
 my %hash = ( key => 'value' );
 
-is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('reset') . "{$/    "
+is( p(%hash), color('reset') . "{$/    "
               . colored('key', 'blue')
               . '  *  '
               . colored('"value"', 'bright_yellow')
               . "$/}"
-, 'global configuration overrides our rc file');
+, 'global configuration overrides our custom rc file');
 
 done_testing;
