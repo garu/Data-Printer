@@ -266,7 +266,7 @@ sub _p {
         }
     }
 
-    if (Scalar::Util::blessed($item) and not $found) {
+    if (not $found and Scalar::Util::blessed($item) ) {
         # let '-class' filters have a go
         foreach my $filter ( @{ $p->{filters}->{'-class'} } ) {
             if ( defined (my $result = $filter->($item, $p)) ) {
