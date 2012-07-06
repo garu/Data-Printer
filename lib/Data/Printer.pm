@@ -83,16 +83,16 @@ my $properties = {
         _depth       => 0,        # used internally
     },
     'filters' => {
-        SCALAR  => [ \&SCALAR ],
-        ARRAY   => [ \&ARRAY  ],
-        HASH    => [ \&HASH   ],
-        REF     => [ \&REF    ],
-        CODE    => [ \&CODE   ],
-        GLOB    => [ \&GLOB   ],
-        VSTRING => [ \&VSTRING ],
-        Regexp  => [ \&Regexp ],
+        SCALAR  => [ \&SCALAR   ],
+        ARRAY   => [ \&ARRAY    ],
+        HASH    => [ \&HASH     ],
+        REF     => [ \&REF      ],
+        CODE    => [ \&CODE     ],
+        GLOB    => [ \&GLOB     ],
+        VSTRING => [ \&VSTRING  ],
+        Regexp  => [ \&Regexp   ],
         -unknown=> [ \&_unknown ],
-        -class  => [ \&_class ],
+        -class  => [ \&_class   ],
     },
 
     _output          => *STDERR,     # used internally
