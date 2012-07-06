@@ -1,7 +1,7 @@
 package Data::Printer;
 use strict;
 use warnings;
-use Term::ANSIColor qw(color colored colorstrip);
+use Term::ANSIColor qw(color colored);
 use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
@@ -505,7 +505,7 @@ sub HASH {
 
             # length of the largest key is used for indenting
             if ($multiline) {
-                my $l = length colorstrip($colored);
+                my $l = length $colored;
                 $len = $l if $l > $len;
             }
         }
