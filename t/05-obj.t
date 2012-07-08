@@ -121,10 +121,11 @@ is( p($obj, class => { inherited => 0 }), 'Foo  {
     }
 }', 'testing objects (inherited => 0)' );
 
+my $extra_field = ( $] < 5.010 ) ? ' ' : ' DOES (UNIVERSAL)';
 
 is( p($obj, class => { inherited => 'all' }), "Foo  {
     Parents       Bar
-    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL),$extra_field, foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
     private methods (2) : _moo (Bar), _other
     internals: {
         test   42
@@ -142,7 +143,7 @@ is( p($obj, class => { inherited => 'all', universal => 0 }), "Foo  {
 
 is( p($obj, class => { inherited => 'public' }), "Foo  {
     Parents       Bar
-    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
+    public methods (9) : bar (Bar), baz, borg, can (UNIVERSAL),$extra_field, foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
     private methods (1) : _other
     internals: {
         test   42
