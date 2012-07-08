@@ -847,11 +847,12 @@ sub _merge {
         foreach my $key (keys %$p) {
             if ($key eq 'color' or $key eq 'colour') {
                 my $color = $p->{$key};
-                if (defined $color and not $color) {
+                if ( not ref $color or ref $color ne 'HASH' ) {
+                    Carp::carp q['color' should be a HASH reference. Did you mean 'colored'?];
                     $clone->{color} = {};
                 }
                 else {
-                    foreach my $target ( keys %{$p->{$key}} ) {
+                    foreach my $target ( keys %$color ) {
                         $clone->{color}->{$target} = $p->{$key}->{$target};
                     }
                 }
