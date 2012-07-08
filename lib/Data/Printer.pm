@@ -1211,11 +1211,15 @@ Note that both spellings ('color' and 'colour') will work.
         regex       => 'yellow',        # regular expressions
         code        => 'green',         # code references
         glob        => 'bright_cyan',   # globs (usually file handles)
+        vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
         repeated    => 'white on_red',  # references to seen values
         caller_info => 'bright_cyan',   # details on what's being printed
         weak        => 'cyan',          # weak references
         tainted     => 'red',           # tainted content
         escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
+
+        # potential new Perl datatypes, unknown to Data::Printer
+        unknown     => 'bright_yellow on_blue',
      },
    };
 
@@ -1271,6 +1275,7 @@ customization options available, as shown below (with default values):
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
+      show_readonly  => 0,       # expose scalar variables marked as read-only
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
