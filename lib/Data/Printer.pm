@@ -1973,6 +1973,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Sergey Aleynikov (randir)
 
+=item * Stanislaw Pusep (syp)
+
 =item * Stephen Thirlwall (sdt)
 
 =item * sugyan
