@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.30_04   2012-07-08
+    NEW FEATURES:
+        - Improved support for unknown core datatypes (Rebecca Turner)
+
+    BUG FIXES:
+        - fixed indentation when using colored output (Stanislaw Pusep)
+        - fixed t/05-obj.t on older perls (Mike Doherty)
+        - fixed dev-only pod tests
+        - Issue warning (carp) when color/colour is not a hashref
+
 0.30_03   2012-07-05
     NEW FEATURES:
         - new class property 'universal', letting you choose whether
