@@ -62,6 +62,8 @@ my $properties = {
         'code'        => 'green',
         'glob'        => 'bright_cyan',
         'vstring'     => 'bright_blue',
+        'lvalue'      => 'bright_white',
+        'format'      => 'bright_cyan',
         'repeated'    => 'white on_red',
         'caller_info' => 'bright_cyan',
         'weak'        => 'cyan',
@@ -83,6 +85,9 @@ my $properties = {
         _depth       => 0,        # used internally
     },
     'filters' => {
+        # The IO ref type isn't supported as you can't actually create one,
+        # any handle you make is automatically blessed into an IO::* object,
+        # and those are separately handled.
         SCALAR  => [ \&SCALAR   ],
         ARRAY   => [ \&ARRAY    ],
         HASH    => [ \&HASH     ],
@@ -90,6 +95,8 @@ my $properties = {
         CODE    => [ \&CODE     ],
         GLOB    => [ \&GLOB     ],
         VSTRING => [ \&VSTRING  ],
+        LVALUE  => [ \&LVALUE ],
+        FORMAT  => [ \&FORMAT ],
         Regexp  => [ \&Regexp   ],
         -unknown=> [ \&_unknown ],
         -class  => [ \&_class   ],
@@ -583,6 +590,21 @@ sub VSTRING {
     return $string;
 }
 
+sub FORMAT {
+    my ($item, $p) = @_;
+    my $string = '';
+    $string .= colored("FORMAT", $p->{color}->{'format'});
+    return $string;
+}
+
+sub LVALUE {
+    my ($item, $p) = @_;
+    my $string = '';
+    $string .= colored("LVALUE", $p->{color}->{'format'});
+    $string .= "  ";
+    $string .= SCALAR( $item, $p );
+    return $string;
+}
 
 sub GLOB {
     my ($item, $p) = @_;
