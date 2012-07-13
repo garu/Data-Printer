@@ -596,7 +596,7 @@ sub GLOB {
     # implement some of these flags (maybe not even
     # fcntl() itself, so we must wrap it.
     my $flags;
-    eval { $flags = fcntl($$item, F_GETFL, 0) };
+    eval { no warnings qw( unopened closed ); $flags = fcntl($$item, F_GETFL, 0) };
     if ($flags) {
         $extra .= ($flags & O_WRONLY) ? 'write-only'
                 : ($flags & O_RDWR)   ? 'read/write'
