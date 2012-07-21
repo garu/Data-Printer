@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.30_05   2012-07-21
+    NEW FEATURES:
+        - Add support for FORMAT and LVALUE refs (Rebecca Turner)
+
+    BUG FIXES:
+        - prevent warning when dumping refs to unopened or closed
+          file handles (Rebecca Turner)
+        - on Win32, it is allowed to use an RC file without
+          read-only permissions
+
 0.30_04   2012-07-08
     NEW FEATURES:
         - Improved support for unknown core datatypes (Rebecca Turner)
