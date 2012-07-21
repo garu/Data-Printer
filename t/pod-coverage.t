@@ -9,5 +9,5 @@ plan skip_all => 'set TEST_POD to enable this test (developer only!)'
   unless $ENV{TEST_POD};
 
 all_pod_coverage_ok({
-  also_private => [ qr/^(?:ARRAY|CODE|GLOB|HASH|REF|VSTRING|Regexp)$/, qr/^np$/ ],
+  also_private => [ qr/^(?:ARRAY|CODE|GLOB|HASH|REF|VSTRING|Regexp|FORMAT|LVALUE)$/, qr/^np$/ ],
 });
