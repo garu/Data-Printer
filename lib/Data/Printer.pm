@@ -631,7 +631,7 @@ sub GLOB {
         # Solaris, for example, doesn't have O_ASYNC :(
         my %flags = ();
         eval { $flags{'append'}      = O_APPEND   };
-        eval { $flags{'async'}       = O_ASYNC    };
+        eval { $flags{'async'}       = O_ASYNC    }; # leont says this is the only one I should care for.
         eval { $flags{'create'}      = O_CREAT    };
         eval { $flags{'truncate'}    = O_TRUNC    };
         eval { $flags{'nonblocking'} = O_NONBLOCK };
@@ -642,7 +642,7 @@ sub GLOB {
         $extra .= ', ';
     }
     my @layers = ();
-    eval { @layers = PerlIO::get_layers $$item };
+    eval { @layers = PerlIO::get_layers $$item }; # TODO: try PerlIO::Layers::get_layers (leont)
     unless ($@) {
         $extra .= "layers: @layers";
     }
