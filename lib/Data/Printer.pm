@@ -972,7 +972,7 @@ sub _load_rc_file {
     return unless -e $file;
 
     my $mode = (stat $file )[2];
-    if ($mode & 0020 || $mode & 0002) {
+    if ($^O !~ /Win32/i && ($mode & 0020 || $mode & 0002) ) {
         warn "rc file '$file' must NOT be writeable to other users. Skipping.\n";
         return;
     }
@@ -1516,7 +1516,7 @@ user id that ran the script using Data::Printer);
 
 =item * The file B<must> be read-only for everyone but your user.
 This usually means permissions C<0644>, C<0640> or C<0600> in
-Unix-like systems;
+Unix-like systems. B<THIS IS NOT CHECKED IN WIN32>;
 
 =item * The file will B<NOT> be loaded in Taint mode, unless
 you specifically load Data::Printer with the 'allow_tainted'
