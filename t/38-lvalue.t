@@ -14,7 +14,8 @@ BEGIN {
 my $scalar = \substr( "abc", 2);
 my $test_name = "LVALUE refs";
 eval {
-    is( p($scalar), 'LVALUE  "c"', $test_name );
+    is( p($scalar), '"c" (LVALUE)', $test_name );
+    is( p($scalar, show_lvalue => 0), '"c"', 'disabled ' . $test_name );
 };
 if ($@) {
     fail( $test_name );

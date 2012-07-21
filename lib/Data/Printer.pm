@@ -40,6 +40,7 @@ my $properties = {
     'show_tainted'   => 1,
     'show_weak'      => 1,
     'show_readonly'  => 0,
+    'show_lvalue'    => 1,
     #'escape_chars'   => 1, ### <== DEPRECATED!!!
     'print_escapes'  => 0,
     'quote_keys'     => 'auto',
@@ -599,10 +600,10 @@ sub FORMAT {
 
 sub LVALUE {
     my ($item, $p) = @_;
-    my $string = '';
-    $string .= colored("LVALUE", $p->{color}->{'format'});
-    $string .= "  ";
-    $string .= SCALAR( $item, $p );
+    my $string = SCALAR( $item, $p );
+    $string .= colored( ' (LVALUE)', $p->{color}{lvalue} )
+        if $p->{show_lvalue};
+
     return $string;
 }
 
@@ -1299,6 +1300,7 @@ customization options available, as shown below (with default values):
       show_tainted   => 1,       # expose tainted variables
       show_weak      => 1,       # expose weak references
       show_readonly  => 0,       # expose scalar variables marked as read-only
+      show_lvalue    => 1,       # expose lvalue types
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
