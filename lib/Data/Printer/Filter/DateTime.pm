@@ -45,6 +45,10 @@ filter 'DateTime::Duration', sub {
     return _format( $string, @_ );
 };
 
+filter 'DateTime::Tiny', sub {
+    return _format( $_[0]->as_string, @_ );
+};
+
 filter 'Date::Calc::Object', sub {
     return _format( $_[0]->string(2), @_ );
 };

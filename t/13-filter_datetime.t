@@ -51,7 +51,7 @@ SKIP: {
 
 SKIP: {
     eval 'use DateTime';
-    skip 'DateTime not available', 3 if $@;
+    skip 'DateTime not available', 4 if $@;
 
     my $d1 = DateTime->new( year => 1981, month =>  9, day => 29 );
     my $d2 = DateTime->new( year => 1984, month => 11, day => 15 );
@@ -82,8 +82,6 @@ SKIP: {
     );
 };
 
-
-
 SKIP: {
     eval 'use DateTime::Incomplete';
     skip 'DateTime::Incomplete not available', 2 if $@;
@@ -95,6 +93,20 @@ SKIP: {
     [0] 2003-xx-xxTxx:xx:xx,
     [1] this is a hash
 ]', 'inline and class filters together (DateTime::Incomplete)'
+    );
+};
+
+SKIP: {
+    eval 'use DateTime::Tiny';
+    skip 'DateTime::Tiny not available', 2 if $@;
+
+    my $d = DateTime::Tiny->new( year => 2003, month => 3, day => 11 );
+    is( p($d), '2003-03-11T00:00:00', 'DateTime::Tiny' );
+    my @list = ($d, { foo => 1 });
+    is( p(@list), '[
+    [0] 2003-03-11T00:00:00,
+    [1] this is a hash
+]', 'inline and class filters together (DateTime::Tiny)'
     );
 };
 
