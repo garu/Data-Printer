@@ -1844,6 +1844,27 @@ In the example above, the C<$html_output> variable contains the
 HTML escaped output of C<p($object)>, so you can print it for
 later inspection or render it (if it's a web app).
 
+=head2 Using Data::Printer with Template Toolkit
+
+I<< (contributed by Stephen Thirlwall (sdt)) >>
+
+If you use Template Toolkit and want to dump your variables using Data::Printer,
+install the L<Template::Plugin::DataPrinter> module and load it in your template:
+
+   [% USE DataPrinter %]
+
+The provided methods match those of C<Template::Plugin::Dumper>:
+
+   ansi-colored dump of the data structure in "myvar":
+   [% DataPrinter.dump( myvar ) %]
+
+   html-formatted, colored dump of the same data structure:
+   [% DataPrinter.dump_html( myvar ) %]
+
+The module allows several customization options, even letting you load it as a
+complete drop-in replacement for Template::Plugin::Dumper so you don't even have
+to change your previous templates!
+
 =head2 Unified interface for Data::Printer and other debug formatters
 
 I<< (contributed by Kevin McGrath (catlgrep)) >>
