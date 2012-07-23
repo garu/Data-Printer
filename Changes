@@ -1,5 +1,12 @@
 Revision history for Data-Printer
 
+0.30_06   2012-07-22
+    NEW FEATURES:
+        - new filter for DateTime::Tiny
+
+    OTHER:
+        - new tip: using DDP with Template Toolkit
+
 0.30_05   2012-07-21
     NEW FEATURES:
         - Add support for FORMAT and LVALUE refs (Rebecca Turner)
