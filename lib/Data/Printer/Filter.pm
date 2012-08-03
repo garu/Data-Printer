@@ -2,6 +2,7 @@ package Data::Printer::Filter;
 use strict;
 use warnings;
 use Clone::PP qw(clone);
+require Carp;
 require Data::Printer;
 
 my %_filters_for = ();
@@ -14,6 +15,9 @@ sub import {
 
     my $filter = sub {
         my ($type, $code) = @_;
+
+        Carp::croak "syntax: filter 'Class', sub { ... }"
+          unless $type and $code and ref $code eq 'CODE';
 
         unshift @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $p) = @_;
