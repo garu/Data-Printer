@@ -52,7 +52,6 @@ sub import {
 
     my $imported = sub (\[@$%&];%) {
         my ($item, $p) = @_;
-        require Data::Printer;
         return Data::Printer::p( $item, %properties );
     };
 
