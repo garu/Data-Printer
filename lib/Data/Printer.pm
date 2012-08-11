@@ -107,6 +107,7 @@ my $properties = {
     _current_indent  => 0,           # used internally
     _linebreak       => \$BREAK,     # used internally
     _seen            => {},          # used internally
+    _seen_override   => {},          # used internally
     _depth           => 0,           # used internally
     _tie             => 0,           # used internally
 };
@@ -252,7 +253,8 @@ sub _p {
             return colored($p->{_seen}->{$id}, $p->{color}->{repeated});
         }
     }
-    else {
+    # some filters don't want us to show their repeated refs
+    elsif( !exists $p->{_seen_override}{$ref} ) {
         $p->{_seen}->{$id} = $p->{name};
     }
 
@@ -903,8 +905,12 @@ sub _merge {
                             }
                             else {
                                 my %from_module = %{$module->_filter_list};
+                                my %extras      = %{$module->_extra_options};
+
                                 foreach my $k (keys %from_module) {
                                     unshift @{ $clone->{filters}->{$k} }, @{ $from_module{$k} };
+                                    $clone->{_seen_override}{$k} = 1
+                                        if $extras{$k}{show_repeated};
                                 }
                             }
                         }

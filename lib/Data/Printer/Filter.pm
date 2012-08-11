@@ -5,7 +5,8 @@ use Clone::PP qw(clone);
 require Carp;
 require Data::Printer;
 
-my %_filters_for = ();
+my %_filters_for   = ();
+my %_extras_for    = ();
 
 sub import {
     my $caller = caller;
@@ -14,10 +15,20 @@ sub import {
     my %properties = ();
 
     my $filter = sub {
-        my ($type, $code) = @_;
+        my ($type, $code, $extra) = @_;
 
         Carp::croak "syntax: filter 'Class', sub { ... }"
           unless $type and $code and ref $code eq 'CODE';
+
+        if ($extra) {
+            Carp::croak 'extra filter field must be a hashref'
+                unless ref $extra and ref $extra eq 'HASH';
+
+            $_extras_for{$id}{$type} = $extra;
+        }
+        else {
+            $_extras_for{$id}{$type} = {};
+        }
 
         unshift @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $p) = @_;
@@ -32,6 +43,10 @@ sub import {
 
     my $filters = sub {
         return $_filters_for{$id};
+    };
+
+    my $extras = sub {
+        return $_extras_for{$id};
     };
 
     my $newline = sub {
@@ -64,7 +79,8 @@ sub import {
 
         *{"$caller\::p"} = $imported;
 
-        *{"$caller\::_filter_list"} = $filters;
+        *{"$caller\::_filter_list"}   = $filters;
+        *{"$caller\::_extra_options"} = $extras;
     }
 };
 
