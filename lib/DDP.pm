@@ -10,7 +10,9 @@ BEGIN {
 1;
 __END__
 
-=head1 DDP - Data::Printer shortcut for faster debugging
+=head1 NAME
+
+DDP - Data::Printer shortcut for faster debugging
 
 =head1 SYNOPSIS
 
