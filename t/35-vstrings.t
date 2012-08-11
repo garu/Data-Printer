@@ -11,6 +11,7 @@ BEGIN {
 
 }
 
+plan skip_all => 'Older perls do not have VSTRING support' if $] < 5.010;
 my $scalar = v1.2.3;
 eval {
     is( p($scalar), 'v1.2.3', "VSTRINGs" );
