@@ -13,7 +13,7 @@ use File::HomeDir ();
 use Fcntl;
 use version 0.77 ();
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
