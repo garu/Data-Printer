@@ -17,11 +17,11 @@ sub import {
     my $filter = sub {
         my ($type, $code, $extra) = @_;
 
-        Carp::croak "syntax: filter 'Class', sub { ... }"
+        Carp::croak( "syntax: filter 'Class', sub { ... }" )
           unless $type and $code and ref $code eq 'CODE';
 
         if ($extra) {
-            Carp::croak 'extra filter field must be a hashref'
+            Carp::croak( 'extra filter field must be a hashref' )
                 unless ref $extra and ref $extra eq 'HASH';
 
             $_extras_for{$id}{$type} = $extra;
