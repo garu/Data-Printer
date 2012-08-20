@@ -300,6 +300,7 @@ sub _p {
 
     if ($p->{show_tied} and $p->{_tie} ) {
         $string .= ' (tied to ' . $p->{_tie} . ')';
+        $p->{_tie} = '';
     }
 
     return $string;
