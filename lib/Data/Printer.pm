@@ -41,7 +41,6 @@ my $properties = {
     'show_weak'      => 1,
     'show_readonly'  => 0,
     'show_lvalue'    => 1,
-    #'escape_chars'   => 1, ### <== DEPRECATED!!!
     'print_escapes'  => 0,
     'quote_keys'     => 'auto',
     'use_prototypes' => 1,
@@ -346,13 +345,7 @@ sub _escape_chars {
     $orig_color   = color( $orig_color );
     my $esc_color = color( $p->{color}{escaped} );
 
-    my $escape_chars = 1;
-    if (exists $p->{escape_chars}) {
-        Carp::carp q('escape_chars' is deprecated!);
-        $escape_chars = $p->{escape_chars};
-    }
-
-    if ($p->{print_escapes} || !$escape_chars) {
+    if ($p->{print_escapes}) {
         my %escaped = (
             "\n" => $esc_color . '\n' . $orig_color,
             "\r" => $esc_color . '\r' . $orig_color,
@@ -1350,16 +1343,6 @@ customization options available, as shown below (with default values):
   };
 
 Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
-
-=head3 WARNING: C<escape_chars> is **deprecated**:
-
-In versions 0.28 and 0.29 there was a property called 'escape_chars' that
-was replaced by 'print_escapes' to avoid ambiguity. The old name was
-confusing because 'escape' could be interpreted as a noun or as an adjective.
-
-It will still work until version 0.32, but wil trigger a warning so you
-can update your code and/or RC file. Please use 'print_escapes' instead. Thanks!
-
 
 =head1 FILTERS
 
