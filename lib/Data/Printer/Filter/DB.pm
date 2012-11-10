@@ -69,8 +69,27 @@ filter '-class' => sub {
         return ref($obj) . ' DBIC Schema with ' . p( $obj->storage->dbh );
     }
     elsif ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
-        return colored( ref($obj), $properties->{color}{class} )
-             . ' (' . colored( $obj->as_query, 'bright_yellow' ) . ')';
+
+        my $str = colored( ref($obj), $properties->{color}{class} );
+        $str .= ' (' . $obj->result_class . ')'
+          if $obj->can( 'result_class' );
+
+        if (my $query_data = $obj->as_query) {
+          my @query_data = @$$query_data;
+          indent;
+          my $sql = shift @query_data;
+          $str .= ' {'
+               . newline . colored($sql, 'bright_yellow')
+               . newline . join ( newline, map {
+                      $_->[1] . ' (' . $_->[0]{sqlt_datatype} . ')'
+                    } @query_data
+               )
+               ;
+          outdent;
+          $str .= newline . '}';
+        }
+
+        return $str;
     }
     else {
         return;
