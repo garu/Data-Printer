@@ -1917,6 +1917,43 @@ I<< (contributed by Yanick Champoux (yanick)) >>
 The "examples/try_me.pl" file included in this distribution has a sample
 dump with a complex data structure to let you quickly test color schemes.
 
+=head2 creating fiddling filters
+
+I<< (contributed by dirk) >>
+
+Sometimes, you may want to take advantage of Data::Printer's original dump,
+but add/change some of the original data to enhance your debugging ability.
+Say, for example, you have an C<HTTP::Response> object you want to print
+but the content is encoded. The basic approach, of course, would be to
+just dump the decoded content:
+
+  use DDP filter {
+    'HTTP::Response' => sub { p( \shift->decoded_content, %{shift} );
+  };
+
+But what if you want to see the rest of the original object? Dumping it
+would be a no-go, because you would just recurse forever in your own filter.
+
+Never fear! When you create a filter in Data::Printer, you're not replacing
+the original one, you're just stacking yours on top of it. To forward your data
+to the original filter, all you have to do is return an undefined value. This
+means you can rewrite your C<HTTP::Response> filter like so, if you want:
+
+  use DDP filters => {
+    'HTTP::Response' => sub {
+      my ($res, $p) = @_;
+
+      # been here before? Switch to original handler
+      return if exists $res->{decoded_content};
+
+      # first timer? Come on in!
+      my $clone = $res->clone;
+      $clone->{decoded_content} = $clone->decoded_content;
+      return p($clone, %$p);
+    }
+  };
+
+And voilà! Your fiddling filter now works like a charm :)
 
 =head1 BUGS
 
