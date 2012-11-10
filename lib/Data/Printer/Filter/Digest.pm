@@ -4,36 +4,39 @@ use warnings;
 use Data::Printer::Filter;
 use Term::ANSIColor;
 
-foreach my $digest (
-    qw( Digest::Adler32   Digest::MD2       Digest::MD4
-        Digest::MD5       Digest::SHA       Digest::SHA1
-        Digest::Whirlpool Digest::Haval256
-    )
-) {
-    filter $digest, sub {
-        my ($obj, $p) = @_;
-        my $digest = $obj->clone->hexdigest;
-        my $str = $digest;
-        my $ref = ref $obj;
+foreach my $digest ( qw( Digest::MD2 Digest::MD4 Digest::Haval256)) {
+    filter $digest => \&_print_digest;
+}
 
-        if ( $p->{digest}{show_class_name} ) {
-            $str .= " ($ref)";
-        }
+filter '-class', sub {
+  my ($obj, $p) = @_;
+  return unless $obj->isa( 'Digest::base' );
+  return _print_digest( $obj, $p );
+};
 
-        unless ( exists  $p->{digest}{show_reset}
-                    and !$p->{digest}{show_reset}
-         ) {
-           if ($digest eq $ref->new->hexdigest) {
-               $str .= ' [reset]';
-           }
-        }
 
-        my $color = $p->{color}{digest};
-        $color = 'bright_green' unless defined $color;
+sub _print_digest {
+  my ($obj, $p) = @_;
+  my $digest = $obj->clone->hexdigest;
+  my $str = $digest;
+  my $ref = ref $obj;
 
-        return colored( $str, $color );
+  if ( $p->{digest}{show_class_name} ) {
+      $str .= " ($ref)";
+  }
 
-    };
+  unless ( exists  $p->{digest}{show_reset}
+              and !$p->{digest}{show_reset}
+   ) {
+     if ($digest eq $ref->new->hexdigest) {
+         $str .= ' [reset]';
+     }
+  }
+
+  my $color = $p->{color}{digest};
+  $color = 'bright_green' unless defined $color;
+
+  return colored( $str, $color );
 }
 
 1;
