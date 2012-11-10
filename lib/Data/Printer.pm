@@ -324,7 +324,7 @@ sub SCALAR {
     else {
         my $val = _escape_chars($$item, $p->{color}{string}, $p);
 
-        $string .= qq["] . colored($val, $p->{color}->{'string'}) . qq["];
+        $string .= q["] . colored($val, $p->{color}->{'string'}) . q["];
     }
 
     $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
