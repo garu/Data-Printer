@@ -284,6 +284,29 @@ L<Data::Printer::Filter::DateTime> pretty-prints several date
 and time objects (not just DateTime) for you on the fly, including
 duration/delta objects!
 
+=head2 Digest
+
+L<Data::Printer::Filter::Digest> displays a string containing the
+hash of the actual message digest instead of the object. Works on
+C<Digest::MD5>, C<Digest::SHA>, any digest class that inherits from
+C<Digest::base> and some others that implement their own thing!
+
+=head2 ClassicRegex
+
+L<Data::Printer::Filter::ClassicRegex> changes the way Data::Printer
+dumps regular expressions, doing it the classic C<qr//> way that got
+popular in C<Data::Dumper>.
+
+=head2 URI
+
+L<Data::Printer::Filter::URI> pretty-prints L<URI> objects, displaying
+the URI as a string instead of dumping the object.
+
+=head2 JSON
+
+L<Data::Printer::Filter::JSON> lets you see your JSON structures
+replacing boolean objects with simple C<true/false> strings!
+
 =head2 URIs
 
 L<Data::Printer::Filter::URI> filters through several L<URI> manipulation
