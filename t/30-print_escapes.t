@@ -64,11 +64,11 @@ foreach my $item (@stuff) {
     is(
         p( $item->{original} ),
           color('reset')
+        . '"'
         . color('bright_yellow')
-        . '"'
         . $colored
-        . '"'
-        . color('reset'),
+        . color('reset')
+        . '"',
         'testing escape sequence for ' . $item->{unescaped}
     );
 }
@@ -76,11 +76,11 @@ foreach my $item (@stuff) {
 is(
     p( $mixed->{original} ),
        color('reset')
+     . '"'
      . color('bright_yellow')
-     . '"'
      . $mixed->{colored}
-     . '"'
-     . color('reset'),
+     . color('reset')
+     . '"',
      'testing escape sequence for ' . $mixed->{unescaped}
 );
 

@@ -40,7 +40,7 @@ my %hash = ( key => 'value' );
 is( p(%hash), color('reset') . "{$/    "
               . colored('key', 'red')
               . '  +  '
-              . colored('"value"', 'bright_yellow')
+              . q["] . colored('value', 'bright_yellow') . q["]
               . "$/}"
    , 'hash keys are now red'
 );
@@ -48,7 +48,7 @@ is( p(%hash), color('reset') . "{$/    "
 is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('reset') . "{$/    "
               . colored('key', 'blue')
               . '  *  '
-              . colored('"value"', 'bright_yellow')
+              . q["] . colored('value', 'bright_yellow') . q["]
               . "$/}"
 , 'local configuration overrides our rc file');
 

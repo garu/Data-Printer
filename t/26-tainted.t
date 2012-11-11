@@ -22,7 +22,7 @@ BEGIN {
 
 is(
     p($path),
-    color('reset') . colored(qq{"$path"}, 'bright_yellow')
+    color('reset') . q["] . colored($path, 'bright_yellow') . q["]
                    . ' ' . colored('(TAINTED)', 'red'),
     'tainted scalar'
 );

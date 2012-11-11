@@ -54,14 +54,14 @@ my %hash = ( key => 'value' );
 is( p(%hash), color('reset') . "{$/    "
               . colored('key', 'green')
               . '  %  '
-              . colored('"value"', 'bright_yellow')
+              . q["] . colored('value', 'bright_yellow') . q["]
               . "$/}"
 , 'custom rc file overrides standard rc file');
 
 is( p(%hash, color => { hash => 'blue' }, hash_separator => '  *  ' ), color('reset') . "{$/    "
               . colored('key', 'blue')
               . '  *  '
-              . colored('"value"', 'bright_yellow')
+              . q["] . colored('value', 'bright_yellow') . q["]
               . "$/}"
 , 'in-code configuration overrides custom rc file');
 

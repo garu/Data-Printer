@@ -14,7 +14,7 @@ my $number = 3.14;
 is( p($number), color('reset') . colored($number, 'bright_blue'), 'colored number');
 
 my $string = 'test';
-is( p($string), color('reset') . colored('"test"', 'bright_yellow'), 'colored string');
+is( p($string), color('reset') . q["] . colored('test', 'bright_yellow') . q["], 'colored string');
 
 my $undef = undef;
 is( p($undef), color('reset') . colored('undef', 'bright_red'), 'colored undef');

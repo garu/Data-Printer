@@ -55,7 +55,7 @@ my %hash = ( key => 'value' );
 is( p(%hash), color('reset') . "{$/    "
               . colored('key', 'red')
               . '  +  '
-              . colored('"value"', 'bright_yellow')
+              . q["] . colored('value', 'bright_yellow') . q["]
               . "$/}"
 , 'custom configuration overrides standard rc file');
 
