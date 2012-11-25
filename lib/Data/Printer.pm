@@ -346,6 +346,8 @@ sub _escape_chars {
     my $esc_color = color( $p->{color}{escaped} );
 
     if ($p->{print_escapes}) {
+        $str =~ s/\e/$esc_color\\e$orig_color/g;
+
         my %escaped = (
             "\n" => $esc_color . '\n' . $orig_color,
             "\r" => $esc_color . '\r' . $orig_color,
@@ -353,7 +355,6 @@ sub _escape_chars {
             "\f" => $esc_color . '\f' . $orig_color,
             "\b" => $esc_color . '\b' . $orig_color,
             "\a" => $esc_color . '\a' . $orig_color,
-            "\e" => $esc_color . '\e' . $orig_color,
         );
         foreach my $k ( keys %escaped ) {
             my $esc = $escaped{$k};
