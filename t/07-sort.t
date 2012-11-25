@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-package Moo;
+package MyClass;
 sub bbb  { };
 sub new  { bless {}, shift }
 sub aaa  { };
@@ -21,7 +21,7 @@ BEGIN {
 use Data::Printer {
     'sort_keys' => 0,
     'class'     => {
-        'sort_methods' => 0,
+        'sort_methods' => 1,
     },
 };
 
@@ -44,23 +44,23 @@ $string .= '}';
 is( p($data), $string, 'sort_keys => 0' );
 
 
-my $obj = Moo->new;
+my $obj = MyClass->new;
 
 my $res = p($obj);
 ok( $res =~ m/public methods \(3\) : (.+)/,
     'found public methods'
 );
 my $method_list = $1;
-isnt($method_list, 'aaa, bbb, new',
-     'unordered public methods'
+is($method_list, 'aaa, bbb, new',
+     'ordered public methods'
 );
 
 ok( $res =~ m/private methods \(3\) : (.+)/,
     'found private methods'
 );
 $method_list = $1;
-isnt($method_list, '_ccc, _ddd, _zzz',
-     'unordered private methods'
+is($method_list, '_ccc, _ddd, _zzz',
+   'ordered private methods'
 );
 
 
