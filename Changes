@@ -1,5 +1,12 @@
 Revision history for Data-Printer
 
+0.35  2012-11-25
+    BUG FIXES:
+        - fixed escaped chars colorization issue in bleadperl
+          (thanks Andreas Koenig for reporting!)
+    OTHER:
+        - more tests added
+
 0.34  2012-11-11
     NEW FEATURES:
         - improved display of DBIC ResultSets
