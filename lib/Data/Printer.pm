@@ -349,21 +349,19 @@ sub _escape_chars {
         $str =~ s/\e/$esc_color\\e$orig_color/g;
 
         my %escaped = (
-            "\n" => $esc_color . '\n' . $orig_color,
-            "\r" => $esc_color . '\r' . $orig_color,
-            "\t" => $esc_color . '\t' . $orig_color,
-            "\f" => $esc_color . '\f' . $orig_color,
-            "\b" => $esc_color . '\b' . $orig_color,
-            "\a" => $esc_color . '\a' . $orig_color,
+            "\n" => '\n',
+            "\r" => '\r',
+            "\t" => '\t',
+            "\f" => '\f',
+            "\b" => '\b',
+            "\a" => '\a',
         );
         foreach my $k ( keys %escaped ) {
-            my $esc = $escaped{$k};
-            $str =~ s/$k/$esc/g;
+            $str =~ s/$k/$esc_color$escaped{$k}$orig_color/g;
         }
     }
     # always escape the null character
-    my $null = $esc_color . '\0' . $orig_color;
-    $str =~ s/\0/$null/g;
+    $str =~ s/\0/$esc_color\\0$orig_color/g;
 
     return $str;
 }
