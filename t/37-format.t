@@ -7,9 +7,10 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 
     use Test::More;
-    use Data::Printer;
 
 }
+
+use Data::Printer;
 
 format TEST =
 .
