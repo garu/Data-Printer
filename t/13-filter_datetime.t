@@ -111,6 +111,20 @@ SKIP: {
 };
 
 SKIP: {
+    eval 'use Class::Date';
+    skip 'Class::Date not available', 2 if $@;
+
+    my $d = Class::Date::date({ year => 2003, month => 3, day => 11 }, 'GMT');
+    is( p($d), '2003-03-11 00:00:00 [GMT]', 'Class::Date' );
+    my @list = ($d, { foo => 1 });
+    is( p(@list), '[
+    [0] 2003-03-11 00:00:00 [GMT],
+    [1] this is a hash
+]', 'inline and class filters together (Class::Date)'
+    );
+};
+
+SKIP: {
     eval 'use Date::Calc::Object';
     skip 'Date::Calc::Object not available', 2 if $@;
 
