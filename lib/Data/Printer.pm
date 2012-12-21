@@ -355,6 +355,8 @@ sub _escape_chars {
                . $orig_color
     }
 
+    $str =~ s/\e/$esc_color\\e$orig_color/g if $p->{print_escapes};
+
     if ($p->{escape_chars} eq "nonascii") {
         $str =~ s<([^\x{00}-\x{7f}]+)><
           $esc_color . (sprintf '\x{%02x}', ord $1) . $orig_color
@@ -366,8 +368,6 @@ sub _escape_chars {
     }
 
     if ($p->{print_escapes}) {
-        $str =~ s/\e/$esc_color\\e$orig_color/g;
-
         my %escaped = (
             "\n" => '\n',
             "\r" => '\r',

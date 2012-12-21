@@ -10,10 +10,12 @@ BEGIN {
     use_ok (
         'Data::Printer',
             colored      => 1,
+            print_escapes => 1,
     );
 };
 
 my $string = "L\x{e9}on likes to build a \x{2603}";
+my %hash   = ( $string => $string );
 
 sub col($) {
     return color('bright_red') . '\\x{' . shift . '}' . color('bright_yellow');
@@ -41,6 +43,7 @@ is(
 use_ok (
     'Data::Printer',
         colored      => 1,
+        print_escapes => 1,
         escape_chars => "nonascii",
 );
 
@@ -56,6 +59,7 @@ is(
 use_ok (
     'Data::Printer',
         colored      => 1,
+        print_escapes => 1,
         escape_chars => "nonlatin1",
 );
 
@@ -70,6 +74,7 @@ is(
 use_ok (
     'Data::Printer',
         colored      => 1,
+        print_escapes => 1,
         escape_chars => "all",
 );
 
