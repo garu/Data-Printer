@@ -42,6 +42,7 @@ my $properties = {
     'show_readonly'  => 0,
     'show_lvalue'    => 1,
     'print_escapes'  => 0,
+    'escape_chars'   => 'none',
     'quote_keys'     => 'auto',
     'use_prototypes' => 1,
     'output'         => 'stderr',
@@ -344,6 +345,25 @@ sub _escape_chars {
 
     $orig_color   = color( $orig_color );
     my $esc_color = color( $p->{color}{escaped} );
+
+    # if we're escaping everything then we don't need to keep swapping
+    # colors in and out, and we need to return right away because
+    # we no longer need to print_escapes
+    if ($p->{escape_chars} eq "all") {
+        return $esc_color
+               . join('',map { sprintf '\x{%02x}', ord $_ } split //, $str)
+               . $orig_color
+    }
+
+    if ($p->{escape_chars} eq "nonascii") {
+        $str =~ s<([^\x{00}-\x{7f}]+)><
+          $esc_color . (sprintf '\x{%02x}', ord $1) . $orig_color
+        >ge;
+    } elsif ($p->{escape_chars} eq "nonlatin1") {
+        $str =~ s<([^\x{00}-\x{ff}]+)><
+          $esc_color . (sprintf '\x{%02x}', ord $1) . $orig_color
+        >ge;
+    }
 
     if ($p->{print_escapes}) {
         $str =~ s/\e/$esc_color\\e$orig_color/g;
@@ -1301,6 +1321,8 @@ customization options available, as shown below (with default values):
       show_readonly  => 0,       # expose scalar variables marked as read-only
       show_lvalue    => 1,       # expose lvalue types
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
+      escape_chars   => 'none',  # escape chars into \x{...} form.  Values are
+                                 # "none", "nonascii", "nonlatin1", "all"
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
       separator      => ',',     # uses ',' to separate array/hash elements
@@ -2033,6 +2055,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Kip Hampton (ubu)
 
 =item * Marcel Grünauer (hanekomu)
+
+=item * Mark Fowler (Trelane)
 
 =item * Matt S. Trout (mst)
 
