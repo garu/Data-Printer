@@ -359,11 +359,14 @@ sub _escape_chars {
 
     if ($p->{escape_chars} eq "nonascii") {
         $str =~ s<([^\x{00}-\x{7f}]+)><
-          $esc_color . (sprintf '\x{%02x}', ord $1) . $orig_color
+          $esc_color
+          . (join "", map { sprintf '\x{%02x}', ord $_ } split //, $1)
+          . $orig_color
         >ge;
     } elsif ($p->{escape_chars} eq "nonlatin1") {
         $str =~ s<([^\x{00}-\x{ff}]+)><
-          $esc_color . (sprintf '\x{%02x}', ord $1) . $orig_color
+          $esc_color
+          . (join "", map { sprintf '\x{%02x}', ord $_ } split //, $1) . $orig_color
         >ge;
     }
 

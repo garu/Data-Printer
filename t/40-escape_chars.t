@@ -14,11 +14,14 @@ BEGIN {
     );
 };
 
-my $string = "L\x{e9}on likes to build a \x{2603}";
+my $string = "L\x{e9}on likes to build a m\x{f8}\x{f8}se \x{2603} with \x{2744}\x{2746}";
 my %hash   = ( $string => $string );
 
-sub col($) {
-    return color('bright_red') . '\\x{' . shift . '}' . color('bright_yellow');
+sub col(@) {
+    my $return = color('bright_red');
+    $return .= '\\x{' . shift . '}' while @_;
+    $return .= color('bright_yellow');
+    return $return;
 }
 
 sub str($) {
@@ -50,7 +53,7 @@ use_ok (
 
 is(
     p( $string ),
-    str("L" . col("e9") . "on likes to build a " . col("2603")),
+    str "L@{[col 'e9']}on likes to build a m@{[col 'f8','f8']}se @{[col '2603']} with @{[col '2744','2746']}",
     "Testing 'nonascii'"
 );
 
@@ -65,7 +68,7 @@ use_ok (
 
 is(
     p( $string ),
-    str("L\x{e9}on likes to build a " . col("2603")),
+    str "L\x{e9}on likes to build a m\x{f8}\x{f8}se @{[col '2603']} with @{[col '2744','2746']}",
     "Testing 'nonlatin1'"
 );
 
