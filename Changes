@@ -5,6 +5,10 @@ Revision history for Data-Printer
         - Add 'escape_chars' to allow \x{...} printing for chars
           (patch by Mark Fowler)
 
+    BUG FIXES:
+        - fixed crash in esoteric classes (github issue #41, thanks
+          Ivan Bessarabov for reporting)
+
 0.35  2012-11-25
     BUG FIXES:
         - fixed escaped chars colorization issue in bleadperl
