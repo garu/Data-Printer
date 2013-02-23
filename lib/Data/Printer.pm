@@ -714,33 +714,37 @@ sub _class {
         } else {
             require MRO::Compat;
         }
-        require Package::Stash;
 
-        my $stash = Package::Stash->new($ref);
+        # Package::Stash dies on blessed XS
+        eval {
+            require Package::Stash;
 
-        if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
-            if ($p->{class}{parents}) {
-                $string .= (' ' x $p->{_current_indent})
-                        . 'Parents       '
-                        . join(', ', map { colored($_, $p->{color}->{'class'}) }
-                                     @superclasses
-                        ) . $BREAK;
+            my $stash = Package::Stash->new($ref);
+
+            if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
+                if ($p->{class}{parents}) {
+                    $string .= (' ' x $p->{_current_indent})
+                            . 'Parents       '
+                            . join(', ', map { colored($_, $p->{color}->{'class'}) }
+                                         @superclasses
+                            ) . $BREAK;
+                }
+
+                if ( $p->{class}{linear_isa} and
+                      (
+                        ($p->{class}{linear_isa} eq 'auto' and @superclasses > 1)
+                        or
+                        ($p->{class}{linear_isa} ne 'auto')
+                      )
+                ) {
+                    $string .= (' ' x $p->{_current_indent})
+                            . 'Linear @ISA   '
+                            . join(', ', map { colored( $_, $p->{color}->{'class'}) }
+                                      @{mro::get_linear_isa($ref)}
+                            ) . $BREAK;
+                }
             }
-
-            if ( $p->{class}{linear_isa} and
-                  (
-                    ($p->{class}{linear_isa} eq 'auto' and @superclasses > 1)
-                    or
-                    ($p->{class}{linear_isa} ne 'auto')
-                  )
-            ) {
-                $string .= (' ' x $p->{_current_indent})
-                        . 'Linear @ISA   '
-                        . join(', ', map { colored( $_, $p->{color}->{'class'}) }
-                                  @{mro::get_linear_isa($ref)}
-                        ) . $BREAK;
-            }
-        }
+        };
 
         $string .= _show_methods($ref, $p)
             if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
@@ -815,11 +819,16 @@ sub _show_methods {
 
     my %seen_method_name;
 
+    # Package::Stash dies on blessed XS
+    my @all_methods = ();
+    eval {
+        @all_methods = map $methods_of->($_),
+                           @{mro::get_linear_isa($ref)},
+                           $p->{class}{universal} ? 'UNIVERSAL' : ()
+    };
+
 METHOD:
-    foreach my $method (
-        map $methods_of->($_), @{mro::get_linear_isa($ref)},
-                               $p->{class}{universal} ? 'UNIVERSAL' : ()
-    ) {
+    foreach my $method (@all_methods) {
         my ($package_string, $method_string) = @$method;
 
         next METHOD if $seen_method_name{$method_string}++;
