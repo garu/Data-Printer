@@ -349,25 +349,25 @@ sub _escape_chars {
     # if we're escaping everything then we don't need to keep swapping
     # colors in and out, and we need to return right away because
     # we no longer need to print_escapes
-    if ($p->{escape_chars} eq "all") {
+    if ($p->{escape_chars} eq 'all') {
         return $esc_color
-               . join('',map { sprintf '\x{%02x}', ord $_ } split //, $str)
+               . join('', map { sprintf '\x{%02x}', ord $_ } split //, $str)
                . $orig_color
     }
 
     $str =~ s/\e/$esc_color\\e$orig_color/g if $p->{print_escapes};
 
-    if ($p->{escape_chars} eq "nonascii") {
-        $str =~ s<([^\x{00}-\x{7f}]+)><
+    if ($p->{escape_chars} eq 'nonascii') {
+        $str =~ s{([^\x{00}-\x{7f}]+)}{
           $esc_color
-          . (join "", map { sprintf '\x{%02x}', ord $_ } split //, $1)
+          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1)
           . $orig_color
-        >ge;
-    } elsif ($p->{escape_chars} eq "nonlatin1") {
-        $str =~ s<([^\x{00}-\x{ff}]+)><
+        }ge;
+    } elsif ($p->{escape_chars} eq 'nonlatin1') {
+        $str =~ s{([^\x{00}-\x{ff}]+)}{
           $esc_color
-          . (join "", map { sprintf '\x{%02x}', ord $_ } split //, $1) . $orig_color
-        >ge;
+          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1) . $orig_color
+        }ge;
     }
 
     if ($p->{print_escapes}) {
