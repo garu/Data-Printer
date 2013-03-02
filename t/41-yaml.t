@@ -1,6 +1,12 @@
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use Test::More;
+
+BEGIN {
+    $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
+    use File::HomeDir::Test;  # avoid user's .dataprinter
+};
 
 use DDP;
 
