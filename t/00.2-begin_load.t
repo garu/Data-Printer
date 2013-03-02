@@ -1,4 +1,13 @@
+use strict;
+use warnings;
+
 my $res;
+
+BEGIN {
+    $ENV{ANSI_COLORS_DISABLED} = 1;
+    delete $ENV{DATAPRINTERRC};
+    use File::HomeDir::Test;  # avoid user's .dataprinter
+}
 
 BEGIN {
     use Test::More;
