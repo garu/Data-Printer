@@ -897,8 +897,31 @@ sub _merge {
         foreach my $key (keys %$p) {
             if ($key eq 'color' or $key eq 'colour') {
                 my $color = $p->{$key};
-                if ( not ref $color or ref $color ne 'HASH' ) {
-                    Carp::carp q['color' should be a HASH reference. Did you mean 'colored'?];
+                my $color_error = 0;
+
+                if ( not ref $color ) {
+                    if ($color =~ /\A[[:alpha:]_]\w*(?:::\w+)*\z/) {
+                        my $color_theme = "Data::Printer::ColorTheme::$color";
+                        eval "use $color_theme";
+                        if ($@) {
+                            $color_error = 1;
+                        }
+                        else {
+                            eval { $color = $p->{$key} = $color_theme->colors($p) };
+                            croak "'$color_theme' should provide a 'colors' method returning a color hash reference."
+                                if $@ or ref $color ne 'HASH';
+                        }
+                    }
+                    else {
+                        $color_error = 1;
+                    }
+                }
+                elsif ( ref $color ne 'HASH' ) {
+                    $color_error = 1;
+                }
+
+                if ($color_error) {
+                    Carp::carp q['color' should be a HASH reference or a Data::Printer::ColorTheme::* class. Did you mean 'colored'?];
                     $clone->{color} = {};
                 }
                 else {
