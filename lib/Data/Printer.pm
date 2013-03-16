@@ -895,7 +895,11 @@ sub _merge {
 
     if ($p) {
         foreach my $key (keys %$p) {
-            if ($key eq 'color' or $key eq 'colour') {
+            if ($key eq 'as') {
+                $clone->{caller_info} = 1;
+                $clone->{caller_message} = $p->{$key};
+            }
+            elsif ($key eq 'color' or $key eq 'colour') {
                 my $color = $p->{$key};
                 if ( not ref $color or ref $color ne 'HASH' ) {
                     Carp::carp q['color' should be a HASH reference. Did you mean 'colored'?];
