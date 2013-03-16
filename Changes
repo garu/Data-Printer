@@ -9,6 +9,9 @@ Revision history for Data-Printer
     BUG FIXES:
         - fixed crash in esoteric classes (github issue #41, thanks
           Ivan Bessarabov for reporting)
+        - removed support for Digest::Haval256, as it can't really be
+          observed without damaging the original data. If future versions
+          provide a clone() function, it can be added again.
 
     OTHER:
         - more tests

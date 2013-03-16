@@ -4,7 +4,7 @@ use warnings;
 use Data::Printer::Filter;
 use Term::ANSIColor;
 
-foreach my $digest ( qw( Digest::MD2 Digest::MD4 Digest::Haval256)) {
+foreach my $digest ( qw(Digest::MD2 Digest::MD4) ) {
     filter $digest => \&_print_digest;
 }
 
