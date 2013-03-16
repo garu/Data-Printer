@@ -18,6 +18,7 @@ Revision history for Data-Printer
 
     OTHER:
         - more tests
+        - new external filter indexed: PDL
 
 0.35  2012-11-25
     BUG FIXES:
