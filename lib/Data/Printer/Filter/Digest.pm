@@ -102,8 +102,6 @@ hexadecimal format as a string.
 
 =item * L<Digest::Whirlpool>
 
-=item * L<Digest::Haval256>
-
 =back
 
 If you have any suggestions for more modules or better output,
