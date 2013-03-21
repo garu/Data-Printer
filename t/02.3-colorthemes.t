@@ -15,6 +15,6 @@ BEGIN {
 my $number = 42;
 is(
     p($number),
-    color('reset') . colored($number, 'red on_white'),
+    color('reset') . colored($number, 'cyan'),
     'color theme works!'
 );

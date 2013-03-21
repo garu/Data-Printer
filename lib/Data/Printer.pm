@@ -907,7 +907,14 @@ sub _merge {
                             $color_error = 1;
                         }
                         else {
-                            eval { $color = $p->{$key} = $color_theme->colors($p) };
+                            eval {
+                                my $color_theme_object = $color_theme->new;
+                                $color = $p->{$key} = {
+                                    map {
+                                        $_ => $color_theme_object->$_()
+                                    } $color_theme_object->provides
+                                };
+                            };
                             croak "'$color_theme' should provide a 'colors' method returning a color hash reference."
                                 if $@ or ref $color ne 'HASH';
                         }
