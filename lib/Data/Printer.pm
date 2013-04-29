@@ -34,6 +34,7 @@ my $properties = {
     'sort_keys'      => 1,
     'deparse'        => 0,
     'hash_separator' => '   ',
+    'align_hash'     => 1,
     'separator'      => ',',
     'end_separator'  => 0,
     'show_tied'      => 1,
@@ -530,7 +531,7 @@ sub HASH {
             };
 
             # length of the largest key is used for indenting
-            if ($multiline) {
+            if ($multiline and $p->{align_hash}) {
                 my $l = length $colored;
                 $len = $l if $l > $len;
             }
@@ -1325,6 +1326,7 @@ customization options available, as shown below (with default values):
       name           => 'var',   # name to display on cyclic references
       indent         => 4,       # how many spaces in each indent
       hash_separator => '   ',   # what separates keys from values
+      align_hash     => 1,       # align values in hash
       colored        => 'auto',  # colorize output (1 for always, 0 for never)
       index          => 1,       # display array indices
       multiline      => 1,       # display in multiple lines (see note below)
