@@ -320,7 +320,7 @@ sub SCALAR {
     if (not defined $$item) {
         $string .= colored('undef', $p->{color}->{'undef'});
     }
-    elsif (Scalar::Util::looks_like_number($$item)) {
+    elsif (_is_number($$item)) {
         $string .= colored($$item, $p->{color}->{'number'});
     }
     else {
@@ -339,6 +339,30 @@ sub SCALAR {
     }
 
     return $string;
+}
+
+sub _is_number {
+    my ($maybe_a_number) = @_;
+
+    # Scalar values that start from zero is strings, but not numbers.
+    # You can write `my $foo = 0123`, but then `$foo` will be 83,
+    # (numbers starting with zero is octal integers)
+    return '' if $maybe_a_number =~ /^-?0[0-9]/;
+
+    my $is_number = $maybe_a_number =~ m/
+        ^
+        -?          # number can start with minus, but can't start with plus
+                    # is scalar starts with plus it is not number
+
+        [0-9-]+     # then there should be some numbers
+
+        ( \. [0-9]+ )?      # there can be decimal part, which is optional
+
+        ( e [+-] [0-9]+ )?  # then there can be optional exponential notation part
+        $
+    /x;
+
+    return $is_number;
 }
 
 sub _escape_chars {
