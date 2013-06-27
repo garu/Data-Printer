@@ -322,7 +322,7 @@ called in order, until one of them returns a string. This lets
 you have several filters inspecting the same given value until
 one of them decides to actually treat it somehow.
 
-If your filter catched a value and you don't want to treat it,
+If your filter caught a value and you don't want to treat it,
 simply return and the next filter will be called. If there are no
 other filters for that particular class or type available, the
 standard Data::Printer calls will be used.

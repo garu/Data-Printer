@@ -1139,7 +1139,7 @@ how to create filters, and general tips, just keep reading :) >>
 
 Oh, if you are just experimenting and/or don't want to use a
 configuration file, you can set all options during initialization,
-including coloring, identation and filters!
+including coloring, indentation and filters!
 
   use Data::Printer {
       color => {
@@ -1152,7 +1152,7 @@ including coloring, identation and filters!
       },
   };
 
-The first C<{}> block is just syntax sugar, you can safely ommit it
+The first C<{}> block is just syntax sugar, you can safely omit it
 if it makes things easier to read:
 
   use DDP colored => 1;
@@ -1192,7 +1192,7 @@ in a way they are suitable for being C<eval>'ed back in.
 The thing is, a lot of people keep using it (and similar ones,
 like Data::Dump) to print data structures and objects on screen
 for inspection and debugging, and while you B<can> use those
-modules for that, it doesn't mean mean you B<should>.
+modules for that, it doesn't mean you B<should>.
 
 This is where Data::Printer comes in. It is meant to do one thing
 and one thing only:
@@ -1208,7 +1208,7 @@ L<JSON>, or whatever. CPAN is full of such solutions!
 
 Once you load Data::Printer, the C<p()> function will be imported
 into your namespace and available to you. It will pretty-print
-into STDERR (or any other output target) whatever variabe you pass to it.
+into STDERR (or any other output target) whatever variable you pass to it.
 
 =head2 Changing output targets
 
