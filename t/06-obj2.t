@@ -32,7 +32,7 @@ is( p($scalar), 'FooScalar  {
     internals: 42
 }', 'testing blessed scalar' );
 
-is( p($array ), 
+is( p($array ),
 'FooArray  {
     public methods (2) : foo, new
     private methods (0)
@@ -42,7 +42,7 @@ is( p($array ),
 SKIP: {
     skip 'no internals in blessed subs yet', 1;
 
-is( p($code), 
+is( p($code),
 'FooCode  {
     public methods (2) : foo, new
     private methods (0)

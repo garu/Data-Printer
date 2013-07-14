@@ -106,7 +106,7 @@ Create your filter module:
   filter 'SCALAR', sub {
       my ($ref, $properties) = @_;
       my $val = $$ref;
-      
+
       if ($val > 100) {
           return 'too big!!';
       }
@@ -362,5 +362,3 @@ Copyright 2011 Breno G. de Oliveira C<< <garu at cpan.org> >>. All rights reserv
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>.
-
-

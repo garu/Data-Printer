@@ -287,7 +287,7 @@ sub _p {
             }
         }
     }
-    
+
     if ( not $found ) {
         # if it's not a class and not a known core type, we must be in
         # a future perl with some type we're unaware of
@@ -700,7 +700,7 @@ sub GLOB {
 sub _unknown {
     my($item, $p) = @_;
     my $ref = ref $item;
-    
+
     my $string = '';
     $string = colored($ref, $p->{color}->{'unknown'});
     return $string;
@@ -1096,7 +1096,7 @@ Want to see what's inside a variable in a complete, colored
 and human-friendly way?
 
   use Data::Printer;   # or just "use DDP" for short
-  
+
   p @array;            # no need to pass references
 
 Code above might output something like this (with colors!):
@@ -1890,7 +1890,7 @@ To turn Data::Printer's output into HTML, you can do something like:
 
   use HTML::FromANSI;
   use Data::Printer;
-  
+
   my $html_output = ansi2html( p($object, colored => 1) );
 
 In the example above, the C<$html_output> variable contains the
@@ -2170,6 +2170,3 @@ RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
 FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
-
-
-

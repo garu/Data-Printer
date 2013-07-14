@@ -105,7 +105,7 @@ is( p($obj, class => { show_methods => 'all' }), 'Foo  {
     }
 }', 'testing objects (explicitly asking for all methods)' );
 
-is( p($obj, class => { internals => 0 } ), 
+is( p($obj, class => { internals => 0 } ),
 'Foo  {
     Parents       Bar
     public methods (4) : baz, borg, foo, new

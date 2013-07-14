@@ -21,5 +21,3 @@ q{\ {
 }},
   'colored alignment'
 );
-
-

@@ -35,4 +35,3 @@ is(
     $end_comma_output,
     "Got correct structure with end_separator => 1 and separator => '--'",
 );
-

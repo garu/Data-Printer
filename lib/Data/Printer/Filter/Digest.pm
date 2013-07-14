@@ -141,5 +141,3 @@ the hexdigest of a new, empty object of that same class.
 =head1 SEE ALSO
 
 L<Data::Printer>
-
-
