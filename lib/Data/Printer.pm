@@ -39,6 +39,7 @@ my $properties = {
     'end_separator'  => 0,
     'show_tied'      => 1,
     'show_tainted'   => 1,
+    'show_unicode'   => 0,
     'show_weak'      => 1,
     'show_readonly'  => 0,
     'show_lvalue'    => 1,
@@ -70,6 +71,7 @@ my $properties = {
         'caller_info' => 'bright_cyan',
         'weak'        => 'cyan',
         'tainted'     => 'red',
+        'unicode'     => 'bright_yellow',
         'escaped'     => 'bright_red',
         'unknown'     => 'bright_yellow on_blue',
     },
@@ -331,6 +333,9 @@ sub SCALAR {
 
     $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
         if $p->{show_tainted} and Scalar::Util::tainted($$item);
+
+    $string .= ' ' . colored('(U)', $p->{color}->{'unicode'})
+        if $p->{show_unicode} and utf8::is_utf8($$item);
 
     $p->{_tie} = ref tied $$item;
 
