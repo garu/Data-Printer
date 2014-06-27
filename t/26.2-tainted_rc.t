@@ -6,6 +6,7 @@ use Test::More;
 my $file;
 BEGIN {
     delete $ENV{ANSI_COLORS_DISABLED};
+    delete $ENV{DATAPRINTERRC};
     use Term::ANSIColor;
     use File::HomeDir::Test;
     use File::HomeDir;

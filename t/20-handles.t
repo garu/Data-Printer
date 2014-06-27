@@ -6,17 +6,18 @@ BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
     delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
-    use File::HomeDir;
-    use File::Spec;
-    use Test::More;
-    use Fcntl;
+}
 
-    use Data::Printer;
+use File::HomeDir;
+use File::Spec;
+use Test::More;
+use Fcntl;
 
-    $filename = File::Spec->catfile(
-        File::HomeDir->my_home, 'test_file.dat'
-    );
-};
+use Data::Printer;
+
+$filename = File::Spec->catfile(
+    File::HomeDir->my_home, 'test_file.dat'
+);
 
 if ( open $var, '>', $filename ) {
     my $str = p $var;
