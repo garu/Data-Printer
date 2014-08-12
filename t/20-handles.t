@@ -11,12 +11,12 @@ BEGIN {
     use Test::More;
     use Fcntl;
 
-    use Data::Printer;
-
     $filename = File::Spec->catfile(
         File::HomeDir->my_home, 'test_file.dat'
     );
 };
+
+use Data::Printer;
 
 if ( open $var, '>', $filename ) {
     my $str = p $var;
