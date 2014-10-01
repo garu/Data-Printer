@@ -1037,7 +1037,7 @@ sub _load_rc_file {
         return;
     }
 
-    if ( -l $file || (!-f _) || -p _ || -S _ || -b _ || -c _ ) {
+    if ( (!-f _) || -p _ || -S _ || -b _ || -c _ ) {
         warn "rc file '$file' doesn't look like a plain file. Skipping.\n";
         return;
     }
@@ -1561,8 +1561,8 @@ loading the file:
 specifically point elsewhere via the 'C<rc_file>' property or
 the DATAPRINTERRC environment variable;
 
-=item * The file B<must> be a plain file, never a symbolic
-link, named pipe or socket;
+=item * The file B<must> be a plain file or symbolic link,
+never a named pipe or socket;
 
 =item * The file B<must> be owned by you (i.e. the effective
 user id that ran the script using Data::Printer);
