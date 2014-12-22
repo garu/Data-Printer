@@ -1,12 +1,20 @@
 Revision history for Data-Printer
 
-0.36
+0.35_01 2014-12-22
+    BACKWARDS-INCOMPATIBLE CHANGE
+        - p()'s return value now defaults to 'pass'. Please see
+          https://github.com/garu/Data-Printer/issues/16 for the
+          full discussion. THIS WILL BREAK CODE RELYING ON p() TO
+          RETURN A STRING. To fix your code, please set 'return_value'
+          to 'dump' explicitly, or use the experimental np() function.
+
+    NEW HIGHLY EXPERIMENTAL FEATURE:
+        - np(), a version of p() that always returns the string instead
+          of printing it.
+
     NEW FEATURES:
         - Add 'escape_chars' to allow \x{...} printing for chars
           (patch by Mark Fowler)
-        - new option 'as' => 'X' provided as a quick shortcut
-          to 'caller_info => 1, caller_message => 'X'. This lets you
-          do something like "use DDP; p $foo, as => 'my tag'"
         - Class::Date support in the DateTime filter (Ivan Bessarabov)
 
     BUG FIXES:
@@ -15,6 +23,10 @@ Revision history for Data-Printer
         - removed support for Digest::Haval256, as it can't really be
           observed without damaging the original data. If future versions
           provide a clone() function, it can be added again.
+        - Being extra loud when rc files fail to load (RT#89203, thanks
+          Caleb Cushing for reporting).
+        - Prevents PERL5OPT from interfering with deparse tests (github
+          issue #55, thanks David Precious for reporting)
 
     OTHER:
         - more tests
