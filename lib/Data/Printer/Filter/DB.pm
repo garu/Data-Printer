@@ -65,8 +65,12 @@ filter 'DBI::st', sub {
 filter '-class' => sub {
     my ($obj, $properties) = @_;
 
+    # TODO: if it's a Result, show columns and relationships (anything that
+    #       doesn't involve touching the database
     if ( $obj->isa('DBIx::Class::Schema') ) {
         return ref($obj) . ' DBIC Schema with ' . p( $obj->storage->dbh );
+        # TODO: show a list of all class_mappings available for the schema
+        #       (a.k.a. tables)
     }
     elsif ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
 
