@@ -17,7 +17,7 @@ my $client_script = <<'EOSCRIPT';
     BEGIN {
         delete $ENV{ANSI_COLORS_DISABLED};
         use File::HomeDir::Test;  # avoid user's .dataprinter
-        use Data::Printer;
+        use Data::Printer return_value => 'dump';
     };
 
     my $num = 3.14;

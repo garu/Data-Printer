@@ -9,7 +9,7 @@ BEGIN {
     use Test::More;
 }
 
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 plan skip_all => 'Older perls do not have VSTRING support' if $] < 5.010;
 my $scalar = v1.2.3;

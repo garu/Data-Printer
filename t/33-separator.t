@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer separator => '--';
+use Data::Printer return_value => 'dump', separator => '--';
 
 my $structure = [
     1,

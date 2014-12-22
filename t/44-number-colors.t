@@ -7,7 +7,7 @@ BEGIN {
     delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
-    use_ok ('Data::Printer', colored => 1);
+    use_ok ('Data::Printer', return_value => 'dump', colored => 1);
 };
 
 pass('Loaded ok');

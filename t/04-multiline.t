@@ -9,7 +9,8 @@ BEGIN {
 };
 
 use Data::Printer {
-    'multiline' => 0,
+    'return_value' => 'dump',
+    'multiline'    => 0,
 };
 
 my $data = [ 1, 2, { foo => 3, bar => 4 } ];

@@ -42,7 +42,7 @@ sub new    { bless {}, shift }
 
 package main;
 use Test::More;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 my $obj = Foo->new;
 

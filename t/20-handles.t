@@ -16,7 +16,7 @@ BEGIN {
     );
 };
 
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 if ( open $var, '>', $filename ) {
     my $str = p $var;

@@ -10,7 +10,7 @@ BEGIN {
 
 }
 
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 format TEST =
 .

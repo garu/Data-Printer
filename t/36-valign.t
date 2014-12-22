@@ -10,7 +10,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 my $var = { q[foo bar],2,3,4};
 

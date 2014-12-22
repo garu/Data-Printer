@@ -7,17 +7,17 @@ BEGIN {
 };
 
 package Foo;
-use Data::Printer { colored => 1, color => { number => 'green' } };
+use Data::Printer { return_value => 'dump', colored => 1, color => { number => 'green' } };
 sub foo { p($_[0]) }
 
 package Bar;
-use Data::Printer { colored => 1, color => { number => 'yellow' } };
+use Data::Printer { return_value => 'dump', colored => 1, color => { number => 'yellow' } };
 
 sub bar { p($_[0]) }
 
 package main;
 use Test::More;
-use Data::Printer { colored => 1, color => { number => 'blue' } };
+use Data::Printer { return_value => 'dump', colored => 1, color => { number => 'blue' } };
 delete $ENV{ANSI_COLORS_DISABLED};
 
 my $data = 42;
@@ -26,9 +26,9 @@ plan skip_all => 'failed color sanity check'
     if $data eq colored($data, 'blue');
 
 # IMPORTANT NOTE:
-# this "overriding" was because I felt the final
+# this "overriding" was because I felt the end
 # user should be the one deciding how to output
-# the data. These "nested custom dumps" looks to me
+# the data. These "nested custom dumps" look to me
 # like something quite rare and unlikely to happen
 # in the Real World (tm). But if you have a
 # compelling argument on why this behavior should

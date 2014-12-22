@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 my $scalar = 'test';
 is( p($scalar), '"test"', 'simple scalar' );

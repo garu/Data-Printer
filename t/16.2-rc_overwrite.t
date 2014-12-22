@@ -31,7 +31,7 @@ BEGIN {
     # file created and in place, let's load up our
     # module and see if it overrides the default conf
     # with our .dataprinter RC file
-    use_ok ('Data::Printer', rc_file => $file );
+    use_ok ('Data::Printer', rc_file => $file, return_value => 'dump' );
     unlink $file or fail('error removing test file');
 };
 

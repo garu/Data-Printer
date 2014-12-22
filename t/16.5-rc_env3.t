@@ -44,7 +44,7 @@ BEGIN {
     # code and env rc files created
     # check that the rc file specified with rc_file overrides the one
     # specified with $ENV{DATAPRINTERRC}
-    use_ok ('Data::Printer', rc_file => $code_rcfile);
+    use_ok ('Data::Printer', rc_file => $code_rcfile, return_value => 'dump');
 
     unlink $code_rcfile or fail('error removing test file');
     unlink $env_rcfile  or fail('error removing test file');

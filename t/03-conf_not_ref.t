@@ -9,6 +9,7 @@ BEGIN {
 };
 
 use Data::Printer
+    'return_value'   => 'dump',
     'name'           => 'TEST',
     'indent'         => 2,
     'index'          => 0,

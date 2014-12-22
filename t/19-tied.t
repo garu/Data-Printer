@@ -94,7 +94,7 @@ sub READLINE { return 'foo' }
 package main;
 
 use Test::More;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 my $var = 42;
 is p($var), '42', 'untied scalar shows only the scalar';

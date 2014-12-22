@@ -11,7 +11,7 @@ BEGIN {
 
 BEGIN {
     use Test::More;
-    use Data::Printer colored => 0, multiline => 0, index => 0;
+    use Data::Printer return_value => 'dump', colored => 0, multiline => 0, index => 0;
 
     my @data = ( 1 .. 3 );
 

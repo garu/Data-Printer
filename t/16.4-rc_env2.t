@@ -32,6 +32,7 @@ BEGIN {
     # file created and in place, check that the explicit configuration below
     # overrides the custom rc file
     use_ok ('Data::Printer', {
+                return_value => 'dump',
                 color => {
                     hash => 'blue'
                 },

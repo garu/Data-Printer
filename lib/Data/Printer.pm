@@ -47,7 +47,7 @@ my $properties = {
     'quote_keys'     => 'auto',
     'use_prototypes' => 1,
     'output'         => 'stderr',
-    'return_value'   => 'dump',       # also 'void' or 'pass'
+    'return_value'   => 'pass',       # also 'dump' or 'void'
     'colored'        => 'auto',       # also 0 or 1
     'caller_info'    => 0,
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
@@ -1232,9 +1232,30 @@ several different places:
 
 =head2 Return Value
 
+As of version 0.36, Data::Printer's return value defaults to "pass-through",
+meaning it will dump the variable to STDERR (or wherever you set the output
+to) and will return the variable itself.
+
 If for whatever reason you want to mangle with the output string
-instead of printing it, you can simply ask for a return
+instead of printing it, you can either use the (also exported) C<np()>
+function which always returns the string to be printed:
+
+    use DDP;
+
+    # move to a string
+    my $string = np @some_array;
+
+    # send as a warning
+    warn np($some_string);
+
+    # output to STDOUT instead of STDERR
+    print np(%some_hash);
+
+
+or change the return value to 'dump' and ask for p()'s return value instead:
 value:
+
+  use DDP return_value => 'dump';
 
   # move to a string
   my $string = p @some_array;
@@ -1260,7 +1281,7 @@ available:
 
 =over 4
 
-=item * C<'dump'> (default):
+=item * C<'dump'>
 
     p %var;               # prints the dump to STDERR (void context)
     my $string = p %var;  # returns the dump *without* printing
@@ -1271,7 +1292,7 @@ available:
     my $string = p %var;  # $string is undef. Data still printed in STDERR
 
 
-=item * C<'pass'>:
+=item * C<'pass'> (default as of 0.36):
 
     p %var;               # prints the dump to STDERR, returns %var
     my %copy = p %var;    # %copy = %var. Data still printed in STDERR

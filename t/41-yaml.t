@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use DDP;
+use DDP return_value => 'dump';
 
 eval 'use YAML::Syck';
 if ($@) {

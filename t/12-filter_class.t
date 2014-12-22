@@ -14,6 +14,7 @@ my $filters = _filter_list();
 is $filters, undef, 'no filters set';
 
 my $properties = {
+    return_value => 'dump',
     indent => 5,
     _current_indent => 0,
     _linebreak => \"\n",

@@ -8,7 +8,7 @@ BEGIN {
 };
 
 use Test::More;
-use Data::Printer caller_info => 1;
+use Data::Printer return_value => 'dump', caller_info => 1;
 
 sub _get_path { my (undef, $filename) =caller; return $filename }
 my $filepath = _get_path();

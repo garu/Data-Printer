@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
     use_ok ('Scalar::Util', qw(weaken));
-    use_ok ('Data::Printer', colored => 1);
+    use_ok ('Data::Printer', return_value => 'dump', colored => 1);
 };
 
 my $number = 3.14;

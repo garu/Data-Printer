@@ -21,7 +21,7 @@ sub foo    { }
 
 package main;
 use Test::More;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 my $scalar = FooScalar->new;
 my $array  = FooArray->new;
 my $code   = FooCode->new;

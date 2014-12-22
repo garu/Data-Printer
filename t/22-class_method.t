@@ -16,7 +16,7 @@ sub _data_printer { my $self = shift; return 'foo is ' . $self->foo }
 
 package main;
 use Test::More;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 
 my $obj = Foo->new;
 

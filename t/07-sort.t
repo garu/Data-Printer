@@ -19,6 +19,7 @@ BEGIN {
 };
 
 use Data::Printer {
+    'return_value' => 'dump',
     'sort_keys' => 0,
     'class'     => {
         'sort_methods' => 1,

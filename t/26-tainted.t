@@ -19,7 +19,7 @@ BEGIN {
     use_ok ('Term::ANSIColor');
 };
 
-use Data::Printer colored => 1;
+use Data::Printer return_value => 'dump', colored => 1;
 
 is(
     p($path),

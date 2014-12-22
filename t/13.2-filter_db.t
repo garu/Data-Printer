@@ -11,6 +11,7 @@ BEGIN {
 };
 
 use Data::Printer {
+    return_value => 'dump',
     filters => {
         -external => 'DB',  # testing simpler syntax
                             # (list syntax is tested in datetime)

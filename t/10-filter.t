@@ -9,6 +9,7 @@ BEGIN {
 };
 
 use Data::Printer {
+    return_value => 'dump',
     filters => {
         'My::Module'    => sub { $_[0]->test },
         'SCALAR'        => sub { 'found!!' },

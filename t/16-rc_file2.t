@@ -32,6 +32,7 @@ BEGIN {
     # module and see if it overrides the default conf
     # with our .dataprinter RC file
     use_ok ('Data::Printer', {
+                return_value => 'dump',
                 color => {
                     hash => 'blue'
                 },

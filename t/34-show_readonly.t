@@ -11,7 +11,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer show_readonly => 1;
+use Data::Printer return_value => 'dump', show_readonly => 1;
 
 my $foo = 42;
 

@@ -43,7 +43,7 @@ BEGIN {
 
     # standard and custom rc files created
     # check that the custom rc overrides the standard one
-    use_ok ('Data::Printer');
+    use_ok ('Data::Printer', return_value => 'dump');
 
     unlink $standard_rcfile or fail('error removing test file');
     unlink $custom_rcfile   or fail('error removing test file');

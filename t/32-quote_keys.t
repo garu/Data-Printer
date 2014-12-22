@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
     use_ok ('Term::ANSIColor');
     use_ok (
-        'Data::Printer', colored => 0,
+        'Data::Printer', return_value => 'dump', colored => 0,
     );
 };
 

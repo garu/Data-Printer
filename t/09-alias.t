@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer { alias => 'Dumper' };
+use Data::Printer { alias => 'Dumper', 'return_value' => 'dump' };
 
 my $scalar = 'test';
 is( Dumper($scalar), '"test"', 'aliasing p()' );

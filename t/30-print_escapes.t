@@ -9,6 +9,7 @@ BEGIN {
     use_ok ('Term::ANSIColor');
     use_ok (
         'Data::Printer',
+            return_value  => 'dump',
             colored       => 1,
             print_escapes => 1,
     );

@@ -16,6 +16,7 @@ BEGIN {
 };
 
 use Data::Printer {
+    return_value => 'dump',
     filters => {
        -external => [ 'DateTime' ],
        HASH => sub { 'this is a hash' }

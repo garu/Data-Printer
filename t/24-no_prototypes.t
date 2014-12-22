@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer use_prototypes => 0;
+use Data::Printer return_value => 'dump', use_prototypes => 0;
 
 is p(\"test"), '"test"', 'scalar without prototype check';
 

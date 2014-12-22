@@ -9,6 +9,7 @@ BEGIN {
 };
 
 use Data::Printer {
+   return_value => 'dump',
    alias => 'Dumper',
    filters => {
     'ARRAY' => sub {

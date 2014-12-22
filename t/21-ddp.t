@@ -7,7 +7,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 
     use Test::More;
-    use_ok( 'DDP', filters => { SCALAR => sub { '...' } } ) or plan skip_all => 'unable to load DDP';
+    use_ok( 'DDP', return_value => 'dump', filters => { SCALAR => sub { '...' } } ) or plan skip_all => 'unable to load DDP';
 }
 
 my $scalar = 'test';

@@ -17,7 +17,7 @@ sub new  { bless {}, shift }
 
 package main;
 use Test::More tests => 1;
-use Data::Printer class_method => 'bar';
+use Data::Printer return_value => 'dump', class_method => 'bar';
 
 my $obj = Foo->new;
 
