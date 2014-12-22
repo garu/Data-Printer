@@ -1033,17 +1033,17 @@ sub _load_rc_file {
 
     my $mode = (stat $file )[2];
     if ($^O !~ /Win32/i && ($mode & 0020 || $mode & 0002) ) {
-        warn "rc file '$file' must NOT be writeable to other users. Skipping.\n";
+        warn "*** WARNING *** rc file '$file' must NOT be writeable to other users. Skipping.\n";
         return;
     }
 
     if ( -l $file || (!-f _) || -p _ || -S _ || -b _ || -c _ ) {
-        warn "rc file '$file' doesn't look like a plain file. Skipping.\n";
+        warn "*** WARNING *** rc file '$file' doesn't look like a plain file. Skipping.\n";
         return;
     }
 
     unless (-o $file) {
-        warn "rc file '$file' must be owned by your (effective) user. Skipping.\n";
+        warn "*** WARNING *** rc file '$file' must be owned by your (effective) user. Skipping.\n";
         return;
     }
 
@@ -1054,29 +1054,29 @@ sub _load_rc_file {
 
         if( ${^TAINT} != 0 ) {
             if ( $args->{allow_tainted} ) {
-                warn "WARNING: Reading tainted file '$file' due to user override.\n";
+                warn "*** WARNING *** Reading tainted file '$file' due to user override.\n";
                 $rc_data =~ /(.+)/s; # very bad idea - god help you
                 $rc_data = $1;
             }
             else {
-                warn "taint mode on: skipping rc file '$file'.\n";
+                warn "*** WARNING *** taint mode on: skipping rc file '$file'.\n";
                 return;
             }
         }
 
         my $config = eval $rc_data;
         if ( $@ ) {
-            warn "Error loading $file: $@\n";
+            warn "*** WARNING *** Error loading $file: $@\n";
         }
         elsif (!ref $config or ref $config ne 'HASH') {
-            warn "Error loading $file: config file must return a hash reference\n";
+            warn "*** WARNING *** Error loading $file: config file must return a hash reference\n";
         }
         else {
             $properties = _merge( $config );
         }
     }
     else {
-        warn "error opening '$file': $!\n";
+        warn "*** WARNING *** error opening '$file': $!\n";
     }
 }
 
