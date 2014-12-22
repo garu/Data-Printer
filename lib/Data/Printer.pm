@@ -135,11 +135,12 @@ sub import {
         $properties = _merge( $args );
     }
 
-    my $exported = ($properties->{use_prototypes} ? \&p : \&np );
+    my $exported = ($properties->{use_prototypes} ? \&p : \&p_without_prototypes );
     my $imported = $properties->{alias} || 'p';
     my $caller = caller;
     no strict 'refs';
     *{"$caller\::$imported"} = $exported;
+    *{"$caller\::np"} = \&np;
 }
 
 
@@ -147,13 +148,18 @@ sub p (\[@$%&];%) {
     return _print_and_return( $_[0], _data_printer(!!defined wantarray, @_) );
 }
 
-# np() is a p() clone without prototypes.
+sub np (\[@$%&];%) {
+    my ($dump, $p) = _data_printer(1, @_);
+    return $dump;
+}
+
+# This is a p() clone without prototypes.
 # Just like regular Data::Dumper, this version
 # expects a reference as its first argument.
 # We make a single exception for when we only
 # get one argument, in which case we ref it
 # for the user and keep going.
-sub np  {
+sub p_without_prototypes  {
     my $item = shift;
 
     if (!ref $item && @_ == 0) {
