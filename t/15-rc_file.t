@@ -33,6 +33,17 @@ BEGIN {
     # with our .dataprinter RC file
     use_ok ('Data::Printer');
     unlink $file or fail('error removing test file');
+
+    # let's see if we can call p() from within the BEGIN block itself.
+    # prototypes aren't available in here :(
+    my $h = { a => 42 };
+    is( p($h), color('reset') . "{$/    "
+                . colored('a', 'red')
+                . '  +  '
+                . colored('42', 'bright_blue')
+                . "$/}"
+    , 'hash keys are now red'
+    );
 };
 
 my %hash = ( key => 'value' );
