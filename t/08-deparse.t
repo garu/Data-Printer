@@ -8,6 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
+use 5.008; # <-- prevents PERL5OPT from kicking in and mangling B::Deparse
 use Data::Printer {
     'deparse'   => 1,
     'deparseopts' => [],
