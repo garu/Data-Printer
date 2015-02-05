@@ -718,7 +718,7 @@ sub _class {
 
     # if the user specified a method to use instead, we do that
     if ( $p->{class_method} and my $method = $item->can($p->{class_method}) ) {
-        return $method->($item, $p);
+        return $method->($item, $p) if ref $method eq 'CODE';
     }
 
     my $string = '';
