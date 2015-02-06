@@ -1043,8 +1043,8 @@ sub _load_rc_file {
         return;
     }
 
-    if ( -l $file || (!-f _) || -p _ || -S _ || -b _ || -c _ ) {
-        warn "*** WARNING *** rc file '$file' doesn't look like a plain file. Skipping.\n";
+    if ( -p _ || -S _ || -b _ || -c _ ) {
+        warn "*** WARNING *** rc file '$file' doesn't look like a plain file or a symlink. Skipping.\n";
         return;
     }
 
