@@ -45,6 +45,7 @@ my $properties = {
     'print_escapes'  => 0,
     'escape_chars'   => 'none',
     'quote_keys'     => 'auto',
+    'scalar_quotes'  => '"',
     'use_prototypes' => 1,
     'output'         => 'stderr',
     'return_value'   => 'pass',       # also 'dump' or 'void'
@@ -332,7 +333,7 @@ sub SCALAR {
     else {
         my $val = _escape_chars($$item, $p->{color}{string}, $p);
 
-        $string .= q["] . colored($val, $p->{color}->{'string'}) . q["];
+        $string .= $p->{scalar_quotes} . colored($val, $p->{color}->{'string'}) . $p->{scalar_quotes};
     }
 
     $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
@@ -1394,6 +1395,7 @@ customization options available, as shown below (with default values):
                                  # "none", "nonascii", "nonlatin1", "all"
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
+      scalar_quotes  => '"',     # the quote symbols to enclose scalar values
       separator      => ',',     # uses ',' to separate array/hash elements
       end_separator  => 0,       # prints the separator after last element in array/hash.
                                  # the default is 0 that means not to print
