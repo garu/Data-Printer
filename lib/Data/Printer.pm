@@ -142,12 +142,17 @@ sub import {
     no strict 'refs';
     *{"$caller\::$imported"} = $exported;
     *{"$caller\::np"} = \&np;
+    *{"$caller\::pa"} = \&pa;
+    *{"$caller\::ph"} = \&ph;
 }
 
 
 sub p (\[@$%&];%) {
     return _print_and_return( $_[0], _data_printer(!!defined wantarray, @_) );
 }
+
+sub ph (%) { &p(+{@_}) }
+sub pa (@) { &p(+[@_]) }
 
 sub np (\[@$%&];%) {
     my ($dump, $p) = _data_printer(1, @_);
