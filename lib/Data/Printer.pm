@@ -142,8 +142,11 @@ sub import {
     no strict 'refs';
     *{"$caller\::$imported"} = $exported;
     *{"$caller\::np"} = \&np;
-    *{"$caller\::pa"} = \&pa;
-    *{"$caller\::ph"} = \&ph;
+
+    if ($properties->{use_shortcut}) {
+        *{"$caller\::pa"} = \&pa;
+        *{"$caller\::ph"} = \&ph;
+    }
 }
 
 
@@ -152,6 +155,7 @@ sub p (\[@$%&];%) {
 }
 
 sub ph (%) { &p(+{@_}) }
+
 sub pa (@) { &p(+[@_]) }
 
 sub np (\[@$%&];%) {

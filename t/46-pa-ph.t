@@ -8,7 +8,7 @@ BEGIN {
     use File::HomeDir::Test;  # avoid user's .dataprinter
 };
 
-use Data::Printer qw'return_value dump';
+use Data::Printer qw'return_value dump use_shortcut 1';
 
 my $dh = ph my %hsh = qw'a b c d';
 my $da = pa my @arr = 1..4;
