@@ -13,7 +13,7 @@ use File::HomeDir ();
 use Fcntl;
 use version 0.77 ();
 
-our $VERSION = '0.35_01';
+our $VERSION = '0.36';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -294,7 +294,7 @@ sub _p {
             }
         }
     }
-    
+
     if ( not $found ) {
         # if it's not a class and not a known core type, we must be in
         # a future perl with some type we're unaware of
@@ -707,7 +707,7 @@ sub GLOB {
 sub _unknown {
     my($item, $p) = @_;
     my $ref = ref $item;
-    
+
     my $string = '';
     $string = colored($ref, $p->{color}->{'unknown'});
     return $string;

@@ -1,5 +1,42 @@
 Revision history for Data-Printer
 
+0.36 2015-05-29
+    Bumping 0.35_01 to stable. Below is the (repeated) changelog,
+    with the single addition of the 'scalar_quotes' patch.
+
+    BACKWARDS-INCOMPATIBLE CHANGE
+        - p()'s return value now defaults to 'pass'. Please see
+          https://github.com/garu/Data-Printer/issues/16 for the
+          full discussion. THIS WILL BREAK CODE RELYING ON p() TO
+          RETURN A STRING. To fix your code, please set 'return_value'
+          to 'dump' explicitly, or use the experimental np() function.
+
+    NEW HIGHLY EXPERIMENTAL FEATURE:
+        - np(), a version of p() that always returns the string instead
+          of printing it.
+
+    NEW FEATURES:
+        - Add 'escape_chars' to allow \x{...} printing for chars
+          (patch by Mark Fowler)
+        - 'scalar_quotes' let you specify the quote to use when,
+          well, quoting (Ivan Bessarabov)
+        - Class::Date support in the DateTime filter (Ivan Bessarabov)
+
+    BUG FIXES:
+        - fixed crash in esoteric classes (github issue #41, thanks
+          Ivan Bessarabov for reporting)
+        - removed support for Digest::Haval256, as it can't really be
+          observed without damaging the original data. If future versions
+          provide a clone() function, it can be added again.
+        - Being extra loud when rc files fail to load (RT#89203, thanks
+          Caleb Cushing for reporting).
+        - Prevents PERL5OPT from interfering with deparse tests (github
+          issue #55, thanks David Precious for reporting)
+
+    OTHER:
+        - more tests
+        - new external filter indexed: PDL
+
 0.35_01 2014-12-22
     BACKWARDS-INCOMPATIBLE CHANGE
         - p()'s return value now defaults to 'pass'. Please see
