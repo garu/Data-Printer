@@ -16,5 +16,3 @@ is( np($scalar), '"test"', 'np() returns string' );
 
 
 is( np($scalar, return_value => 'void'), '"test"', 'np() always returns strings' );
-
-
