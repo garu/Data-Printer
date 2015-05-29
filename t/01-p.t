@@ -274,10 +274,7 @@ $regex = qr{
       |
     ^ \s* go \s
 }x;
-is( p($regex), '\
-      |
-    ^ \s* go \s
-  (modifiers: x)', 'creepy regex' );
+is( p($regex), "\\ \n      |\n    ^ \\s* go \\s\n  (modifiers: x)", 'creepy regex' );
 
 $array[0] = qr{\d(\W)[\s]*};
 $array[2][1] = qr{\d(\W)[\s]*};
