@@ -23,22 +23,22 @@ my %options = (
         'File::Temp'      => 0,
         'Fcntl'           => 0,
         ($] >= 5.010
-            ? () 
+            ? ()
             : (
                 'MRO::Compat' => 0.09,
                 'Hash::Util::FieldHash::Compat' => 0.03,
               )
         ),
     },
-    META_MERGE      => {
+    META_MERGE => {
         resources => {
-            license     =>      'http://dev.perl.org/licenses/',
-            bugtracker  =>      'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Printer',
-            repository  =>      'http://github.com/garu/Data-Printer',
+            license     => 'http://dev.perl.org/licenses/',
+            bugtracker  => 'https://github.com/garu/Data-Printer/issues/',
+            repository  => 'https://github.com/garu/Data-Printer',
         },
     },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Data-Printer-*' },
+    dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    clean => { FILES => 'Data-Printer-*' },
 );
 
 
