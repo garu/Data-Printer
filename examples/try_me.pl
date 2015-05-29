@@ -36,4 +36,3 @@ $sample{ref} = \%sample;
 weaken $sample{ref};
 
 use DDP; p %sample;
-

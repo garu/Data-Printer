@@ -9,7 +9,7 @@ filter 'DBI::db', sub {
     my $name = $dbh->{Driver}{Name};
 
     my $string = "$name Database Handle ("
-               . ($dbh->{Active} 
+               . ($dbh->{Active}
                   ? colored('connected', 'bright_green')
                   : colored('disconnected', 'bright_red'))
                . ') {'
@@ -45,7 +45,7 @@ filter 'DBI::st', sub {
     if ($sth->{NUM_OF_PARAMS} > 0) {
         my $values = $sth->{ParamValues};
         if ($values) {
-            $str .= '  (' 
+            $str .= '  ('
                  . join(', ',
                       map {
                          my $v = $values->{$_};
@@ -186,5 +186,3 @@ C<bindings unavailable> message instead of the bound values.
 =head1 SEE ALSO
 
 L<Data::Printer>
-
-

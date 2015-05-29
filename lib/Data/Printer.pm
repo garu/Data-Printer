@@ -1103,7 +1103,7 @@ Want to see what's inside a variable in a complete, colored
 and human-friendly way?
 
   use Data::Printer;   # or just "use DDP" for short
-  
+
   p @array;            # no need to pass references
 
 Code above might output something like this (with colors!):
@@ -1919,7 +1919,7 @@ To turn Data::Printer's output into HTML, you can do something like:
 
   use HTML::FromANSI;
   use Data::Printer;
-  
+
   my $html_output = ansi2html( p($object, colored => 1) );
 
 In the example above, the C<$html_output> variable contains the
@@ -2199,6 +2199,3 @@ RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
 FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
-
-
-

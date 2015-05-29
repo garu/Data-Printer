@@ -40,4 +40,3 @@ is p($data), '\ {
     ]
 }',
   'testing odd objects (YAML::Syck)';
-

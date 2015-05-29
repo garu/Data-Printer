@@ -19,7 +19,7 @@ use Data::Printer {
 my $data = 'I can has Digest?';
 
 foreach my $module (qw( Digest::Adler32 Digest::MD2 Digest::MD4 Digest::MD5
-                        Digest::SHA Digest::SHA1 
+                        Digest::SHA Digest::SHA1
                         Digest::Whirlpool
 )) {
 
