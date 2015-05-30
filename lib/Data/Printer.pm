@@ -2087,11 +2087,19 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Árpád Szász
 
+=item * Athanasios Douitsis (aduitsis)
+
 =item * brian d foy
+
+=item * Chad Granum (exodist)
 
 =item * Chris Prather (perigrin)
 
+=item * David D Lowe (Flimm)
+
 =item * David Golden (xdg)
+
+=item * David Precious (bigpresh)
 
 =item * David Raab
 
@@ -2109,13 +2117,19 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Fitz Elliott
 
+=item * Frew Schmidt (frew)
+
 =item * Ivan Bessarabov (bessarabv)
 
 =item * J Mash
 
+=item * Jay Allen (jayallen)
+
 =item * Jesse Luehrs (doy)
 
 =item * Joel Berger (jberger)
+
+=item * John S. Anderson (genehack)
 
 =item * Kartik Thakore (kthakore)
 
@@ -2135,13 +2149,25 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Mike Doherty (doherty)
 
+=item * Nuba Princigalli (nuba)
+
+=item * Olaf Alders (oalders)
+
 =item * Paul Evans (LeoNerd)
+
+=item * Pedro Melo (melo)
 
 =item * Przemysław Wesołek (jest)
 
 =item * Rebecca Turner (iarna)
 
+=item * Renato Cron (renatoCRON)
+
+=item * Ricardo Signes (rjbs)
+
 =item * Rob Hoelz (hoelzro)
+
+=item * sawyer
 
 =item * Sebastian Willing (Sewi)
 
@@ -2155,9 +2181,13 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Tatsuhiko Miyagawa (miyagawa)
 
+=item * Thomas Sibley (tsibley)
+
 =item * Tim Heaney (oylenshpeegul)
 
 =item * Torsten Raudssus (Getty)
+
+=item * Tokuhiro Matsuno (tokuhirom)
 
 =item * Wesley Dal`Col (blabos)
 
