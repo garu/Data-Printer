@@ -1680,6 +1680,12 @@ You can't pass more than one variable at a time.
    p($foo);       # right
    p($bar);       # right
 
+You can't use it in variable declarations (it will most likely not do what
+you want):
+
+    p my @array = qw(a b c d);         # wrong
+    my @array = qw(a b c d); p @array; # right
+
 The default mode is to use prototypes, in which you are supposed to pass
 variables, not anonymous structures:
 
