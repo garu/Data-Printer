@@ -6,6 +6,7 @@ use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
 use Clone::PP qw(clone);
+use Package::Stash;
 use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
@@ -749,8 +750,6 @@ sub _class {
 
         # Package::Stash dies on blessed XS
         eval {
-            require Package::Stash;
-
             my $stash = Package::Stash->new($ref);
 
             if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
@@ -777,6 +776,10 @@ sub _class {
                 }
             }
         };
+        if ($@) {
+            warn "*** WARNING *** Could not get superclasses for $ref: $@"
+                unless $@ =~ / is not a module name at /;
+        }
 
         $string .= _show_methods($ref, $p)
             if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
@@ -858,6 +861,10 @@ sub _show_methods {
                            @{mro::get_linear_isa($ref)},
                            $p->{class}{universal} ? 'UNIVERSAL' : ()
     };
+    if ($@) {
+        warn "*** WARNING *** Could not get all_methods for $ref: $@"
+           unless $@ =~ / is not a module name at /;
+    }
 
 METHOD:
     foreach my $method (@all_methods) {
