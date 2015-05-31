@@ -12,7 +12,9 @@ use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
 use Fcntl;
-use version 0.77 ();
+# This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
+# Instead, we now require version in the VSTRING() method.
+# use version 0.77 ();
 
 our $VERSION = '0.36';
 
@@ -637,7 +639,9 @@ sub Regexp {
 
 sub VSTRING {
     my ($item, $p) = @_;
+    eval { require version };
     my $string = '';
+    # This will raise an error if we have version < 0.77;
     $string .= colored(version->declare($$item)->normal, $p->{color}->{'vstring'});
     return $string;
 }
