@@ -184,4 +184,36 @@ SKIP: {
     );
 };
 
+SKIP: {
+    eval 'use Panda::Date';
+    skip 'Panda::Date not available', 6 if $@;
+
+    my $d = Panda::Date->new({ year => 2003, month => 2, day => 11 }, 'America/New_York');
+    is( p($d), '2003-02-11 00:00:00 [EST]', 'Panda::Date' );
+    my @list = ($d, { foo => 1 });
+    is( p(@list), '[
+    [0] 2003-02-11 00:00:00 [EST],
+    [1] this is a hash
+]', 'inline and class filters together (Panda::Date)'
+    );
+
+    my $delta = Panda::Date::Rel->new('1M 2D 7h');
+    is( p($delta), "1M 2D 7h", 'Panda::Date::Rel' );
+    @list = ($delta, { foo => 1 });
+    is( p(@list), '[
+    [0] 1M 2D 7h,
+    [1] this is a hash
+]', 'inline and class filters together (Panda::Date::Rel)'
+    );
+
+    my $interval = Panda::Date::Int->new($d, $d + $delta);
+    is( p($interval), '2003-02-11 00:00:00 [EST] ~ 2003-03-13 07:00:00 [EST]', 'Panda::Date::Int' );
+    @list = ($interval, { foo => 1 });
+    is( p(@list), '[
+    [0] 2003-02-11 00:00:00 [EST] ~ 2003-03-13 07:00:00 [EST],
+    [1] this is a hash
+]', 'inline and class filters together (Panda::Date::Int)'
+    );
+};
+
 done_testing;

@@ -73,6 +73,21 @@ filter 'Date::Handler::Delta', sub {
     return _format( $_[0]->AsScalar, @_ );
 };
 
+filter 'Panda::Date', sub {
+    return _format( _filter_Panda_Date($_[0]), @_ );
+};
+
+filter 'Panda::Date::Rel', sub {
+    return _format( "$_[0]", @_ );
+};
+
+filter 'Panda::Date::Int', sub {
+    return _format( _filter_Panda_Date($_[0]->from) . " ~ " . _filter_Panda_Date($_[0]->till), @_ );
+};
+
+sub _filter_Panda_Date {
+    return $_[0]->iso . " [" . $_[0]->tzabbr . "]";
+}
 
 sub _format {
     my ($str, $obj, $p) = @_;
@@ -153,6 +168,8 @@ several date and time manipulation classes and displays the time
 =item * L<Date::Calc::Object>
 
 =item * L<Date::Pcalc::Object>
+
+=item * L<Panda::Date>
 
 =back
 
