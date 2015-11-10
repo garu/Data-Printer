@@ -10,6 +10,7 @@ use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
+use FindBin;
 use Fcntl;
 use version 0.77 ();
 
@@ -913,13 +914,68 @@ sub _get_info_message {
 
     my $message = $p->{caller_message};
 
+    my ( $filename, $line ) = @caller[1..2];
+
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
-    $message =~ s/\b__FILENAME__\b/$caller[1]/g;
-    $message =~ s/\b__LINE__\b/$caller[2]/g;
+    $message =~ s/\b__FILENAME__\b/$filename/g;
+    $message =~ s/\b__LINE__\b/$line/g;
+    # try to guess the variable name that is printed by reading
+    # $line in $filename
+    $message =~ s/\b__VAR__\b/get_caller_print_var($p, $filename, $line)/ge;
 
     return colored($message, $p->{color}{caller_info}) . $BREAK;
 }
 
+# This function reads line number $lineno from file $filename
+#  if this function is called more than once for a given $filename,
+#  it still rereads the file each time. So a possible improvement could
+#  be to store each line of a file in private array the first time the
+#  file is read. Then subsequent calls for the same $filename could
+#  simply lookup the line in the array.
+#
+# TODO :
+#
+#
+sub get_caller_print_var {
+    my ( $p, $filename, $lineno ) = @_;
+    # Note: $filename can be relative to initial directory of the Perl script,
+    #  If the user has changed working directory at this point,
+    #  $filename may not be valid as a relative path.
+    #  Therefore, use FindBin to recover the intial directory of the script:
+    #
+    # See also:  http://perldoc.perl.org/perlfaq8.html#How-do-I-add-the-directory-my-program-lives-in-to-the-module%2flibrary-search-path%3f
+    if ( !File::Spec->file_name_is_absolute( $filename ) ) {
+        $filename = File::Spec->rel2abs( $filename, $FindBin::Bin );
+    }
+    open ( my $fh, '<', $filename ) or die "Could not open file '$filename': $!";
+    my $line;
+    do { $line = <$fh> } until $. == $lineno || eof;
+    close $fh;
+    return '"??"' if not defined $line;
+    chomp $line;
+    # Assume the $line is on either of two forms:
+    #  - p $var;
+    #  - p( $var );
+    #
+    # TODO: Some of the many cases that are not yet handled:
+    # - my $string = np @some_array;
+    # - warn np($some_string);
+    # - p(%some_hash, colored => 1);
+    # - comments at end of line..
+    # - multiple prints at the same line: p $aa; p $bb;
+    # - and so on..
+    if ( $line =~ /^\s*p\s+([^(][^;]*);\s*$/) {
+        $line = $1;
+    }
+    elsif ( $line =~ /^\s*p\s*\(\s*([^,]*.*?)\s*\)\s*;?\s*$/ ) {
+        $line = $1;
+    }
+    else {
+        # Simply use $line as it is. It is should still be better
+        # than not printing anything!
+    }
+    return '"' . $line . '"';
+}
 
 sub _merge {
     my $p = shift;
@@ -1650,8 +1706,7 @@ be interpolated into their according value so you can customize them at will:
     };
 
 As shown above, you may also set a color for "caller_info" in your color
-hash. Default is cyan.
-
+hash. Default is cyan. 
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -1671,6 +1726,22 @@ parameter for p(). For example:
 As of Data::Printer 0.11, you can create complex filters as a separate
 module. Those can even be uploaded to CPAN and used by other people!
 See L<Data::Printer::Filter> for further information.
+
+=head2 Printing name of original variable
+
+Including the special string C<__VAR__> in C<caller_message>, will cause 
+the original variable name that was used when calling C<p()> to be interpolated.
+For example:
+  
+  use Data::Printer  
+     caller_message => 'Printing __VAR__ at line __LINE__ of __FILENAME__:';
+  my $var = 22;
+  p $var;
+
+will give output like:
+
+  Printing "$var" at line 4 of ./test.pl:
+  22
 
 =head1 CAVEATS
 
