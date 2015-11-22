@@ -11,6 +11,7 @@ use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
 use FindBin;
+use File::Basename ();
 use Fcntl;
 use version 0.77 ();
 
@@ -55,25 +56,26 @@ my $properties = {
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
     'class_method'   => '_data_printer', # use a specific dump method, if available
     'color'          => {
-        'array'       => 'bright_white',
-        'number'      => 'bright_blue',
-        'string'      => 'bright_yellow',
-        'class'       => 'bright_green',
-        'method'      => 'bright_green',
-        'undef'       => 'bright_red',
-        'hash'        => 'magenta',
-        'regex'       => 'yellow',
-        'code'        => 'green',
-        'glob'        => 'bright_cyan',
-        'vstring'     => 'bright_blue',
-        'lvalue'      => 'bright_white',
-        'format'      => 'bright_cyan',
-        'repeated'    => 'white on_red',
-        'caller_info' => 'bright_cyan',
-        'weak'        => 'cyan',
-        'tainted'     => 'red',
-        'escaped'     => 'bright_red',
-        'unknown'     => 'bright_yellow on_blue',
+        'array'           => 'bright_white',
+        'number'          => 'bright_blue',
+        'string'          => 'bright_yellow',
+        'class'           => 'bright_green',
+        'method'          => 'bright_green',
+        'undef'           => 'bright_red',
+        'hash'            => 'magenta',
+        'regex'           => 'yellow',
+        'code'            => 'green',
+        'glob'            => 'bright_cyan',
+        'vstring'         => 'bright_blue',
+        'lvalue'          => 'bright_white',
+        'format'          => 'bright_cyan',
+        'repeated'        => 'white on_red',
+        'caller_info'     => 'bright_cyan',
+        'caller_info_var' => 'green',
+        'weak'            => 'cyan',
+        'tainted'         => 'red',
+        'escaped'         => 'bright_red',
+        'unknown'         => 'bright_yellow on_blue',
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
@@ -919,11 +921,30 @@ sub _get_info_message {
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
     $message =~ s/\b__FILENAME__\b/$filename/g;
     $message =~ s/\b__LINE__\b/$line/g;
-    # try to guess the variable name that is printed by reading
-    # $line in $filename
-    $message =~ s/\b__VAR__\b/get_caller_print_var($p, $filename, $line)/ge;
-
-    return colored($message, $p->{color}{caller_info}) . $BREAK;
+    {
+        my $regex = qr/\b(__VAR__)\b/;
+        if ( $message =~ $regex ) {
+            # try to guess the variable name that is printed by reading
+            # $line in $filename
+            my $replace = _get_caller_print_var($p, $filename, $line);
+            # use grep to remove empty items
+            my @parts = grep $_, split $regex, $message;
+            for ( @parts ) {
+                if (/^$regex$/) {
+                    s/$regex/$replace/;
+                    $_ = colored($_, $p->{color}{caller_info_var});
+                }
+                else {
+                    $_ = colored($_, $p->{color}{caller_info});
+                }
+            }
+            $message = join "", @parts;
+        }
+        else {
+            $message = colored($message, $p->{color}{caller_info});
+        }
+    }
+    return $message . $BREAK;
 }
 
 # This function reads line number $lineno from file $filename
@@ -933,48 +954,78 @@ sub _get_info_message {
 #  file is read. Then subsequent calls for the same $filename could
 #  simply lookup the line in the array.
 #
-# TODO :
-#
-#
-sub get_caller_print_var {
+sub _get_caller_print_var {
     my ( $p, $filename, $lineno ) = @_;
-    # Note: $filename can be relative to initial directory of the Perl script,
-    #  If the user has changed working directory at this point,
-    #  $filename may not be valid as a relative path.
-    #  Therefore, use FindBin to recover the intial directory of the script:
+    my $line = _get_caller_source_line( $filename, $lineno );
+    return '"??"' if not defined $line;
+    require PPI;
+    #require PPI::Dumper;
+    my $doc = PPI::Document->new(\$line);
+    #my $dumper = PPI::Dumper->new( $doc );
+    #$dumper->print;
+    my $statement;
+    my $num_statements = 0;
+    for my $child ( @{ $doc->{children} } ) {
+        if ($child->isa('PPI::Statement') ) {
+            $statement = $child;
+            $num_statements++;
+        }
+    }
+
+    # Default behavior is to use $new_line = $line. This default should still be better
+    # than not printing anything! 
+    my $new_line = $line;
+    # Next: try to do better than the default behavior
+    # Example: if $line is
+    #
+    #    "p(%some_hash, colored => 1); # print some_hash"
+    #
+    # we are able to reduce this $line to "%some_hash" using the following:
+    #
+    if ( $num_statements == 1 ) {
+        # If the line contains a single top level statement, and
+        # that statement contains a single PPI::Token::Symbol,
+        # it is likely that that symbol is the name of the sought variable.
+        my $elements = $statement->find('PPI::Token::Symbol');
+        if ( @$elements == 1 ) {
+            $new_line = $elements->[0]->content;
+        }
+        elsif ( @$elements == 2 ) {
+            # otherwise, if there is two PPI::Token::Symbol's in the
+            # statement, and the statement is a PPI::Statement::Variable
+            # is is likely that the second symbol is the sought variable..
+            if ( (ref $statement) eq "PPI::Statement::Variable" ) {
+                $new_line = $elements->[1]->content;
+            }
+        }
+    }
+    return '"' . $new_line . '"';
+}
+
+sub _get_caller_source_line {
+    my ( $filename, $lineno ) = @_;
+    
+    # Note: $filename can be absolute or relative (to initial directory of the
+    # Perl script), For example, for a test file run from another Perl script
+    # using "system t/test.t", $filename (i.e. __FILE__) for the invoked script
+    # "test.t" will be "t/test.t". If the user has changed working directory at
+    # this point, $filename may also not be valid as a relative path.
+    # Therefore, FindBin is used to recover the intial directory of the script:
     #
     # See also:  http://perldoc.perl.org/perlfaq8.html#How-do-I-add-the-directory-my-program-lives-in-to-the-module%2flibrary-search-path%3f
     if ( !File::Spec->file_name_is_absolute( $filename ) ) {
-        $filename = File::Spec->rel2abs( $filename, $FindBin::Bin );
+        $filename = File::Spec->rel2abs(
+            File::Basename::basename($filename), $FindBin::Bin
+        );
     }
     open ( my $fh, '<', $filename ) or die "Could not open file '$filename': $!";
     my $line;
     do { $line = <$fh> } until $. == $lineno || eof;
     close $fh;
-    return '"??"' if not defined $line;
     chomp $line;
-    # Assume the $line is on either of two forms:
-    #  - p $var;
-    #  - p( $var );
-    #
-    # TODO: Some of the many cases that are not yet handled:
-    # - my $string = np @some_array;
-    # - warn np($some_string);
-    # - p(%some_hash, colored => 1);
-    # - comments at end of line..
-    # - multiple prints at the same line: p $aa; p $bb;
-    # - and so on..
-    if ( $line =~ /^\s*p\s+([^(][^;]*);\s*$/) {
-        $line = $1;
-    }
-    elsif ( $line =~ /^\s*p\s*\(\s*([^,]*.*?)\s*\)\s*;?\s*$/ ) {
-        $line = $1;
-    }
-    else {
-        # Simply use $line as it is. It is should still be better
-        # than not printing anything!
-    }
-    return '"' . $line . '"';
+    $line =~ s/^\s+//;
+    $line =~ s/\s+$//;
+    return $line;
 }
 
 sub _merge {
@@ -1369,22 +1420,23 @@ Note that both spellings ('color' and 'colour') will work.
 
    use Data::Printer {
      color => {
-        array       => 'bright_white',  # array index numbers
-        number      => 'bright_blue',   # numbers
-        string      => 'bright_yellow', # strings
-        class       => 'bright_green',  # class names
-        method      => 'bright_green',  # method names
-        undef       => 'bright_red',    # the 'undef' value
-        hash        => 'magenta',       # hash keys
-        regex       => 'yellow',        # regular expressions
-        code        => 'green',         # code references
-        glob        => 'bright_cyan',   # globs (usually file handles)
-        vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
-        repeated    => 'white on_red',  # references to seen values
-        caller_info => 'bright_cyan',   # details on what's being printed
-        weak        => 'cyan',          # weak references
-        tainted     => 'red',           # tainted content
-        escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
+        array           => 'bright_white',  # array index numbers
+        number          => 'bright_blue',   # numbers
+        string          => 'bright_yellow', # strings
+        class           => 'bright_green',  # class names
+        method          => 'bright_green',  # method names
+        undef           => 'bright_red',    # the 'undef' value
+        hash            => 'magenta',       # hash keys
+        regex           => 'yellow',        # regular expressions
+        code            => 'green',         # code references
+        glob            => 'bright_cyan',   # globs (usually file handles)
+        vstring         => 'bright_blue',   # version strings (v5.16.0, etc)
+        repeated        => 'white on_red',  # references to seen values
+        caller_info     => 'bright_cyan',   # details on what's being printed
+        caller_info_var => 'green',         # the name of the variable being printed
+        weak            => 'cyan',          # weak references
+        tainted         => 'red',           # tainted content
+        escaped         => 'bright_red',    # escaped characters (\t, \n, etc)
 
         # potential new Perl datatypes, unknown to Data::Printer
         unknown     => 'bright_yellow on_blue',
