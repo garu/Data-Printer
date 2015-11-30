@@ -987,10 +987,11 @@ sub _get_caller_print_var {
         # that statement contains a single PPI::Token::Symbol,
         # it is likely that that symbol is the name of the sought variable.
         my $elements = $statement->find('PPI::Token::Symbol');
-        if ( @$elements == 1 ) {
+        my $num_elem = ( $elements ) ? scalar @$elements : 0;
+        if ( $num_elem == 1 ) {
             $new_line = $elements->[0]->content;
         }
-        elsif ( @$elements == 2 ) {
+        elsif ( $num_elem == 2 ) {
             # otherwise, if there is two PPI::Token::Symbol's in the
             # statement, and the statement is a PPI::Statement::Variable
             # is is likely that the second symbol is the sought variable..
