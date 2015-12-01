@@ -909,7 +909,6 @@ sub _deparse {
     $sub    =~ s/\n/$pad/gse;
     return $sub;
 }
-
 sub _get_info_message {
     my $p = shift;
     my @caller = caller 2;
@@ -918,6 +917,42 @@ sub _get_info_message {
 
     my ( $filename, $line ) = @caller[1..2];
 
+    # Note: $filename will not be valid if we were called from "eval $str"..
+    #   In that case $filename will be on the form "(eval xx)"..
+    #   For example, for "eval 'p $var'", $filename will be "(eval xx)",
+    #   in "caller 2", for "xx" equal to an integer representing the
+    #   number of the eval statement in the source (as encountered on runtime).
+    #
+    #   For example, if this were the third "eval" encountered at runtime, xx
+    #   would be 3. In this case, element 7 of "caller 3" will contain the
+    #   eval-text, i.e. "p $var", and $filename and $line can also be recovered
+    #   from "caller 3".  But not all cases allows the source line to be
+    #   recovered. For example, for "eval 'sub my_func { p $var }'", and then a
+    #   call to "my_func()", will set $filename to "(eval xx)", but now element
+    #   7 of "caller 3" will no longer be defined. So in order to determine the
+    #   source statement in "caller 2", one would need to parse the whole source
+    #   using PPI and search for the xx-th eval statement, and the try to parse
+    #   that statement to arrive at 'p $var'.. However, since the xx number
+    #   refers to runtime code, it may not be the same number as in the source
+    #   code... (Alternatively one could try use "B::Deparse" on "my_func")
+    #
+    my $line_str = undef;
+    my $eval_regex = qr/^\Q(eval\E/;
+    if ( $filename =~ $eval_regex ) {
+        #   Still try to determine $filename, by going one stack frame up:
+        my @temp = caller 3;
+        if ( $temp[1] =~ $eval_regex ) {
+            # TODO: we do not currently handle recursive evals
+            #   currently: simply bail out on determining the $filename
+            $filename = undef;
+            $line = 0;
+        }
+        else {
+            $filename = $temp[1];
+            $line = $temp[2];
+        }
+        $line_str = $temp[6];  # this is the $str in "eval $str" (or may be undef)
+    }
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
     $message =~ s/\b__FILENAME__\b/$filename/g;
     $message =~ s/\b__LINE__\b/$line/g;
@@ -926,7 +961,7 @@ sub _get_info_message {
         if ( $message =~ $regex ) {
             # try to guess the variable name that is printed by reading
             # $line in $filename
-            my $replace = _get_caller_print_var($p, $filename, $line);
+            my $replace = _get_caller_print_var($p, $filename, $line, $line_str);
             # use grep to remove empty items
             my @parts = grep $_, split $regex, $message;
             for ( @parts ) {
@@ -947,34 +982,35 @@ sub _get_info_message {
     return $message . $BREAK;
 }
 
-# This function reads line number $lineno from file $filename
-#  if this function is called more than once for a given $filename,
-#  it still rereads the file each time. So a possible improvement could
-#  be to store each line of a file in private array the first time the
-#  file is read. Then subsequent calls for the same $filename could
-#  simply lookup the line in the array.
+# This function reads line number $lineno from file $filename (if $line is undef).
+#   If this function is called more than once for a given $filename, it still
+#   rereads the file each time. So a possible improvement could be to store each
+#   line of a file in private array the first time the file is read. Then
+#   subsequent calls for the same $filename could simply lookup the line in the
+#   array.
 #
 sub _get_caller_print_var {
-    my ( $p, $filename, $lineno ) = @_;
-    my $line = _get_caller_source_line( $filename, $lineno );
+    my ( $p, $filename, $lineno, $line ) = @_;
+    if ( !defined $line ) {
+        $line = _get_caller_source_line( $filename, $lineno );
+    }
     return '"??"' if not defined $line;
     require PPI;
-    #require PPI::Dumper;
     my $doc = PPI::Document->new(\$line);
+    #require PPI::Dumper;
     #my $dumper = PPI::Dumper->new( $doc );
     #$dumper->print;
-    my $statement;
-    my $num_statements = 0;
-    for my $child ( @{ $doc->{children} } ) {
-        if ($child->isa('PPI::Statement') ) {
-            $statement = $child;
-            $num_statements++;
-        }
-    }
+    my ($statements, $num_statements) =
+      _ppi_get_top_level_items( $doc, 'PPI::Statement' );
 
     # Default behavior is to use $new_line = $line. This default should still be better
     # than not printing anything! 
     my $new_line = $line;
+
+    # It is not necessary to display a trailing semicolon.
+    # (It will only act as "noise" in the output..)
+    $new_line =~ s/;$//;
+    
     # Next: try to do better than the default behavior
     # Example: if $line is
     #
@@ -983,24 +1019,53 @@ sub _get_caller_print_var {
     # we are able to reduce this $line to "%some_hash" using the following:
     #
     if ( $num_statements == 1 ) {
-        # If the line contains a single top level statement, and
-        # that statement contains a single PPI::Token::Symbol,
-        # it is likely that that symbol is the name of the sought variable.
-        my $elements = $statement->find('PPI::Token::Symbol');
-        my $num_elem = ( $elements ) ? scalar @$elements : 0;
-        if ( $num_elem == 1 ) {
-            $new_line = $elements->[0]->content;
-        }
-        elsif ( $num_elem == 2 ) {
-            # otherwise, if there is two PPI::Token::Symbol's in the
-            # statement, and the statement is a PPI::Statement::Variable
-            # is is likely that the second symbol is the sought variable..
-            if ( (ref $statement) eq "PPI::Statement::Variable" ) {
-                $new_line = $elements->[1]->content;
+        my $statement = $statements->[0];
+        my $is_assignment_statement =
+          (ref $statement) eq "PPI::Statement::Variable";
+        my $symbols = $statement->find('PPI::Token::Symbol');
+        my $num_symbols = ( $symbols ) ? scalar @$symbols : 0;
+        my ($words, $num_words) =
+          _ppi_get_top_level_items( $statement, 'PPI::Token::Word' );
+        # Requiring $num_words == 1, avoids considering cases like
+        #   p my_sub( $var );
+        # In that case 'p' would be a word, and 'my_sub' would be a word,
+        #  and we should *not* extract '$var' in this case.
+        #  (This is because it is not the variable
+        #  that is printed, rather 'my_sub( $var )' is printed..)
+        if ( $num_words == 1 or $is_assignment_statement ) {
+            # If the line contains a single top level statement, and
+            # that statement contains a single PPI::Token::Symbol,
+            # it is likely that that symbol is the name of the sought variable.
+            if ( $num_symbols == 1 ) {
+                $new_line = $symbols->[0]->content;
+            }
+            elsif ( $num_symbols == 2 ) {
+                # otherwise, if there are two PPI::Token::Symbol's in the
+                # statement, and the statement is a PPI::Statement::Variable
+                # it is likely that the second symbol is the sought variable..
+                # I.e., consider:
+                #    my $res = p $var;
+                # there are two symbols : '$res' and '$var', but we are interested
+                # in the last one.
+                if ( (ref $statement) eq "PPI::Statement::Variable" ) {
+                    $new_line = $symbols->[1]->content;
+                }
             }
         }
     }
     return '"' . $new_line . '"';
+}
+
+sub _ppi_get_top_level_items {
+    my ( $ref, $class_name ) = @_;
+
+    my @items;
+    for my $child ( @{ $ref->{children} } ) {
+        if ($child->isa( $class_name ) ) {
+            push @items, $child;
+        }
+    }
+    return (\@items, scalar @items);
 }
 
 sub _get_caller_source_line {
