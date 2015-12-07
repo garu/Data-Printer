@@ -931,7 +931,7 @@ sub _get_info_message {
     #   call to "my_func()", will set $filename to "(eval xx)", but now element
     #   7 of "caller 3" will no longer be defined. So in order to determine the
     #   source statement in "caller 2", one would need to parse the whole source
-    #   using PPI and search for the xx-th eval statement, and the try to parse
+    #   using PPI and search for the xx-th eval statement, and then try to parse
     #   that statement to arrive at 'p $var'.. However, since the xx number
     #   refers to runtime code, it may not be the same number as in the source
     #   code... (Alternatively one could try use "B::Deparse" on "my_func")
@@ -952,6 +952,10 @@ sub _get_info_message {
             $line = $temp[2];
         }
         $line_str = $temp[6];  # this is the $str in "eval $str" (or may be undef)
+        # seems like earlier versions of perl (< 5.20) adds a new line and a
+        # semicolon to this string.
+        $line_str =~ s/;$//;
+        $line_str =~ s/\s+$//;
     }
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
     $message =~ s/\b__FILENAME__\b/$filename/g;
