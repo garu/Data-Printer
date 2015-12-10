@@ -909,6 +909,7 @@ sub _deparse {
     $sub    =~ s/\n/$pad/gse;
     return $sub;
 }
+
 sub _get_info_message {
     my $p = shift;
     my @caller = caller 2;
@@ -917,48 +918,10 @@ sub _get_info_message {
 
     my ( $filename, $line ) = @caller[1..2];
 
-    # Note: $filename will not be valid if we were called from "eval $str"..
-    #   In that case $filename will be on the form "(eval xx)"..
-    #   For example, for "eval 'p $var'", $filename will be "(eval xx)",
-    #   in "caller 2", for "xx" equal to an integer representing the
-    #   number of the eval statement in the source (as encountered on runtime).
-    #
-    #   For example, if this were the third "eval" encountered at runtime, xx
-    #   would be 3. In this case, element 7 of "caller 3" will contain the
-    #   eval-text, i.e. "p $var", and $filename and $line can also be recovered
-    #   from "caller 3".  But not all cases allows the source line to be
-    #   recovered. For example, for "eval 'sub my_func { p $var }'", and then a
-    #   call to "my_func()", will set $filename to "(eval xx)", but now element
-    #   7 of "caller 3" will no longer be defined. So in order to determine the
-    #   source statement in "caller 2", one would need to parse the whole source
-    #   using PPI and search for the xx-th eval statement, and then try to parse
-    #   that statement to arrive at 'p $var'.. However, since the xx number
-    #   refers to runtime code, it may not be the same number as in the source
-    #   code... (Alternatively one could try use "B::Deparse" on "my_func")
-    #
-    my $line_str = undef;
-    my $eval_regex = qr/^\Q(eval\E/;
-    if ( $filename =~ $eval_regex ) {
-        #   Still try to determine $filename, by going one stack frame up:
-        my @temp = caller 3;
-        if ( $temp[1] =~ $eval_regex ) {
-            # TODO: we do not currently handle recursive evals
-            #   currently: simply bail out on determining the $filename
-            $filename = undef;
-            $line = 0;
-        }
-        else {
-            $filename = $temp[1];
-            $line = $temp[2];
-        }
-        $line_str = $temp[6];  # this is the $str in "eval $str" (or may be undef)
-        # seems like earlier versions of perl (< 5.20) adds a new line and a
-        # semicolon to this string.
-        $line_str =~ s/;$//;
-        $line_str =~ s/\s+$//;
-    }
+    ( $line, $filename, my $line_str, my $filename_str ) 
+      = _handle_filename( $line, $filename );
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
-    $message =~ s/\b__FILENAME__\b/$filename/g;
+    $message =~ s/\b__FILENAME__\b/$filename_str/g;
     $message =~ s/\b__LINE__\b/$line/g;
     {
         my $regex = qr/\b(__VAR__)\b/;
@@ -986,6 +949,57 @@ sub _get_info_message {
     return $message . $BREAK;
 }
 
+sub _handle_filename {
+    my ( $line, $filename ) = @_;
+
+    my $line_str = undef;
+    my $eval_regex = qr/^\Q(eval\E/;
+    my $filename_str = $filename;
+    # Note : $filename will not be valid if we were called from "eval $str"..
+    #   In that case $filename will be on the form "(eval xx)"..
+    #   For example, for "eval 'p $var'", $filename will be "(eval xx)",
+    #   in "caller 2", for "xx" equal to an integer representing the
+    #   number of the eval statement in the source (as encountered on runtime).
+    #
+    #   For example, if this were the third "eval" encountered at runtime, xx
+    #   would be 3. In this case, element 7 of "caller 3" will contain the
+    #   eval-text, i.e. "p $var", and $filename and $line can also be recovered
+    #   from "caller 3".  But not all cases allows the source line to be
+    #   recovered. For example, for "eval 'sub my_func { p $var }'", and then a
+    #   call to "my_func()", will set $filename to "(eval xx)", but now element
+    #   7 of "caller 3" will no longer be defined. So in order to determine the
+    #   source statement in "caller 2", one would need to parse the whole source
+    #   using PPI and search for the xx-th eval statement, and then try to parse
+    #   that statement to arrive at 'p $var'.. However, since the xx number
+    #   refers to runtime code, it may not be the same number as in the source
+    #   code... (Alternatively one could try use "B::Deparse" on "my_func")
+    #
+    if ( $filename =~ $eval_regex ) {
+        #   Still try to determine $filename, by going one stack frame up:
+        my @caller = caller 4;
+        if ( $caller[1] =~ $eval_regex ) {
+            # TODO: we do not currently handle recursive evals
+            #   currently: simply bail out on determining the $filename
+            $filename = undef;
+            $filename_str = '??';
+            $line = 0;
+        }
+        else {
+            $filename = $caller[1];
+            $filename_str = $caller[1];
+            $line = $caller[2];
+        }
+        $line_str = $caller[6];  # this is the $str in "eval $str" (or may be undef)
+        if ( defined $line_str ) {
+            # seems like earlier versions of perl (< 5.20) adds a new line and a
+            # semicolon to this string.
+            $line_str =~ s/;$//;
+            $line_str =~ s/\s+$//;
+        }
+    }
+    return  ( $line, $filename, $line_str, $filename_str) ;
+}
+
 # This function reads line number $lineno from file $filename (if $line is undef).
 #   If this function is called more than once for a given $filename, it still
 #   rereads the file each time. So a possible improvement could be to store each
@@ -995,10 +1009,13 @@ sub _get_info_message {
 #
 sub _get_caller_print_var {
     my ( $p, $filename, $lineno, $line ) = @_;
-    if ( !defined $line ) {
+    if ( not defined $line ) {
+        if ( not defined $filename ) {
+            return _quote('??');
+        }
         $line = _get_caller_source_line( $filename, $lineno );
     }
-    return '"??"' if not defined $line;
+    return _quote('??') if not defined $line;
     require PPI;
     my $doc = PPI::Document->new(\$line);
     #require PPI::Dumper;
@@ -1051,13 +1068,19 @@ sub _get_caller_print_var {
                 #    my $res = p $var;
                 # there are two symbols : '$res' and '$var', but we are interested
                 # in the last one.
-                if ( (ref $statement) eq "PPI::Statement::Variable" ) {
+                if ( $is_assignment_statement ) {
                     $new_line = $symbols->[1]->content;
                 }
             }
         }
     }
-    return '"' . $new_line . '"';
+    return _quote( $new_line );
+}
+
+sub _quote {
+    my ( $str ) = @_;
+
+    return '"' . $str . '"';
 }
 
 sub _ppi_get_top_level_items {
