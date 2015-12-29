@@ -15,6 +15,8 @@ BEGIN {
             File::HomeDir->my_home,
             '.dataprinter'
     );
+    # untaint - only necessary for old Win32
+    ($file) = $file =~ /^(.*)$/;
 
     if (-e $file) {
         plan skip_all => 'File .dataprinter should not be in test homedir';

@@ -6,12 +6,15 @@ use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
 use Clone::PP qw(clone);
+use Package::Stash;
 use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
 use Fcntl;
-use version 0.77 ();
+# This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
+# Instead, we now require version in the VSTRING() method.
+# use version 0.77 ();
 
 our $VERSION = '0.36';
 
@@ -636,7 +639,9 @@ sub Regexp {
 
 sub VSTRING {
     my ($item, $p) = @_;
+    eval { require version };
     my $string = '';
+    # This will raise an error if we have version < 0.77;
     $string .= colored(version->declare($$item)->normal, $p->{color}->{'vstring'});
     return $string;
 }
@@ -749,8 +754,6 @@ sub _class {
 
         # Package::Stash dies on blessed XS
         eval {
-            require Package::Stash;
-
             my $stash = Package::Stash->new($ref);
 
             if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
@@ -777,6 +780,10 @@ sub _class {
                 }
             }
         };
+        if ($@) {
+            warn "*** WARNING *** Could not get superclasses for $ref: $@"
+                unless $@ =~ / is not a module name at /;
+        }
 
         $string .= _show_methods($ref, $p)
             if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
@@ -858,6 +865,10 @@ sub _show_methods {
                            @{mro::get_linear_isa($ref)},
                            $p->{class}{universal} ? 'UNIVERSAL' : ()
     };
+    if ($@) {
+        warn "*** WARNING *** Could not get all_methods for $ref: $@"
+           unless $@ =~ / is not a module name at /;
+    }
 
 METHOD:
     foreach my $method (@all_methods) {
