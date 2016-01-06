@@ -10,6 +10,7 @@ BEGIN {
     use_ok (
         'Data::Printer',
             colored      => 1,
+            return_value => 'dump',
             show_unicode => 1,
     );
 };
