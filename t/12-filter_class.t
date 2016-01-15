@@ -57,4 +57,7 @@ is $filters->{SCALAR}->[0]->('SCALAR', $properties), 'other test for: "SCALAR"',
 
 is $filters->{HASH}->[0]->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
 
+my $foo = 1;
+ok( np( $foo ), 'np is imported' );
+
 done_testing;
