@@ -65,11 +65,15 @@ sub import {
         return;
     };
 
-    my $imported = sub (\[@$%&];%) {
+    my $imported_p = sub (\[@$%&];%) {
         my ($item, $p) = @_;
         return Data::Printer::p( $item, %properties );
     };
 
+    my $imported_np = sub (\[@$%&];%) {
+        my ($item, $p) = @_;
+        return Data::Printer::np( $item, %properties );
+    };
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
@@ -77,7 +81,8 @@ sub import {
         *{"$caller\::outdent"} = $outdent;
         *{"$caller\::newline"} = $newline;
 
-        *{"$caller\::p"} = $imported;
+        *{"$caller\::np"} = $imported_np;
+        *{"$caller\::p"} = $imported_p;
 
         *{"$caller\::_filter_list"}   = $filters;
         *{"$caller\::_extra_options"} = $extras;
