@@ -17,7 +17,7 @@ my $properties = {
     return_value => 'dump',
     indent => 5,
     _current_indent => 0,
-    _linebreak => \"\n",
+    _linebreak => "\n",
 };
 
 sub test {

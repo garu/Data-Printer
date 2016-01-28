@@ -25,9 +25,7 @@ BEGIN {
     }
 }
 
-
 # defaults
-my $BREAK = "\n";
 my $properties = {
     'name'           => 'var',
     'indent'         => 4,
@@ -112,7 +110,7 @@ my $properties = {
 
     _output          => *STDERR,     # used internally
     _current_indent  => 0,           # used internally
-    _linebreak       => \$BREAK,     # used internally
+    _linebreak       => "\n",        # used internally
     _seen            => {},          # used internally
     _seen_override   => {},          # used internally
     _depth           => 0,           # used internally
@@ -211,15 +209,14 @@ sub _data_printer {
 
     croak 'When calling p() without prototypes, please pass arguments as references'
         unless ref $_[0];
-
     my ($item, %local_properties) = @_;
     local %ENV = %ENV;
-
     my $p = _merge(\%local_properties);
+
     unless ($p->{multiline}) {
-        $BREAK = ' ';
-        $p->{'indent'} = 0;
-        $p->{'index'}  = 0;
+        $p->{'_linebreak'} = ' ';
+        $p->{'indent'}     = 0;
+        $p->{'index'}      = 0;
     }
 
     # We disable colors if colored is set to false.
@@ -442,7 +439,7 @@ sub ARRAY {
         $string .= '[]';
     }
     else {
-        $string .= "[$BREAK";
+        $string .= "[$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         foreach my $i (0 .. $#{$item} ) {
@@ -473,7 +470,7 @@ sub ARRAY {
             $string .= $p->{separator}
               if $i < $#{$item} || $p->{end_separator};
 
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
 
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
@@ -533,7 +530,7 @@ sub HASH {
         $string .= '{}';
     }
     else {
-        $string .= "{$BREAK";
+        $string .= "{$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         my $total_keys  = scalar keys %$item;
@@ -606,7 +603,7 @@ sub HASH {
             $string .= $p->{separator}
               if --$total_keys > 0 || $p->{end_separator};
 
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
 
             my $size = 2 + length($raw_key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
@@ -747,8 +744,7 @@ sub _class {
     if ($p->{class}{expand} eq 'all'
         or $p->{class}{expand} >= $p->{class}{_depth}
     ) {
-        $string .= "  {$BREAK";
-
+        $string .= "  {$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         if ($] >= 5.010) {
@@ -767,7 +763,7 @@ sub _class {
                             . 'Parents       '
                             . join(', ', map { colored($_, $p->{color}->{'class'}) }
                                          @superclasses
-                            ) . $BREAK;
+                            ) . $p->{_linebreak};
                 }
 
                 if ( $p->{class}{linear_isa} and
@@ -781,7 +777,7 @@ sub _class {
                             . 'Linear @ISA   '
                             . join(', ', map { colored( $_, $p->{color}->{'class'}) }
                                       @{mro::get_linear_isa($ref)}
-                            ) . $BREAK;
+                            ) . $p->{_linebreak};
                 }
             }
         };
@@ -799,7 +795,7 @@ sub _class {
 
             local $p->{_reftype} = Scalar::Util::reftype $item;
             $string .= _p($item, $p);
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
         }
 
         $p->{_current_indent} -= $p->{indent};
@@ -905,7 +901,7 @@ METHOD:
                  . (@list ? ' : ' : '')
                  . join(', ', map { colored($_, $p->{color}->{method}) }
                               @list
-                   ) . $BREAK;
+                   ) . $p->{_linebreak};
     }
 
     return $string;
@@ -933,7 +929,7 @@ sub _get_info_message {
     $message =~ s/\b__FILENAME__\b/$caller[1]/g;
     $message =~ s/\b__LINE__\b/$caller[2]/g;
 
-    return colored($message, $p->{color}{caller_info}) . $BREAK;
+    return colored($message, $p->{color}{caller_info}) . $p->{_linebreak};
 }
 
 

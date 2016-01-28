@@ -50,7 +50,7 @@ sub import {
     };
 
     my $newline = sub {
-        return ${$properties{_linebreak}} . (' ' x $properties{_current_indent});
+        return $properties{_linebreak} . (' ' x $properties{_current_indent});
     };
 
     my $indent = sub {
