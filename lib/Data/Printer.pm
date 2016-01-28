@@ -101,8 +101,8 @@ my $properties = {
         CODE    => [ \&CODE     ],
         GLOB    => [ \&GLOB     ],
         VSTRING => [ \&VSTRING  ],
-        LVALUE  => [ \&LVALUE ],
-        FORMAT  => [ \&FORMAT ],
+        LVALUE  => [ \&LVALUE   ],
+        FORMAT  => [ \&FORMAT   ],
         Regexp  => [ \&Regexp   ],
         -unknown=> [ \&_unknown ],
         -class  => [ \&_class   ],
@@ -651,7 +651,7 @@ sub VSTRING {
 sub FORMAT {
     my ($item, $p) = @_;
     my $string = '';
-    $string .= colored("FORMAT", $p->{color}->{'format'});
+    $string .= colored('FORMAT', $p->{color}->{'format'});
     return $string;
 }
 
