@@ -1399,6 +1399,7 @@ customization options available, as shown below (with default values):
       deparse        => 0,       # use B::Deparse to expand (expose) subroutines
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
+      show_unicode   => 0,       # show unicode flag if it exists
       show_weak      => 1,       # expose weak references
       show_readonly  => 0,       # expose scalar variables marked as read-only
       show_lvalue    => 1,       # expose lvalue types
