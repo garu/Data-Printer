@@ -2097,6 +2097,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =over 4
 
+=item * Adam Rosenstein
+
 =item * Allan Whiteford
 
 =item * Andreas König
@@ -2106,6 +2108,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Árpád Szász
 
 =item * Athanasios Douitsis (aduitsis)
+
+=item * Baldur Kristinsson
 
 =item * brian d foy
 
@@ -2165,6 +2169,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Maxim Vuets
 
+=item * Michael Conrad
+
 =item * Mike Doherty (doherty)
 
 =item * Nuba Princigalli (nuba)
@@ -2206,6 +2212,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Torsten Raudssus (Getty)
 
 =item * Tokuhiro Matsuno (tokuhirom)
+
+=item * vividsnow
 
 =item * Wesley Dal`Col (blabos)
 
