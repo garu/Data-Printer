@@ -16,7 +16,7 @@ use Fcntl;
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
 
-our $VERSION = '0.36';
+our $VERSION = '0.37';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
