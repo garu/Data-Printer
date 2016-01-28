@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.38 2016-01-28
+    BUG FIXES:
+        - removed Test::Most unlisted dependency
+          (thanks Marco Masetti for reporting)
+
 0.37 2016-01-28
     NEW FEATURES:
         - Support for displaying scalar's unicode flag

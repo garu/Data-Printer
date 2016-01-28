@@ -16,7 +16,7 @@ use Fcntl;
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -2163,6 +2163,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Kip Hampton (ubu)
 
 =item * Marcel Grünauer (hanekomu)
+
+=item * Marco Masetti (grubert65)
 
 =item * Mark Fowler (Trelane)
 
