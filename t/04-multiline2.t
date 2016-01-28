@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Test::Most tests => 10;
+use Test::More tests => 10;
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1;
