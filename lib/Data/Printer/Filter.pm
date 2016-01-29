@@ -215,6 +215,12 @@ You can use this to throw some data structures back at C<Data::Printer>
 and use the results in your own return string - like when manipulating
 hashes or arrays.
 
+=head2 np()
+
+This is the same as C<Data::Printer>'s np().  You can use this to throw some
+data structures back at C<Data::Printer> and use the results in your own return
+string - like when manipulating hashes or arrays.
+
 =head2 newline()
 
 This helper returns a string using the linebreak as specified by the
