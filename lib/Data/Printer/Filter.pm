@@ -50,7 +50,7 @@ sub import {
     };
 
     my $newline = sub {
-        return ${$properties{_linebreak}} . (' ' x $properties{_current_indent});
+        return $properties{_linebreak} . (' ' x $properties{_current_indent});
     };
 
     my $indent = sub {
@@ -65,11 +65,15 @@ sub import {
         return;
     };
 
-    my $imported = sub (\[@$%&];%) {
+    my $imported_p = sub (\[@$%&];%) {
         my ($item, $p) = @_;
         return Data::Printer::p( $item, %properties );
     };
 
+    my $imported_np = sub (\[@$%&];%) {
+        my ($item, $p) = @_;
+        return Data::Printer::np( $item, %properties );
+    };
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
@@ -77,7 +81,8 @@ sub import {
         *{"$caller\::outdent"} = $outdent;
         *{"$caller\::newline"} = $newline;
 
-        *{"$caller\::p"} = $imported;
+        *{"$caller\::np"} = $imported_np;
+        *{"$caller\::p"} = $imported_p;
 
         *{"$caller\::_filter_list"}   = $filters;
         *{"$caller\::_extra_options"} = $extras;
@@ -209,6 +214,12 @@ This is the same as C<Data::Printer>'s p(), only you can't rename it.
 You can use this to throw some data structures back at C<Data::Printer>
 and use the results in your own return string - like when manipulating
 hashes or arrays.
+
+=head2 np()
+
+This is the same as C<Data::Printer>'s np().  You can use this to throw some
+data structures back at C<Data::Printer> and use the results in your own return
+string - like when manipulating hashes or arrays.
 
 =head2 newline()
 

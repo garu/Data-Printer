@@ -6,6 +6,7 @@ use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
 use Clone::PP qw(clone);
+use Package::Stash;
 use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
@@ -13,9 +14,11 @@ use File::HomeDir ();
 use FindBin;
 use File::Basename ();
 use Fcntl;
-use version 0.77 ();
+# This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
+# Instead, we now require version in the VSTRING() method.
+# use version 0.77 ();
 
-our $VERSION = '0.36';
+our $VERSION = '0.38';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -24,9 +27,7 @@ BEGIN {
     }
 }
 
-
 # defaults
-my $BREAK = "\n";
 my $properties = {
     'name'           => 'var',
     'indent'         => 4,
@@ -41,6 +42,7 @@ my $properties = {
     'end_separator'  => 0,
     'show_tied'      => 1,
     'show_tainted'   => 1,
+    'show_unicode'   => 0,
     'show_weak'      => 1,
     'show_readonly'  => 0,
     'show_lvalue'    => 1,
@@ -56,26 +58,27 @@ my $properties = {
     'caller_message' => 'Printing in line __LINE__ of __FILENAME__:',
     'class_method'   => '_data_printer', # use a specific dump method, if available
     'color'          => {
-        'array'           => 'bright_white',
-        'number'          => 'bright_blue',
-        'string'          => 'bright_yellow',
-        'class'           => 'bright_green',
-        'method'          => 'bright_green',
-        'undef'           => 'bright_red',
-        'hash'            => 'magenta',
-        'regex'           => 'yellow',
-        'code'            => 'green',
-        'glob'            => 'bright_cyan',
-        'vstring'         => 'bright_blue',
-        'lvalue'          => 'bright_white',
-        'format'          => 'bright_cyan',
-        'repeated'        => 'white on_red',
-        'caller_info'     => 'bright_cyan',
+        'array'       => 'bright_white',
+        'number'      => 'bright_blue',
+        'string'      => 'bright_yellow',
+        'class'       => 'bright_green',
+        'method'      => 'bright_green',
+        'undef'       => 'bright_red',
+        'hash'        => 'magenta',
+        'regex'       => 'yellow',
+        'code'        => 'green',
+        'glob'        => 'bright_cyan',
+        'vstring'     => 'bright_blue',
+        'lvalue'      => 'bright_white',
+        'format'      => 'bright_cyan',
+        'repeated'    => 'white on_red',
+        'caller_info' => 'bright_cyan',
         'caller_info_var' => 'green',
-        'weak'            => 'cyan',
-        'tainted'         => 'red',
-        'escaped'         => 'bright_red',
-        'unknown'         => 'bright_yellow on_blue',
+        'weak'        => 'cyan',
+        'tainted'     => 'red',
+        'unicode'     => 'bright_yellow',
+        'escaped'     => 'bright_red',
+        'unknown'     => 'bright_yellow on_blue',
     },
     'class' => {
         inherited    => 'none',   # also 'all', 'public' or 'private'
@@ -101,8 +104,8 @@ my $properties = {
         CODE    => [ \&CODE     ],
         GLOB    => [ \&GLOB     ],
         VSTRING => [ \&VSTRING  ],
-        LVALUE  => [ \&LVALUE ],
-        FORMAT  => [ \&FORMAT ],
+        LVALUE  => [ \&LVALUE   ],
+        FORMAT  => [ \&FORMAT   ],
         Regexp  => [ \&Regexp   ],
         -unknown=> [ \&_unknown ],
         -class  => [ \&_class   ],
@@ -110,7 +113,7 @@ my $properties = {
 
     _output          => *STDERR,     # used internally
     _current_indent  => 0,           # used internally
-    _linebreak       => \$BREAK,     # used internally
+    _linebreak       => "\n",        # used internally
     _seen            => {},          # used internally
     _seen_override   => {},          # used internally
     _depth           => 0,           # used internally
@@ -209,15 +212,14 @@ sub _data_printer {
 
     croak 'When calling p() without prototypes, please pass arguments as references'
         unless ref $_[0];
-
     my ($item, %local_properties) = @_;
     local %ENV = %ENV;
-
     my $p = _merge(\%local_properties);
+
     unless ($p->{multiline}) {
-        $BREAK = ' ';
-        $p->{'indent'} = 0;
-        $p->{'index'}  = 0;
+        $p->{'_linebreak'} = ' ';
+        $p->{'indent'}     = 0;
+        $p->{'index'}      = 0;
     }
 
     # We disable colors if colored is set to false.
@@ -342,6 +344,9 @@ sub SCALAR {
     $string .= ' ' . colored('(TAINTED)', $p->{color}->{'tainted'})
         if $p->{show_tainted} and Scalar::Util::tainted($$item);
 
+    $string .= ' ' . colored('(U)', $p->{color}->{'unicode'})
+        if $p->{show_unicode} and utf8::is_utf8($$item);
+
     $p->{_tie} = ref tied $$item;
 
     if ($p->{show_readonly} and &Internals::SvREADONLY( $item )) {
@@ -437,7 +442,7 @@ sub ARRAY {
         $string .= '[]';
     }
     else {
-        $string .= "[$BREAK";
+        $string .= "[$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         foreach my $i (0 .. $#{$item} ) {
@@ -468,7 +473,7 @@ sub ARRAY {
             $string .= $p->{separator}
               if $i < $#{$item} || $p->{end_separator};
 
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
 
             my $size = 2 + length($i); # [10], [100], etc
             substr $p->{name}, -$size, $size, '';
@@ -528,7 +533,7 @@ sub HASH {
         $string .= '{}';
     }
     else {
-        $string .= "{$BREAK";
+        $string .= "{$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         my $total_keys  = scalar keys %$item;
@@ -601,7 +606,7 @@ sub HASH {
             $string .= $p->{separator}
               if --$total_keys > 0 || $p->{end_separator};
 
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
 
             my $size = 2 + length($raw_key); # {foo}, {z}, etc
             substr $p->{name}, -$size, $size, '';
@@ -639,7 +644,9 @@ sub Regexp {
 
 sub VSTRING {
     my ($item, $p) = @_;
+    eval { require version };
     my $string = '';
+    # This will raise an error if we have version < 0.77;
     $string .= colored(version->declare($$item)->normal, $p->{color}->{'vstring'});
     return $string;
 }
@@ -647,7 +654,7 @@ sub VSTRING {
 sub FORMAT {
     my ($item, $p) = @_;
     my $string = '';
-    $string .= colored("FORMAT", $p->{color}->{'format'});
+    $string .= colored('FORMAT', $p->{color}->{'format'});
     return $string;
 }
 
@@ -740,8 +747,7 @@ sub _class {
     if ($p->{class}{expand} eq 'all'
         or $p->{class}{expand} >= $p->{class}{_depth}
     ) {
-        $string .= "  {$BREAK";
-
+        $string .= "  {$p->{_linebreak}";
         $p->{_current_indent} += $p->{indent};
 
         if ($] >= 5.010) {
@@ -752,8 +758,6 @@ sub _class {
 
         # Package::Stash dies on blessed XS
         eval {
-            require Package::Stash;
-
             my $stash = Package::Stash->new($ref);
 
             if ( my @superclasses = @{$stash->get_symbol('@ISA')||[]} ) {
@@ -762,7 +766,7 @@ sub _class {
                             . 'Parents       '
                             . join(', ', map { colored($_, $p->{color}->{'class'}) }
                                          @superclasses
-                            ) . $BREAK;
+                            ) . $p->{_linebreak};
                 }
 
                 if ( $p->{class}{linear_isa} and
@@ -776,10 +780,14 @@ sub _class {
                             . 'Linear @ISA   '
                             . join(', ', map { colored( $_, $p->{color}->{'class'}) }
                                       @{mro::get_linear_isa($ref)}
-                            ) . $BREAK;
+                            ) . $p->{_linebreak};
                 }
             }
         };
+        if ($@) {
+            warn "*** WARNING *** Could not get superclasses for $ref: $@"
+                unless $@ =~ / is not a module name at /;
+        }
 
         $string .= _show_methods($ref, $p)
             if $p->{class}{show_methods} and $p->{class}{show_methods} ne 'none';
@@ -790,7 +798,7 @@ sub _class {
 
             local $p->{_reftype} = Scalar::Util::reftype $item;
             $string .= _p($item, $p);
-            $string .= $BREAK;
+            $string .= $p->{_linebreak};
         }
 
         $p->{_current_indent} -= $p->{indent};
@@ -861,6 +869,10 @@ sub _show_methods {
                            @{mro::get_linear_isa($ref)},
                            $p->{class}{universal} ? 'UNIVERSAL' : ()
     };
+    if ($@) {
+        warn "*** WARNING *** Could not get all_methods for $ref: $@"
+           unless $@ =~ / is not a module name at /;
+    }
 
 METHOD:
     foreach my $method (@all_methods) {
@@ -892,7 +904,7 @@ METHOD:
                  . (@list ? ' : ' : '')
                  . join(', ', map { colored($_, $p->{color}->{method}) }
                               @list
-                   ) . $BREAK;
+                   ) . $p->{_linebreak};
     }
 
     return $string;
@@ -946,7 +958,7 @@ sub _get_info_message {
             $message = colored($message, $p->{color}{caller_info});
         }
     }
-    return $message . $BREAK;
+    return $message .  $p->{_linebreak};
 }
 
 sub _handle_filename {
@@ -1588,6 +1600,7 @@ customization options available, as shown below (with default values):
       deparse        => 0,       # use B::Deparse to expand (expose) subroutines
       show_tied      => 1,       # expose tied variables
       show_tainted   => 1,       # expose tainted variables
+      show_unicode   => 0,       # show unicode flag if it exists
       show_weak      => 1,       # expose weak references
       show_readonly  => 0,       # expose scalar variables marked as read-only
       show_lvalue    => 1,       # expose lvalue types
@@ -2301,6 +2314,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =over 4
 
+=item * Adam Rosenstein
+
 =item * Allan Whiteford
 
 =item * Andreas König
@@ -2310,6 +2325,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Árpád Szász
 
 =item * Athanasios Douitsis (aduitsis)
+
+=item * Baldur Kristinsson
 
 =item * brian d foy
 
@@ -2363,11 +2380,15 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Marcel Grünauer (hanekomu)
 
+=item * Marco Masetti (grubert65)
+
 =item * Mark Fowler (Trelane)
 
 =item * Matt S. Trout (mst)
 
 =item * Maxim Vuets
+
+=item * Michael Conrad
 
 =item * Mike Doherty (doherty)
 
@@ -2410,6 +2431,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Torsten Raudssus (Getty)
 
 =item * Tokuhiro Matsuno (tokuhirom)
+
+=item * vividsnow
 
 =item * Wesley Dal`Col (blabos)
 

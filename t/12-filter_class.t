@@ -17,7 +17,7 @@ my $properties = {
     return_value => 'dump',
     indent => 5,
     _current_indent => 0,
-    _linebreak => \"\n",
+    _linebreak => "\n",
 };
 
 sub test {
@@ -56,5 +56,8 @@ is $filters->{SCALAR}->[1]->('SCALAR', $properties), 'test', 'SCALAR filter call
 is $filters->{SCALAR}->[0]->('SCALAR', $properties), 'other test for: "SCALAR"', 'SCALAR filter called again';
 
 is $filters->{HASH}->[0]->('HASH', $properties), 'other test for: "HASH"', 'HASH filter with p()';
+
+my $foo = 1;
+ok( np( $foo ), 'np is imported' );
 
 done_testing;

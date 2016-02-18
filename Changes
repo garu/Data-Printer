@@ -1,5 +1,35 @@
 Revision history for Data-Printer
 
+0.38 2016-01-28
+    BUG FIXES:
+        - removed Test::Most unlisted dependency
+          (thanks Marco Masetti for reporting)
+
+0.37 2016-01-28
+    NEW FEATURES:
+        - Support for displaying scalar's unicode flag
+          (Michael Conrad)
+    BUG FIXES:
+        - Fixed test failure due to leaking environment variables
+          (Thomas Sibley)
+        - class_method only works if it's actually something we can call
+          (RenatoCRON)
+        - Attempt to fix a taint error on old Win32 systems
+          (Baldur Kristinsson)
+        - Prevent some 5.8 errors caused by the version module
+          (Baldur Kristinsson)
+        - Data::Printer::Filter should imports np() as well
+          (Olaf Alders)
+        - Multiline property is now properly propagated
+          (Adam Rosenstein)
+    OTHER:
+        - Removed some trailing whitespaces (Ivan Bessarabov)
+        - Extended tests for finding trailing whitespaces (Ivan Bessarabov)
+        - Documented caveat of using p() in variable declarations (vividsnow)
+        - Documented that the 'DB' filter supports DBIx::Class (Olaf Alders)
+        - New .gitignore file (David Lowe)
+        - Updated .travis.yml (Ivan Bessarabov)
+
 0.36 2015-05-29
     Bumping 0.35_01 to stable. Below is the (repeated) changelog,
     with the single addition of the 'scalar_quotes' patch.
