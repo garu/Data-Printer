@@ -1,8 +1,6 @@
 use strict;
 use warnings;
 
-use Data::Printer;
-
 BEGIN {
     delete $ENV{DATAPRINTERRC};
     use File::HomeDir::Test;  # avoid user's .dataprinter
@@ -66,7 +64,7 @@ done_testing;
 #
 #  2) Generate a test module at runtime (in a tempdir) containing a test
 #  subroutine with the code. Then require that module. Then call the test
-#  subroutine of the module. This procdure avoid using eval.. and the caller
+#  subroutine of the module. This procedure avoids using eval.. and the caller
 #  environment of the Data::Printer command would be more similar to the one
 #  in common use cases.
 #
