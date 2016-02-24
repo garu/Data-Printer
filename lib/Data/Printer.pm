@@ -1004,7 +1004,7 @@ sub _handle_filename {
         $line_str = $caller[6];  # this is the $str in "eval $str" (or may be undef)
         if ( defined $line_str ) {
             # seems like earlier versions of perl (< 5.20) adds a new line and a
-            # semicolon to this string.
+            # semicolon to this string.. remove those
             $line_str =~ s/;$//;
             $line_str =~ s/\s+$//;
         }
@@ -1028,11 +1028,7 @@ sub _get_caller_print_var {
         $line = _get_caller_source_line( $filename, $lineno );
     }
     return _quote('??') if not defined $line;
-    require PPI;
-    my $doc = PPI::Document->new(\$line);
-    #require PPI::Dumper;
-    #my $dumper = PPI::Dumper->new( $doc );
-    #$dumper->print;
+    my $doc = _get_ppi_document( \$line );
     my ($statements, $num_statements) =
       _ppi_get_top_level_items( $doc, 'PPI::Statement' );
 
@@ -1089,6 +1085,33 @@ sub _get_caller_print_var {
     return _quote( $new_line );
 }
 
+# We use PPI to parse the source line.
+# Alternatives to using PPI are
+#
+#  - Using a source filter (Filter::Util::Call) as in Data::Dumper::Simple
+#    and let the filter parse the line using a regex and then substitute it with
+#    another call to the data dumper function that includes the variable names in
+#    the argument list
+#
+#  - Using PadWalker as in Devel::Caller and Data::Dumper::Names
+#
+#
+# See also:
+#  - perlmonks: "Displaying a variable's name and value in a sub"
+#      http://www.perlmonks.org/?node_id=888088
+#
+sub _get_ppi_document {
+    my ( $line ) = @_;
+    
+    require PPI;
+    my $doc = PPI::Document->new( $line );
+    #require PPI::Dumper;
+    #my $dumper = PPI::Dumper->new( $doc );
+    #$dumper->print;
+
+    return $doc;
+}
+
 sub _quote {
     my ( $str ) = @_;
 
@@ -1119,9 +1142,38 @@ sub _get_caller_source_line {
     #
     # See also:  http://perldoc.perl.org/perlfaq8.html#How-do-I-add-the-directory-my-program-lives-in-to-the-module%2flibrary-search-path%3f
     if ( !File::Spec->file_name_is_absolute( $filename ) ) {
-        $filename = File::Spec->rel2abs(
-            File::Basename::basename($filename), $FindBin::Bin
-        );
+        if ( $filename eq $0 ) {
+            # If $filename is the initial script name ( $0 ) and is also relative,
+            # it will *not* be relative to $FindBin::RealBin (unless $filename
+            # is a simple name, that is: $filename does not contain any slashes ).
+            # So if we run a script (say "p.pl") located in
+            # sub folder "test" by typing "./test/p.pl" at the terminal prompt,
+            # then $filename will be "./test/p.pl" (which is not a simple name)
+            # and this is relative to "." and not "./test", so it is not relative
+            # to $FindBin::RealBin (which is equal to the absolute version of "./test").
+            #
+            # However, if $filename is the name of a module
+            # ( loaded with a "use" or "require" statement, that is: $filename is
+            # different from $0,  then it turns out that $filename is indeed
+            # relative to $FindBin::RealBin ( if $filename is relative; which can
+            # be the case since relative paths are allowed in @INC) . For example
+            #   use lib '.'; use My::Module; 
+            # then $filename (as inspected from My::Module) will be relative and
+            # equal to "My/Module.pm" (which is relative to $FindBin::RealBin)
+            #
+            # Note: One should in general not use relative paths with the lib pragma
+            #  since it can be misleading. The relative path used with the lib pragma
+            #  is always relative to the current directory, which may not be equal to
+            #  $FindBin::RealBin. For example, if a script is run as "./test/p.pl"
+            #  then "use lib '.'" will not insert the directory of the script
+            #  that is: "./test" into @INC, but rather it inserts "."
+            #
+            #  The correct way to include the directory of the script in @INC seems to be:
+            #    use FindBin; use lib "$FindBin::RealBin";
+            # 
+            $filename = File::Basename::basename($filename);
+        }
+        $filename = File::Spec->rel2abs( $filename, $FindBin::RealBin );
     }
     open ( my $fh, '<', $filename ) or die "Could not open file '$filename': $!";
     my $line;

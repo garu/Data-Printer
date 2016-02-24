@@ -18,6 +18,7 @@ my %options = (
         'Sort::Naturally' => 0,
         'Package::Stash'  => 0.30,
         'Carp'            => 0,
+        'Cwd'             => 0,   # we use getcwd()
         'Clone::PP'       => 0,
         'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,

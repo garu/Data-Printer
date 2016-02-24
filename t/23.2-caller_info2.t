@@ -8,9 +8,14 @@ BEGIN {
 };
 
 use Carp;
+use Cwd ();
+use File::Basename ();
+use File::Spec;
 use File::Temp ();
 use Test::More;
 use Test::Output;
+
+_update_inc();
 
 # Try capture simple variable
 _test( 'p $var', 'no parens capture', expect => '$var' ); 
@@ -44,6 +49,13 @@ _test( 'p _my_sub( $var )', 'print return value from function call' );
 
 done_testing;
 
+
+# Update %INC with the path to the Data::Printer module..
+# we need this for some of the tests..
+sub _update_inc {
+    require Data::Printer;
+}
+
 # Note that Test::Output functions like 'stderr_like' takes a subroutine
 #  reference as the first argument. Given a Data::Printer command in string form
 #  like 'p $var', we would like to generate such a subroutine automatically.
@@ -69,21 +81,28 @@ done_testing;
 #  in common use cases.
 #
 # Here, both methods are used.
-
 {
     my $temp_dir; # state variable for _test() subroutine below
     
+    sub _test {
+        if ( not defined $temp_dir ) { # initialize state variable $temp_dir
+            $temp_dir = _get_temp_dir();
+        }
+        _test1( $temp_dir, @_ );
+        _test2( $temp_dir, @_ );
+        _test3( $temp_dir, @_ );
+    }
+}
+
+{
     # We will require a different module name for each test.
     # (Alternatively, we could use the same module name for each test
     #  and use Class::Unload to delete the previous module)
     # We use the state variable $counter to keep track of the different modules
     my $counter;
     
-    sub _test {
-        my ( $statement, $test_name, %opt ) = @_;
-        if ( not defined $temp_dir ) { # initialize state variable $temp_dir
-            $temp_dir = _get_temp_dir();
-        }
+    sub _test1 {
+        my ( $temp_dir, $statement, $test_name, %opt ) = @_;
         if ( not defined $counter ) { # intitalize state variable $counter
             $counter = 1;
         }
@@ -107,6 +126,61 @@ done_testing;
     }
 }
 
+sub _test2 {
+    my ( $temp_dir, $statement, $test_name, %opt ) = @_;
+    $opt{expect} //= $statement;
+    $opt{exact_match} //= 0;
+    my $func = ($opt{exact_match} ? \&stderr_is : \&stderr_like );
+
+    my $cmd1 = _create_script1( $temp_dir, $statement  );
+    my $dir1 = Cwd::getcwd();
+    my ( $cmd2, $dir2 ) = _get_script_start_dir( $cmd1 );
+    my @cmds = ( $cmd1, $cmd2 );
+    my @dirs = ( $dir1, $dir2 );
+    for (0..1) {
+        my $cmd = $cmds[$_];
+        chdir $dirs[$_];
+        $func->(
+            sub { system 'perl', $cmd },
+            $opt{exact_match}
+               ? $opt{expect}
+               : _get_expect_regex( $opt{expect}, $cmd ),
+            $test_name . " (separate script $_) ",
+        );
+    }
+    chdir $dir1;
+}
+
+sub _test3 {
+    my ( $temp_dir, $statement, $test_name, %opt ) = @_;
+    $opt{expect} //= $statement;
+    $opt{exact_match} //= 0;
+    my $func = ($opt{exact_match} ? \&stderr_is : \&stderr_like );
+
+    my $curdir = Cwd::getcwd();
+    chdir $temp_dir;
+    my ( $cmd, $module_name ) = _create_script2( $statement  );
+    $func->(
+        sub { system 'perl', $cmd },
+        $opt{exact_match}
+        ? $opt{expect}
+        : _get_expect_regex( $opt{expect}, $module_name ),
+        $test_name . " (separate script 3) ",
+    );
+    chdir $curdir;
+}
+
+
+sub _get_script_start_dir {
+    my ( $cmd ) = @_;
+
+    my $cmd1 = File::Basename::basename( $cmd );
+    my $dir1 = File::Basename::dirname( $cmd );
+    my $dir2 = File::Basename::dirname( $dir1 );
+    my $cmd2 = File::Spec->catfile( $dir1, $cmd1 );
+    return ( $cmd2, $dir2 );
+}
+
 sub _get_temp_dir {
     my $tempdir;
     eval { 
@@ -126,6 +200,130 @@ sub _get_expect_regex {
     return qr/^\Q$expect1\E\d+\Q$expect2\E/;
 }
 
+
+sub _create_script1 {
+    my ( $temp_dir, $statement  ) = @_;
+
+    my $mod_path = File::Basename::dirname( $INC{'Data/Printer.pm'} );
+    $mod_path = File::Basename::dirname( $mod_path );
+    
+    my $script =  <<"END_SCRIPT";
+use strict;
+use warnings;
+
+use lib '$mod_path';
+
+BEGIN {
+    delete \$ENV{DATAPRINTERRC};
+    use File::HomeDir::Test;  # avoid user's .dataprinter
+    use Term::ANSIColor;
+};
+
+use Data::Printer 
+{
+    return_value   => 'pass',
+    colored        => 0,
+    caller_info    => 1,
+    caller_message => 'Printing __VAR__ in line __LINE__ of __FILENAME__:'
+};
+
+my \$var = 3;
+my \@some_array = ( 1.. 3 );
+  
+$statement;
+
+sub _my_sub {
+    my ( \$var ) = \@_;
+
+    return ++\$var;
+}
+END_SCRIPT
+
+    my $fn = File::Spec->catfile( $temp_dir, 'test_script1.pl' ); 
+    #if ( -e $fn ) {
+    #    unlink $fn;
+    #}
+    open( my $fh, '>', $fn ) or die "Could not open file '$fn': $!";
+    print $fh $script;
+    close $fh;
+    return $fn;
+}
+
+sub _create_script2 {
+    my ( $statement  ) = @_;
+
+    my $module_name = _write_test_module( $statement );
+    
+    my $script =  <<"END_SCRIPT";
+use strict;
+use warnings;
+
+# Note: the current directory '.' is usually included in \@INC, but it could be
+#   at the end of \@INC.. The following command ensures that the current
+#   directory is at the beginning of \@INC
+use lib '.';  
+use My::Module;
+
+My::Module::func();
+
+END_SCRIPT
+
+    my $fn = 'test_script2.pl';
+    #if ( -e $fn ) {
+    #    unlink $fn;
+    #}
+    open( my $fh, '>', $fn ) or die "Could not open file '$fn': $!";
+    print $fh $script;
+    close $fh;
+    return ( $fn, $module_name );
+}
+
+sub _write_test_module {
+    my ( $statement  ) = @_;
+
+    my $mod_path = File::Basename::dirname( $INC{'Data/Printer.pm'} );
+    $mod_path = File::Basename::dirname( $mod_path );
+
+    my $script =  <<"END_SCRIPT";
+package My::Module;
+
+use strict;
+use warnings;
+use lib '$mod_path';
+
+use Data::Printer 
+{
+    return_value   => 'pass',
+    colored        => 0,
+    caller_info    => 1,
+    caller_message => 'Printing __VAR__ in line __LINE__ of __FILENAME__:'
+};
+
+sub func {
+  my \$var = 3;
+  my \@some_array = ( 1.. 3 );
+  
+  $statement
+}
+
+sub _my_sub {
+    my ( \$var ) = \@_;
+
+    return ++\$var;
+}
+
+1;
+END_SCRIPT
+
+    my $fn = 'My/Module.pm';
+    if ( ! -e 'My' ) {
+         mkdir 'My' or croak "Could not create directory: $!";
+    }
+    open( my $fh, '>', $fn ) or die "Could not open file '$fn': $!";
+    print $fh $script;
+    close $fh;
+    return $fn;
+}
 
 sub _create_test_helper_module {
     my ( $temp_dir, $statement, $module_name, %opt ) = @_;
