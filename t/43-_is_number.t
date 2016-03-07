@@ -41,12 +41,25 @@ my @strings = (
     "NaN",
     "abc",
     '1_000',
+    '123\n',
+    "123\n",
 );
 
 foreach my $not_a_number (@strings) {
+
+    # If we don't change new line symbol then the test output will be messy:
+    #
+    #   ok 20 - _is_number('1_000') return false
+    #   ok 21 - _is_number('123
+    #   # ') return false
+    #   1..21
+
+    my $number_for_test_name = $not_a_number;
+    $number_for_test_name =~ s/\n/\\n/g;
+
     ok(
         not(Data::Printer::_is_number($not_a_number)),
-        "_is_number('$not_a_number') return false",
+        "_is_number('$number_for_test_name') return false",
     );
 }
 
