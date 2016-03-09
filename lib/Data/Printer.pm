@@ -6,14 +6,15 @@ use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
 use Clone::PP qw(clone);
+use Cwd ();
 use Package::Stash;
 use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
-use FindBin;
 use File::Basename ();
 use Fcntl;
+use Data::Printer::ShowVar;
 # This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
@@ -25,6 +26,20 @@ BEGIN {
         require Win32::Console::ANSI;
         Win32::Console::ANSI->import;
     }
+}
+
+#
+# For background regarding the below $initial_cwd variable, see
+# http://www.perlmonks.org/?node_id=1156424
+# https://rt.perl.org/Public/Bug/Display.html?id=127646
+#
+my $initial_cwd;
+BEGIN {
+    # This code is copied from FindBin::cwd2();
+    $initial_cwd = Cwd::getcwd();
+    # getcwd might fail if it hasn't access to the current directory.
+    # try harder.
+    defined $initial_cwd or $initial_cwd = Cwd::cwd();
 }
 
 # defaults
@@ -931,7 +946,7 @@ sub _get_info_message {
     my ( $filename, $line ) = @caller[1..2];
 
     ( $line, $filename, my $line_str, my $filename_str ) 
-      = _handle_filename( $line, $filename );
+      = Data::Printer::ShowVar::handle_filename( $line, $filename );
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
     $message =~ s/\b__FILENAME__\b/$filename_str/g;
     $message =~ s/\b__LINE__\b/$line/g;
@@ -940,7 +955,9 @@ sub _get_info_message {
         if ( $message =~ $regex ) {
             # try to guess the variable name that is printed by reading
             # $line in $filename
-            my $replace = _get_caller_print_var($p, $filename, $line, $line_str);
+            my $replace = Data::Printer::ShowVar::get_caller_print_var(
+                $p, $filename, $line, $line_str
+            );
             # use grep to remove empty items
             my @parts = grep $_, split $regex, $message;
             for ( @parts ) {
@@ -959,230 +976,6 @@ sub _get_info_message {
         }
     }
     return $message .  $p->{_linebreak};
-}
-
-sub _handle_filename {
-    my ( $line, $filename ) = @_;
-
-    my $line_str = undef;
-    my $eval_regex = qr/^\Q(eval\E/;
-    my $filename_str = $filename;
-    # Note : $filename will not be valid if we were called from "eval $str"..
-    #   In that case $filename will be on the form "(eval xx)"..
-    #   For example, for "eval 'p $var'", $filename will be "(eval xx)",
-    #   in "caller 2", for "xx" equal to an integer representing the
-    #   number of the eval statement in the source (as encountered on runtime).
-    #
-    #   For example, if this were the third "eval" encountered at runtime, xx
-    #   would be 3. In this case, element 7 of "caller 3" will contain the
-    #   eval-text, i.e. "p $var", and $filename and $line can also be recovered
-    #   from "caller 3".  But not all cases allows the source line to be
-    #   recovered. For example, for "eval 'sub my_func { p $var }'", and then a
-    #   call to "my_func()", will set $filename to "(eval xx)", but now element
-    #   7 of "caller 3" will no longer be defined. So in order to determine the
-    #   source statement in "caller 2", one would need to parse the whole source
-    #   using PPI and search for the xx-th eval statement, and then try to parse
-    #   that statement to arrive at 'p $var'.. However, since the xx number
-    #   refers to runtime code, it may not be the same number as in the source
-    #   code... (Alternatively one could try use "B::Deparse" on "my_func")
-    #
-    if ( $filename =~ $eval_regex ) {
-        #   Still try to determine $filename, by going one stack frame up:
-        my @caller = caller 4;
-        if ( $caller[1] =~ $eval_regex ) {
-            # TODO: we do not currently handle recursive evals
-            #   currently: simply bail out on determining the $filename
-            $filename = undef;
-            $filename_str = '??';
-            $line = 0;
-        }
-        else {
-            $filename = $caller[1];
-            $filename_str = $caller[1];
-            $line = $caller[2];
-        }
-        $line_str = $caller[6];  # this is the $str in "eval $str" (or may be undef)
-        if ( defined $line_str ) {
-            # seems like earlier versions of perl (< 5.20) adds a new line and a
-            # semicolon to this string.. remove those
-            $line_str =~ s/;$//;
-            $line_str =~ s/\s+$//;
-        }
-    }
-    return  ( $line, $filename, $line_str, $filename_str) ;
-}
-
-# This function reads line number $lineno from file $filename (if $line is undef).
-#   If this function is called more than once for a given $filename, it still
-#   rereads the file each time. So a possible improvement could be to store each
-#   line of a file in private array the first time the file is read. Then
-#   subsequent calls for the same $filename could simply lookup the line in the
-#   array.
-#
-sub _get_caller_print_var {
-    my ( $p, $filename, $lineno, $line ) = @_;
-    if ( not defined $line ) {
-        if ( not defined $filename ) {
-            return _quote('??');
-        }
-        $line = _get_caller_source_line( $filename, $lineno );
-    }
-    return _quote('??') if not defined $line;
-    my $doc = _get_ppi_document( \$line );
-    my ($statements, $num_statements) =
-      _ppi_get_top_level_items( $doc, 'PPI::Statement' );
-
-    # Default behavior is to use $new_line = $line. This default should still be better
-    # than not printing anything! 
-    my $new_line = $line;
-
-    # It is not necessary to display a trailing semicolon.
-    # (It will only act as "noise" in the output..)
-    $new_line =~ s/;$//;
-    
-    # Next: try to do better than the default behavior
-    # Example: if $line is
-    #
-    #    "p(%some_hash, colored => 1); # print some_hash"
-    #
-    # we are able to reduce this $line to "%some_hash" using the following:
-    #
-    if ( $num_statements == 1 ) {
-        my $statement = $statements->[0];
-        my $is_assignment_statement =
-          (ref $statement) eq "PPI::Statement::Variable";
-        my $symbols = $statement->find('PPI::Token::Symbol');
-        my $num_symbols = ( $symbols ) ? scalar @$symbols : 0;
-        my ($words, $num_words) =
-          _ppi_get_top_level_items( $statement, 'PPI::Token::Word' );
-        # Requiring $num_words == 1, avoids considering cases like
-        #   p my_sub( $var );
-        # In that case 'p' would be a word, and 'my_sub' would be a word,
-        #  and we should *not* extract '$var' in this case.
-        #  (This is because it is not the variable
-        #  that is printed, rather 'my_sub( $var )' is printed..)
-        if ( $num_words == 1 or $is_assignment_statement ) {
-            # If the line contains a single top level statement, and
-            # that statement contains a single PPI::Token::Symbol,
-            # it is likely that that symbol is the name of the sought variable.
-            if ( $num_symbols == 1 ) {
-                $new_line = $symbols->[0]->content;
-            }
-            elsif ( $num_symbols == 2 ) {
-                # otherwise, if there are two PPI::Token::Symbol's in the
-                # statement, and the statement is a PPI::Statement::Variable
-                # it is likely that the second symbol is the sought variable..
-                # I.e., consider:
-                #    my $res = p $var;
-                # there are two symbols : '$res' and '$var', but we are interested
-                # in the last one.
-                if ( $is_assignment_statement ) {
-                    $new_line = $symbols->[1]->content;
-                }
-            }
-        }
-    }
-    return _quote( $new_line );
-}
-
-# We use PPI to parse the source line.
-# Alternatives to using PPI are
-#
-#  - Using a source filter (Filter::Util::Call) as in Data::Dumper::Simple
-#    and let the filter parse the line using a regex and then substitute it with
-#    another call to the data dumper function that includes the variable names in
-#    the argument list
-#
-#  - Using PadWalker as in Devel::Caller and Data::Dumper::Names
-#
-#
-# See also:
-#  - perlmonks: "Displaying a variable's name and value in a sub"
-#      http://www.perlmonks.org/?node_id=888088
-#
-sub _get_ppi_document {
-    my ( $line ) = @_;
-    
-    require PPI;
-    my $doc = PPI::Document->new( $line );
-    #require PPI::Dumper;
-    #my $dumper = PPI::Dumper->new( $doc );
-    #$dumper->print;
-
-    return $doc;
-}
-
-sub _quote {
-    my ( $str ) = @_;
-
-    return '"' . $str . '"';
-}
-
-sub _ppi_get_top_level_items {
-    my ( $ref, $class_name ) = @_;
-
-    my @items;
-    for my $child ( @{ $ref->{children} } ) {
-        if ($child->isa( $class_name ) ) {
-            push @items, $child;
-        }
-    }
-    return (\@items, scalar @items);
-}
-
-sub _get_caller_source_line {
-    my ( $filename, $lineno ) = @_;
-    
-    # Note: $filename can be absolute or relative (to initial directory of the
-    # Perl script), For example, for a test file run from another Perl script
-    # using "system t/test.t", $filename (i.e. __FILE__) for the invoked script
-    # "test.t" will be "t/test.t". If the user has changed working directory at
-    # this point, $filename may also not be valid as a relative path.
-    # Therefore, FindBin is used to recover the intial directory of the script:
-    #
-    # See also:  http://perldoc.perl.org/perlfaq8.html#How-do-I-add-the-directory-my-program-lives-in-to-the-module%2flibrary-search-path%3f
-    if ( !File::Spec->file_name_is_absolute( $filename ) ) {
-        if ( $filename eq $0 ) {
-            # If $filename is the initial script name ( $0 ) and is also relative,
-            # it will *not* be relative to $FindBin::RealBin (unless $filename
-            # is a simple name, that is: $filename does not contain any slashes ).
-            # So if we run a script (say "p.pl") located in
-            # sub folder "test" by typing "./test/p.pl" at the terminal prompt,
-            # then $filename will be "./test/p.pl" (which is not a simple name)
-            # and this is relative to "." and not "./test", so it is not relative
-            # to $FindBin::RealBin (which is equal to the absolute version of "./test").
-            #
-            # However, if $filename is the name of a module
-            # ( loaded with a "use" or "require" statement, that is: $filename is
-            # different from $0,  then it turns out that $filename is indeed
-            # relative to $FindBin::RealBin ( if $filename is relative; which can
-            # be the case since relative paths are allowed in @INC) . For example
-            #   use lib '.'; use My::Module; 
-            # then $filename (as inspected from My::Module) will be relative and
-            # equal to "My/Module.pm" (which is relative to $FindBin::RealBin)
-            #
-            # Note: One should in general not use relative paths with the lib pragma
-            #  since it can be misleading. The relative path used with the lib pragma
-            #  is always relative to the current directory, which may not be equal to
-            #  $FindBin::RealBin. For example, if a script is run as "./test/p.pl"
-            #  then "use lib '.'" will not insert the directory of the script
-            #  that is: "./test" into @INC, but rather it inserts "."
-            #
-            #  The correct way to include the directory of the script in @INC seems to be:
-            #    use FindBin; use lib "$FindBin::RealBin";
-            # 
-            $filename = File::Basename::basename($filename);
-        }
-        $filename = File::Spec->rel2abs( $filename, $FindBin::RealBin );
-    }
-    open ( my $fh, '<', $filename ) or die "Could not open file '$filename': $!";
-    my $line;
-    do { $line = <$fh> } until $. == $lineno || eof;
-    close $fh;
-    chomp $line;
-    $line =~ s/^\s+//;
-    $line =~ s/\s+$//;
-    return $line;
 }
 
 sub _merge {

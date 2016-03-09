@@ -24,7 +24,6 @@ my %options = (
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
-        'FindBin'         => 0, # determine path to source file
         'File::Basename'  => 0, 
         'PPI'             => 0, # parse source line to extract variable name
         ($] >= 5.010
