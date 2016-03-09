@@ -389,7 +389,7 @@ sub _is_number {
         ( \. [0-9]+ )?      # there can be decimal part, which is optional
 
         ( e [+-] [0-9]+ )?  # then there can be optional exponential notation part
-        $
+        \z
     /x;
 
     return $is_number;
