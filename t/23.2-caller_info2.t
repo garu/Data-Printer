@@ -257,7 +257,7 @@ sub _test3 {
 
 # Run script in temp dir that uses Data::Printer, then chdir() to new dir and
 # later "require" a module "My::Module" (relative to temp dir) that also uses
-# Data::Printer. The last
+# Data::Printer.
 sub _test4 {
     my ( $temp_dir, $statement, $test_name, $expect, $exact_match, $func ) = @_;
 

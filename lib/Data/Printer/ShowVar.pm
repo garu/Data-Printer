@@ -166,7 +166,7 @@ sub _parse_line {
     return $line;
 }
 
-# Determine the the first argument (usually a variable, but could also be an
+# Determine the first argument (usually a variable, but could also be an
 # expression) of the original caller, i.e. p() or p_without_prototypes(). 
 # Currently we are able to parse the sought variable name the same way regardless
 # of whether the caller was p() or p_without_prototypes(). This is due to the way
@@ -251,21 +251,6 @@ sub _select_statement {
     return ($found_statement, $node, $called_as);
 }
 
-# We choose to only focus on simple statements with p() and p_without_prototypes()
-# Two classes of PPI statements are supported:
-#
-# PPI::Statement :
-#
-#  - p $var, p @var, p %h, ...
-#  - p ( $var ), p ( $var, colored => 0 ), ...
-#  - p_without_prototypes "Hello", p_without_prototypes [ 1, 3, 5 ], ..
-#
-# PPI::Statement::Variable : these are relevant when option "return_value" is 'dump' or
-#   'pass' . Examples:
-#
-#  my $var = p $var, ...
-#
-#
 sub _get_top_level_statements {
     my ( $ref ) = @_;
 
