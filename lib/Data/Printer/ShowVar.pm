@@ -3,11 +3,11 @@ use strict;
 use warnings;
 
 use Term::ANSIColor qw(color colored);
-use Test::More;
 use Carp qw(croak);
 use Cwd ();
 use File::Basename ();
 use File::Spec;
+use List::Util qw(any first);
 
 #
 # For background regarding the below $initial_cwd variable, see
@@ -32,7 +32,7 @@ sub handle_filename {
     # Note : $filename will not be valid if we were called from "eval $str"..
     #   In that case $filename will be on the form "(eval xx)"..
     #   For example, for "eval 'p $var'", $filename will be "(eval xx)",
-    #   in "caller 2", for "xx" equal to an integer representing the
+    #   in "caller 3", for "xx" equal to an integer representing the
     #   number of the eval statement in the source (as encountered on runtime).
     #
     #   For example, if this were the third "eval" encountered at runtime, xx
@@ -82,75 +82,208 @@ sub handle_filename {
 #   array.
 #
 sub get_caller_print_var {
-    my ( $p, $filename, $lineno, $line ) = @_;
+    my ( $p, $filename, $lineno, $line, $caller ) = @_;
+
+    # Determine if we were called as "Data::Printer::p", or as
+    # "Data::Printer::p_without_prototypes"
+    my $called_as = $caller->[3]; 
+
     if ( !defined $line ) {
         if ( !defined $filename ) {
             return _quote('??');
         }
         $line = _get_caller_source_line( $filename, $lineno );
+        if ( !defined $line ) {
+            return _quote("<Could not read file '$filename'>");
+        }
     }
-    if ( !defined $line ) {
-        return _quote("<Could not read file '$filename'>");
+    my ( $valid_callers, $proto ) = _get_valid_callers( $p, $called_as );
+    if (defined $valid_callers ) {
+        my $doc = _get_ppi_document( \$line );
+        if ( defined $doc ) {
+            $line = _parse_line( $doc, $line, $called_as, $valid_callers, $proto );
+        }
     }
-    my $doc = _get_ppi_document( \$line );
-    my ($statements, $num_statements) =
-      _ppi_get_top_level_items( $doc, 'PPI::Statement' );
+    return _quote( $line );
+}
 
-    # Default behavior is to use $new_line = $line. This default should still be better
-    # than not printing anything! 
-    my $new_line = $line;
+sub _get_valid_callers {
+    my ( $p, $called_as ) = @_;
+
+    my @pp; my @pnp;
+    if ( defined (my $alias = $p->{alias} ) ) {
+        push @pp, $alias;
+    }
+    push @pp, 'Data::Printer::p', 'p';
+    push @pnp, 'Data::Printer::p_without_prototypes', 'p_without_prototypes';
+
+    my $proto;
+    my $valid_callers;
+    if ( any { $_ eq $called_as } @pp ) {
+        $valid_callers = \@pp;
+        $proto = 1;
+    }
+    elsif ( any { $_ eq $called_as } @pnp ) {
+        $valid_callers = \@pnp;
+        $proto = 0;
+    }
+    return ($valid_callers, $proto );
+}
+
+# Parse line, and extract variable name to be printed.
+# Default behavior if we cannot determine a variable name is to use $line.
+# This default should still be better than not printing anything! 
+#
+# Example: if $line is
+#
+#    "p(%some_hash, colored => 1); # print some_hash"
+#
+# we should be able to reduce this to "%some_hash":
+#
+# Note: currently the input variable "$proto" is not used.
+sub _parse_line {
+    my ( $doc, $orig_line, $called_as, $valid_callers, $proto ) = @_;
+
+    # If line contains multiple statements, determine which one to use:
+    ( my $line, my $statement, my $node, $called_as ) 
+      = _extract_statement_from_line( $doc, $orig_line, $called_as, $valid_callers );
+
+    my $children = $node->schildren;
+    my $elem = $node->find_first(
+        sub { ($_[1]->name eq 'Token::Word') and ($_[1]->content eq $called_as) }
+    );
+    if ( $elem ) {
+        $elem = $elem->snext_sibling;
+        if ( $elem ) {
+            $line = _parse_var( $elem, $line );
+        }
+    }
 
     # It is not necessary to display a trailing semicolon.
     # (It will only act as "noise" in the output..)
-    $new_line =~ s/;$//;
-    
-    # Next: try to do better than the default behavior
-    # Example: if $line is
-    #
-    #    "p(%some_hash, colored => 1); # print some_hash"
-    #
-    # we are able to reduce this $line to "%some_hash" using the following:
-    #
-    if ( $num_statements == 1 ) {
-        my $statement = $statements->[0];
-        my $is_assignment_statement =
-          (ref $statement) eq "PPI::Statement::Variable";
-        my $symbols = $statement->find('PPI::Token::Symbol');
-        my $num_symbols = ( $symbols ) ? scalar @$symbols : 0;
-        my ($words, $num_words) =
-          _ppi_get_top_level_items( $statement, 'PPI::Token::Word' );
-        # Requiring $num_words == 1, avoids considering cases like
-        #   p my_sub( $var );
-        # In that case 'p' would be a word, and 'my_sub' would be a word,
-        #  and we should *not* extract '$var' in this case.
-        #  (This is because it is not the variable
-        #  that is printed, rather 'my_sub( $var )' is printed..)
-        if ( $num_words == 1 or $is_assignment_statement ) {
-            # If the line contains a single top level statement, and
-            # that statement contains a single PPI::Token::Symbol,
-            # it is likely that that symbol is the name of the sought variable.
-            if ( $num_symbols == 1 ) {
-                $new_line = $symbols->[0]->content;
-            }
-            elsif ( $num_symbols == 2 ) {
-                # otherwise, if there are two PPI::Token::Symbol's in the
-                # statement, and the statement is a PPI::Statement::Variable
-                # it is likely that the second symbol is the sought variable..
-                # I.e., consider:
-                #    my $res = p $var;
-                # there are two symbols : '$res' and '$var', but we are interested
-                # in the last one.
-                if ( $is_assignment_statement ) {
-                    $new_line = $symbols->[1]->content;
-                }
-            }
-        }
-    }
-    return _quote( $new_line );
+    $line =~ s/\s*;?\s*$//;
+
+    return $line;
 }
 
-# We use PPI to parse the source line.
-# Alternatives to using PPI are
+# Determine the the first argument (usually a variable, but could also be an
+# expression) of the original caller, i.e. p() or p_without_prototypes(). 
+# Currently we are able to parse the sought variable name the same way regardless
+# of whether the caller was p() or p_without_prototypes(). This is due to the way
+# PPI parses the line.
+sub _parse_var {
+    my ( $elem, $orig_line ) = @_;
+
+    if ( $elem->name eq 'Structure::List' ) {
+        $elem = _enter_list_structure( $elem );
+        return $orig_line if !$elem; 
+    }
+    my $line = "";
+    while ( $elem ) {
+        ($elem, $line) = _skip_to_next_token( $elem, $line );
+    }
+    return $line;
+}
+
+sub _enter_list_structure {
+    my ( $elem ) = @_;
+    $elem = ( $elem->schildren )[0];
+    return undef if !$elem;
+    if ( any { $elem->name eq $_ } qw(Statement Statement::Expression) ) {
+        $elem = ( $elem->schildren )[0];
+    }
+    return $elem;
+}
+
+sub _skip_to_next_token {
+    my ( $elem, $line ) = @_;
+    while (1) {
+        $line .= $elem->content;
+        $elem = $elem->next_sibling;
+        last if !$elem;
+        if ( $elem->is_comma_or_semi_colon ) {
+            $elem = undef;
+            last;
+        }
+        last if $elem->significant;
+    }
+    return ($elem, $line);
+}
+
+
+#
+sub _extract_statement_from_line {
+    my ( $doc, $orig_line, $called_as, $valid_callers ) = @_;
+
+    my ($statements, $num_statements) = _get_top_level_statements( $doc );
+
+    my $statement;
+    my $node;
+    my $line = $orig_line;
+    
+    if ( $num_statements >= 1 ) {
+        ($statement, $node, $called_as) 
+          = _select_statement( $statements, $called_as, $valid_callers );
+        if ( defined $statement ) {
+            $line = $statement->content;
+        }
+    }
+    return ( $line, $statement, $node, $called_as );
+}
+
+sub _select_statement {
+    my ( $statements, $called_as, $valid_callers ) = @_;
+
+    my $found_statement;
+    my $node;
+    for my $statement (@$statements) {
+        my $words = $statement->find('PPI::Token::Word');
+        my $found_word = first {
+            my $word = $_->content; any { $_ eq $word } @$valid_callers
+        } @$words;
+        if ( defined $found_word ) {
+            $node = $found_word->parent;
+            $found_statement = $statement;
+            $called_as = $found_word->content;
+            last;
+        }
+    }
+    return ($found_statement, $node, $called_as);
+}
+
+# We choose to only focus on simple statements with p() and p_without_prototypes()
+# Two classes of PPI statements are supported:
+#
+# PPI::Statement :
+#
+#  - p $var, p @var, p %h, ...
+#  - p ( $var ), p ( $var, colored => 0 ), ...
+#  - p_without_prototypes "Hello", p_without_prototypes [ 1, 3, 5 ], ..
+#
+# PPI::Statement::Variable : these are relevant when option "return_value" is 'dump' or
+#   'pass' . Examples:
+#
+#  my $var = p $var, ...
+#
+#
+sub _get_top_level_statements {
+    my ( $ref ) = @_;
+
+    my @items;
+    for my $child ( @{ $ref->{children} } ) {
+        if ( ((ref $child) eq 'PPI::Statement')
+             or ((ref $child) eq 'PPI::Statement::Variable') ) {
+            push @items, $child;
+        }
+    }
+    return (\@items, scalar @items);
+}
+
+# Use PPI to parse the source line.
+#
+# This approach (using PPI) is admittedly somewhat heavy, but no good
+# alternative has yet to be found, though many interesting approaches was found on CPAN,
+# but as far as I can see, none of those seems perfect either:
 #
 #  - Using a source filter (Filter::Util::Call) as in Data::Dumper::Simple and
 #    Debug::ShowStuff::ShowVar and let the filter parse the line using a regex
@@ -167,34 +300,89 @@ sub get_caller_print_var {
 #  - perlmonks: "Displaying a variable's name and value in a sub"
 #      http://www.perlmonks.org/?node_id=888088
 #
-sub _get_ppi_document {
-    my ( $line ) = @_;
+{
+    my $is_initialized; 
+    sub _get_ppi_document {
+        my ( $line ) = @_;
     
-    require PPI;
-    my $doc = PPI::Document->new( $line );
-    #require PPI::Dumper;
-    #my $dumper = PPI::Dumper->new( $doc );
-    #$dumper->print;
+        if ( !$is_initialized ) {
+            require PPI;
+            _setup_ppi_extensions();
+            $is_initialized = 1;
+        }
+        my $temp_line = $$line;
+        _add_trailing_semicolon( \$temp_line );
+        my $doc = PPI::Document->new( \$temp_line );
+        return _check_doc_complete( $doc );
+    }
+}
 
-    return $doc;
+sub _add_trailing_semicolon {
+    my ( $line ) = @_;
+
+    if ( $$line !~ /;\s*$/ ) {
+        $$line .= ';';
+    }
+}
+
+sub _setup_ppi_extensions {
+    require Data::Printer::PPI::Extensions;
+    no strict "refs";
+    for (qw( is_comma_or_semi_colon name)) {
+        *{"PPI::Element::$_"} = \&{"Data::Printer::PPI::Extensions::$_"};
+    }
+}
+
+# Checks if the line we read from the source file is complete. That is, if
+# it consists of one or more valid Perl statements. Examples of invalid lines:
+#
+#   p $a; my %h = (
+#
+# This line is not valid since the second statement (my %h = ... ) is not complete.
+# (It is completed on the following lines (not shown)); another example:
+#
+#   };  p $var;
+#
+# In this case, the preceding source lines (not shown) defines a hash or a sub,
+# which is completed on this line ( '};' ).
+#
+#    p { a=> 1, 
+#
+# In this example (assuming use_protypes = 0 ), the hash is not completed on the
+# given source line..
+#
+# These cases can be handled by reading additional lines before or after the
+# given source line until the complete() function of PPI::Document returns true.
+# 
+# However, currently only source lines with one (or more) complete statement are
+# handled. ( Support for statements extending
+# over multiple lines should be straightforward to implement though, if needed. )
+#
+# If the line contains a single Perl statement, it is known that that statement
+# is the correct one ( the one that caused the call to Data::Printer::p() )
+#
+# If the line contains multiple Perl statements, we must determine which of
+# the statements is the correct one. In this case, a currently crude method is
+# is used to determine the correct statement: The statements in the
+# PPI::Document are traversed one by one and the first one that
+# matches (caller())[3] is selected.
+#
+#
+sub _check_doc_complete {
+    my ( $doc ) = @_;
+
+    if ( $doc->complete ) {
+        return $doc;
+    }
+    else {
+        return undef;
+    }
 }
 
 sub _quote {
     my ( $str ) = @_;
 
     return '"' . $str . '"';
-}
-
-sub _ppi_get_top_level_items {
-    my ( $ref, $class_name ) = @_;
-
-    my @items;
-    for my $child ( @{ $ref->{children} } ) {
-        if ($child->isa( $class_name ) ) {
-            push @items, $child;
-        }
-    }
-    return (\@items, scalar @items);
 }
 
 sub _get_caller_source_line {

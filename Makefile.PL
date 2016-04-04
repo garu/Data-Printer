@@ -26,6 +26,7 @@ my %options = (
         'Fcntl'           => 0,
         'File::Basename'  => 0, 
         'PPI'             => 0, # parse source line to extract variable name
+        'List::Util'      => 0,
         ($] >= 5.010
             ? ()
             : (

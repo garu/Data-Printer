@@ -15,6 +15,7 @@ use File::HomeDir ();
 use File::Basename ();
 use Fcntl;
 use Data::Printer::ShowVar;
+
 # This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
@@ -956,7 +957,7 @@ sub _get_info_message {
             # try to guess the variable name that is printed by reading
             # $line in $filename
             my $replace = Data::Printer::ShowVar::get_caller_print_var(
-                $p, $filename, $line, $line_str
+                $p, $filename, $line, $line_str, \@caller
             );
             # use grep to remove empty items
             my @parts = grep $_, split $regex, $message;
