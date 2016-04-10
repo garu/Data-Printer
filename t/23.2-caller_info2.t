@@ -15,7 +15,10 @@ use File::Temp ();
 use Test::More;
 use Test::Output;
 
+use Data::Dumper;
+
 _update_inc();
+
 
 # Try capture simple variable
 _test( 'p $var', 'no parens capture', expect => '$var' ); 
@@ -33,10 +36,10 @@ _test( 'my $str = np @a', 'no print', expect => '', exact_match => 1 );
 
 # Assignment statement:  "my $str = p @a;"
 #  -> captures '@a'
-_test( 'my $str = p @a', 'assignment', expect => '@a' );
+_test( 'my $str = p @a', 'assignment', expect => '@a', proto => 1 );
 
 # Multiple arguments to 'p' command: Capture correct argument '$var'
-_test( 'p($var, colored => 0)', 'multiple args', expect => '$var' );
+_test( 'p($var, colored => 0)', 'multiple args', expect => '$var', proto => 1 );
 
 # Statement with a comment at the end of the line:  "p $var; # p $b"
 #  -> ignores comment, and capture '$var'
@@ -54,16 +57,18 @@ _test(  'p _my_sub( $var )',  'print return value from function call',
 # the statement ( the part that is on the line that contains the function call).
 #  Note: for "eval", PPI will have access to both lines, so it
 #  will work correctly..
-_test( 'my $a = 3; pwp [1,2,' . "\n" . '3]', 'Incomplete statement',
-       expect => 'my $a = 3; pwp [1,2,',
+_test( 'my $a = 3; p [1,2,' . "\n" . '3]', 'Incomplete statement',
+       expect => 'my $a = 3; p [1,2,',
        expect_eval => '[1,2,' . "\n" . '3]',
+       proto => 0,
 );
 
+
 # No proto type: string
-_test( 'pwp "Hello"', 'No proto: string', expect => '"Hello"' );
+_test( 'p "Hello"', 'No proto: string', expect => 'Hello', proto => 0 );
 
 # No proto type: array
-_test( 'pwp [1,2, 6]', 'No proto type: array', expect => '[1,2, 6]' );
+_test( 'p [1,2, 6]', 'No proto type: array', expect => '[1,2, 6]', proto => 0 );
 
 # Nested printer call 1
 _test( 'my @aa = (2, (p $var), 3)', 'Nested call 1', expect => '$var' );
@@ -72,10 +77,10 @@ _test( 'my @aa = (2, (p $var), 3)', 'Nested call 1', expect => '$var' );
 _test( 'my @aa = (2, p ($var), 3)', 'Nested call 2', expect => '$var' );
 
 # Reference to hash
-_test( 'pwp \%h', 'reference to hash', expect => '\%h' );
+_test( 'p \%h', 'reference to hash', expect => '%h', proto => 0 );
 
 # Reference to scalar
-_test( 'pwp \my $var2', 'reference to scalar', expect => '\my $var2' );
+_test( 'p \my $var2', 'reference to scalar', expect => 'my $var2', proto => 0 );
 
 # Array subscript 1
 _test( 'p $a[2]', 'Array subscript 1', expect => '$a[2]' );
@@ -102,14 +107,18 @@ _test( 'p $Data::Printer::VERSION', 'Package variable',
 );
 
 # Array reference
-_test( 'p @$ar', 'Array reference', expect => '@$ar' );
+_test( 'p @$ar', 'Array reference', expect => '@$ar', proto => 1 );
 
 # two statements in one
-_test( 'print STDERR "var=$var\n" && p @a', 'Two-in-one', expect => '@a' );
+_test( 'print STDERR "var=$var\n" && p @a', 'Two-in-one',
+       expect => '@a',
+       proto => 1,
+   );
 
 # Nested parenthesis
-_test( 'pwp (($var + (2  - 5)))', 'Nested parenthesis',
-       expect => '($var + (2  - 5))'
+_test( 'p (($var + (2  - 5)))', 'Nested parenthesis',
+       expect => '($var + (2  - 5))',
+       proto => 0,
 );
 
 
@@ -150,31 +159,19 @@ sub _update_inc {
 # Here, both methods are used.
 {
     my $temp_dir; # state variable for _test() subroutine below
-    my $pwp_alias;
-    BEGIN { $pwp_alias = 'Data::Printer::p_without_prototypes' };
     sub _test {
         my ( $statement, $test_name, %opt ) = @_;
-        $statement =~ s/pwp/$pwp_alias/;
         $statement .= ';';
-        if ( exists $opt{expect} ) {
-            $opt{expect} =~ s/pwp/$pwp_alias/;
-        }
-        else {
-            $opt{expect} = $statement;
-        }
+        $opt{expect} //= $statement;
         $opt{exact_match} //= 0;
+        $opt{proto} //= undef;
         if ( not defined $temp_dir ) { # initialize state variable $temp_dir
             $temp_dir = _get_temp_dir();
         }
         my $func = ($opt{exact_match} ? \&stderr_is : \&stderr_like );
         my @args = ( $temp_dir, $statement, $test_name,
-                     $opt{expect}, $opt{exact_match}, $func );
-        if ( exists $opt{expect_eval} ) {
-            $opt{expect_eval} =~ s/pwp/$pwp_alias/;
-        }
-        else {
-            $opt{expect_eval} = $opt{expect};
-        }
+                     $opt{expect}, $opt{exact_match}, $func, $opt{proto} );
+        $opt{expect_eval} //= $opt{expect};
         _test1( @args, $opt{expect_eval} );
         _test2( @args );
         _test3( @args );
@@ -194,35 +191,63 @@ sub _update_inc {
     # and call its "func" sub routine.
     sub _test1 {
         my ( $temp_dir, $statement, $test_name, $expect_noeval,
-             $exact_match, $func, $expect_eval ) = @_;
+             $exact_match, $func, $proto_info, $expect_eval ) = @_;
         if ( not defined $counter ) { # intitalize state variable $counter
             $counter = 1;
         }
-        for my $i (1..2) {
-            my $module_name = 'DataPrinterTestHelperModule' . $counter++;
-            my $fn = _create_test_helper_module(
-                $temp_dir, $statement, $module_name, eval => $i - 1,
-            );
-            my $test_info = ( $i == 1 ? 'module' : 'eval' );
-            my $expect = ( $i == 1 ? $expect_noeval : $expect_eval );
-            $func->(
-                \&{"$module_name" . "::func"},
-                $exact_match
+        my $proto_types = _get_prototypes( $proto_info );
+        for my $proto (@$proto_types) {
+            for my $i (1..2) {
+                my $module_name = 'DataPrinterTestHelperModule' . $counter++;
+                my $fn = _create_test_helper_module(
+                    $temp_dir, $statement, $module_name, $proto, eval => $i - 1,
+                );
+                my $test_info = ( $i == 1 ? 'module' : 'eval' );
+                my $expect = ( $i == 1 ? $expect_noeval : $expect_eval );
+                $func->(
+                    \&{"$module_name" . "::func"},
+                    $exact_match
                     ? $expect
                     : _get_expect_regex( $expect, $fn ),
-                $test_name . " ($test_info) ",
-            );
+                    $test_name . " ($test_info) ",
+                );
+            }
         }
     }
+}
+
+sub _get_prototypes {
+    my ( $proto_info ) = @_;
+
+    my @p;
+    
+    if ( !defined $proto_info ) {
+        @p = (0, 1);
+    }
+    else {
+        @p = ( $proto_info );
+    }
+    return \@p;
+}
+
+sub _get_prototype {
+    my ( $proto ) = @_;
+
+    if ( !defined $proto ) {
+        $proto = 1;
+    }
+    return $proto;
 }
 
 # Run script in temp dir in two ways:
 #  a) Absolute path : system 'perl', '/tmp/script.pl'
 #  b) Relative path : system 'perl', 'tmp/script.pl'
 sub _test2 {
-    my ( $temp_dir, $statement, $test_name, $expect, $exact_match, $func ) = @_;
+    my ( $temp_dir, $statement, $test_name, $expect, $exact_match,
+         $func, $proto ) = @_;
 
-    my $cmd1 = _create_script1( $temp_dir, $statement  );
+    $proto = _get_prototype( $proto );
+    my $cmd1 = _create_script1( $temp_dir, $statement, $proto );
     my $dir1 = Cwd::getcwd();
     my ( $cmd2, $dir2 ) = _get_script_start_dir( $cmd1 );
     my @cmds = ( $cmd1, $cmd2 );
@@ -242,11 +267,13 @@ sub _test2 {
 # Run script in temp dir that includes a module "My::Module" relative to the
 # temp dir. Only the module loads Data::Printer.
 sub _test3 {
-    my ( $temp_dir, $statement, $test_name, $expect, $exact_match, $func ) = @_;
+    my ( $temp_dir, $statement, $test_name, $expect, $exact_match,
+         $func, $proto ) = @_;
 
+    $proto = _get_prototype( $proto );
     my $curdir = Cwd::getcwd();
     chdir $temp_dir;
-    my ( $cmd, $module_name ) = _create_script2( $statement  );
+    my ( $cmd, $module_name ) = _create_script2( $statement, $proto );
     $func->(
         sub { system 'perl', $cmd },
         $exact_match ? $expect : _get_expect_regex( $expect, $module_name ),
@@ -259,11 +286,13 @@ sub _test3 {
 # later "require" a module "My::Module" (relative to temp dir) that also uses
 # Data::Printer.
 sub _test4 {
-    my ( $temp_dir, $statement, $test_name, $expect, $exact_match, $func ) = @_;
+    my ( $temp_dir, $statement, $test_name, $expect, $exact_match,
+         $func, $proto ) = @_;
 
     my $curdir = Cwd::getcwd();
     chdir $temp_dir;
-    my ( $cmd, $module_name ) = _create_script3( $statement  );
+    $proto = _get_prototype( $proto );
+    my ( $cmd, $module_name ) = _create_script3( $statement, $proto  );
     my $expect_regex = qr/\Q<Could not read file '\E$module_name\Q'>\E/;
     $func->(
         sub { system 'perl', $cmd },
@@ -318,7 +347,7 @@ END_STR
     };
 
     sub _get_script_var_decl {
-        return $decl_str;
+        return \$decl_str;
     }
 }
 
@@ -336,7 +365,7 @@ END_STR
     };
 
     sub _get_script_sub_def {
-        return $sub_def;
+        return \$sub_def;
     }
 }
 
@@ -346,6 +375,7 @@ END_STR
         $use_str = <<"END_STR";
 use Data::Printer 
 {
+    use_prototypes => xxx,
     return_value   => 'pass',
     colored        => 0,
     caller_info    => 1,
@@ -356,18 +386,22 @@ END_STR
     };
 
     sub _get_script_use_str {
-        return $use_str;
+        my ( %opt ) = @_;
+        $opt{proto} //= 1;
+        my $temp = $use_str;
+        $temp =~ s/xxx/$opt{proto}/;
+        return \$temp;
     }
 }
 
 sub _create_script1 {
-    my ( $temp_dir, $statement  ) = @_;
+    my ( $temp_dir, $statement, $proto ) = @_;
 
     my $mod_path = File::Basename::dirname( $INC{'Data/Printer.pm'} );
     $mod_path = File::Basename::dirname( $mod_path );
     my $var_decl = _get_script_var_decl();
     my $sub_def = _get_script_sub_def();
-    my $use_dataprinter = _get_script_use_str();
+    my $use_dataprinter = _get_script_use_str(proto => $proto);
     my $script =  <<"END_SCRIPT";
 use strict;
 use warnings;
@@ -380,13 +414,13 @@ BEGIN {
     use Term::ANSIColor;
 };
 
-$use_dataprinter;
+$$use_dataprinter;
 
-$var_decl;
+$$var_decl;
 
 $statement;
 
-$sub_def
+$$sub_def
 
 END_SCRIPT
 
@@ -402,12 +436,12 @@ END_SCRIPT
 
 
 sub _create_script2 {
-    my ( $statement  ) = @_;
+    my ( $statement, $proto  ) = @_;
 
     my $module_dir = 'My';
     my $module_base_name = 'Module';
     my ( $module_name, $module_name_perl ) 
-         = _write_test_module( $statement, $module_base_name, $module_dir );
+         = _write_test_module( $statement, $module_base_name, $module_dir, $proto );
     
     my $script =  <<"END_SCRIPT";
 use strict;
@@ -434,7 +468,7 @@ END_SCRIPT
 }
 
 sub _create_script3 {
-    my ( $statement  ) = @_;
+    my ( $statement, $proto  ) = @_;
 
     my $dummy_dir = 'dummy_folder';
     if ( ! -e $dummy_dir ) {
@@ -448,9 +482,9 @@ sub _create_script3 {
     my $module_dir = 'My';
     my $module_base_name = 'Module2';
     my ( $module_name, $module_name_perl ) 
-        = _write_test_module( $statement, $module_base_name, $module_dir );
+        = _write_test_module( $statement, $module_base_name, $module_dir, $proto );
     chdir '..';
-    my $use_dataprinter = _get_script_use_str();
+    my $use_dataprinter = _get_script_use_str(proto => $proto);
     my $script =  <<"END_SCRIPT";
 use strict;
 use warnings;
@@ -466,7 +500,7 @@ BEGIN {
     use Term::ANSIColor;
 };
 
-$use_dataprinter;
+$$use_dataprinter;
 
 chdir '$test_dir';
 
@@ -487,14 +521,14 @@ END_SCRIPT
 }
 
 sub _write_test_module {
-    my ( $statement, $base_name, $dir  ) = @_;
+    my ( $statement, $base_name, $dir, $proto  ) = @_;
 
     my $name = $dir . '::' . $base_name;
     my $mod_path = File::Basename::dirname( $INC{'Data/Printer.pm'} );
     $mod_path = File::Basename::dirname( $mod_path );
     my $var_decl = _get_script_var_decl();
     my $sub_def = _get_script_sub_def();
-    my $use_dataprinter = _get_script_use_str();
+    my $use_dataprinter = _get_script_use_str(proto => $proto);
 
     my $script =  <<"END_SCRIPT";
 package $name;
@@ -503,15 +537,15 @@ use strict;
 use warnings;
 use lib '$mod_path';
 
-$use_dataprinter;
+$$use_dataprinter;
 
 sub func {
-  $var_decl;
+  $$var_decl;
   
   $statement
 }
 
-$sub_def
+$$sub_def
 
 1;
 END_SCRIPT
@@ -530,7 +564,7 @@ END_SCRIPT
 
 
 sub _create_test_helper_module {
-    my ( $temp_dir, $statement, $module_name, %opt ) = @_;
+    my ( $temp_dir, $statement, $module_name, $proto, %opt ) = @_;
 
     $opt{eval} //= 0;
     if ( $opt{eval} ) {
@@ -538,7 +572,7 @@ sub _create_test_helper_module {
     }
     my $var_decl = _get_script_var_decl();
     my $sub_def = _get_script_sub_def();
-    my $use_dataprinter = _get_script_use_str();
+    my $use_dataprinter = _get_script_use_str( proto => $proto );
 
     my $script =  <<"END_SCRIPT";
 package $module_name;
@@ -546,14 +580,14 @@ package $module_name;
 use strict;
 use warnings;
 
-$use_dataprinter;
+$$use_dataprinter;
 
 sub func {
-  $var_decl;
+  $$var_decl;
   $statement
 }
 
-$sub_def
+$$sub_def
 
 1;
 END_SCRIPT

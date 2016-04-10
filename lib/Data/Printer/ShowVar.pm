@@ -111,11 +111,20 @@ sub _get_valid_callers {
     my ( $p, $called_as ) = @_;
 
     my @pp; my @pnp;
+    my @temp = qw(Data::Printer::p);
     if ( defined (my $alias = $p->{alias} ) ) {
-        push @pp, $alias;
+        push @temp, $alias;
     }
-    push @pp, 'Data::Printer::p', 'p';
-    push @pnp, 'Data::Printer::p_without_prototypes', 'p_without_prototypes';
+    else {
+        push @temp, 'p';
+    }
+    if ( $p->{use_prototypes} ) {
+        push @pp, @temp;
+    }
+    else {
+        push @pnp, @temp;
+    }
+    push @pnp, 'Data::Printer::p_without_prototypes';
 
     my $proto;
     my $valid_callers;
@@ -131,7 +140,7 @@ sub _get_valid_callers {
 }
 
 # Parse line, and extract variable name to be printed.
-# Default behavior if we cannot determine a variable name is to use $line.
+# Default behavior if we cannot determine a variable name is to return $line.
 # This default should still be better than not printing anything! 
 #
 # Example: if $line is
@@ -162,7 +171,10 @@ sub _parse_line {
     # It is not necessary to display a trailing semicolon.
     # (It will only act as "noise" in the output..)
     $line =~ s/\s*;?\s*$//;
-
+    # $line will be quoted later. Avoid double pairs of quotes:
+    $line =~ s/^["'](.*)["']$/$1/;
+    # When use_prototypes = 0, references, like "\%h", should be printed as "%h":
+    $line =~ s/^\\//;
     return $line;
 }
 
