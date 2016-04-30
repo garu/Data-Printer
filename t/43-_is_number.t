@@ -43,6 +43,7 @@ my @strings = (
     '1_000',
     '123\n',
     "123\n",
+    '-',
 );
 
 foreach my $not_a_number (@strings) {
