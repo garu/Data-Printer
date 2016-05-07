@@ -366,7 +366,7 @@ sub _is_number {
         -?          # number can start with minus, but can't start with plus
                     # is scalar starts with plus it is not number
 
-        [0-9-]+     # then there should be some numbers
+        [0-9]+      # then there should be some numbers
 
         ( \. [0-9]+ )?      # there can be decimal part, which is optional
 
