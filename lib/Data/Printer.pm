@@ -178,7 +178,7 @@ sub _print_and_return {
     my ($item, $dump, $p) = @_;
 
     if ( $p->{return_value} eq 'pass' ) {
-        print { $p->{_output} } $dump . $/;
+        print { $p->{_output} } $dump . "\n";
 
         my $ref = ref $item;
         if ($ref eq 'ARRAY') {
@@ -195,11 +195,11 @@ sub _print_and_return {
         }
     }
     elsif ( $p->{return_value} eq 'void' ) {
-        print { $p->{_output} } $dump . $/;
+        print { $p->{_output} } $dump . "\n";
         return;
     }
     else {
-        print { $p->{_output} } $dump . $/ unless defined wantarray;
+        print { $p->{_output} } $dump . "\n" unless defined wantarray;
         return $dump;
     }
 }
