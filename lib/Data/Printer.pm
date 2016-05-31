@@ -1744,6 +1744,15 @@ will generate an exception for you with the following message:
 Another way to avoid this is to use the much more complete L<Data::Printer::Filter>
 interface for standalone filters.
 
+A further side effect of the default setting C<{ use_prototypes => 1 }> is the autovivification of hash entries
+which appear (with C<undef> values) because the use prototypes assumes a reference to the variable being inspected. 
+See L<perlref>  for a discussion of when lvalue context and autovivification. To prevent this add:
+
+    "use_prototypes => 0"
+    
+to your configuration options or your C<.dataprinter> file.
+
+
 =head1 EXTRA TIPS
 
 =head2 Circumventing prototypes
