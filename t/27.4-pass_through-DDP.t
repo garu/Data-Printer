@@ -18,11 +18,12 @@ eval { require Capture::Tiny; 1; }
 ##############
 ### hashes ###
 ##############
-my %foo = ( answer => 42 );
+my %foo = ( answer => 42, question => 24 );
 
 my $expected = <<'EOT';
 {
-    answer   42
+    answer     42,
+    question   24
 }
 EOT
 
@@ -44,7 +45,7 @@ is_deeply \%return_list, \%foo, 'pass-through return (hash list)';
 is $stdout, '', 'STDOUT should be empty after p() (hash, scalar)';
 is $stderr, $expected, 'pass-through STDERR (hash, scalar)';
 
-like $return_scalar, qr{^1/\d+$}, 'pass-through return (hash scalar)';
+is $return_scalar, scalar %foo, 'pass-through return (hash scalar)';
 
 
 ##############
