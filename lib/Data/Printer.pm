@@ -238,7 +238,7 @@ sub _data_printer {
         delete $ENV{ANSI_COLORS_DISABLED};
     }
 
-    my $out = color('reset');
+    my $out = color('reset') || '';
 
     if ( $p->{caller_info} and $p->{_depth} == 0 ) {
         $out .= _get_info_message($p);
@@ -380,8 +380,8 @@ sub _is_number {
 sub _escape_chars {
     my ($str, $orig_color, $p) = @_;
 
-    $orig_color   = color( $orig_color );
-    my $esc_color = color( $p->{color}{escaped} );
+    $orig_color   = color( $orig_color )          || '';
+    my $esc_color = color( $p->{color}{escaped} ) || '';
 
     # if we're escaping everything then we don't need to keep swapping
     # colors in and out, and we need to return right away because
