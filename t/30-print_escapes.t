@@ -60,7 +60,6 @@ foreach my $item (@stuff) {
 
     $mixed->{original}  .= $item->{original};
     $mixed->{unescaped} .= $item->{unescaped};
-    $mixed->{colored}   .= $colored;
 
     is(
         p( $item->{original} ),
@@ -73,6 +72,11 @@ foreach my $item (@stuff) {
         'testing escape sequence for ' . $item->{unescaped}
     );
 }
+
+$mixed->{colored} = color('bright_red')
+                  . $mixed->{unescaped}
+                  . color('bright_yellow')
+                  ;
 
 is(
     p( $mixed->{original} ),
