@@ -117,6 +117,60 @@ my $properties = {
     _tie             => 0,           # used internally
 };
 
+my %c0controls_char = (
+    "\0" => '\0',    # NULL (NUL)
+    "\a" => '\a',    # BELL (BEL)
+    "\b" => '\b',    # BACKSPACE (BS)
+    "\e" => '\e',    # ESCAPE (ESC)
+    "\f" => '\f',    # FORM FEED (FF)
+    "\n" => '\n',    # LINE FEED (LF)
+    "\r" => '\r',    # CARRIAGE RETURN (CR)
+    "\t" => '\t',    # CHARACTER TABULATION (HT)
+);
+
+my %c0controls_picture = (
+    "\N{U+0000}" => "\N{U+2400}",    # NULL (NUL)
+    "\N{U+0001}" => "\N{U+2401}",    # START OF HEADING (SOH)
+    "\N{U+0002}" => "\N{U+2402}",    # START OF TEXT (STX)
+    "\N{U+0003}" => "\N{U+2403}",    # END OF TEXT (ETX)
+    "\N{U+0004}" => "\N{U+2404}",    # END OF TRANSMISSION (EOT)
+    "\N{U+0005}" => "\N{U+2405}",    # ENQUIRY (ENQ)
+    "\N{U+0006}" => "\N{U+2406}",    # ACKNOWLEDGE (ACK)
+    "\N{U+0007}" => "\N{U+2407}",    # BELL (BEL)
+    "\N{U+0008}" => "\N{U+2408}",    # BACKSPACE (BS)
+    "\N{U+0009}" => "\N{U+2409}",    # CHARACTER TABULATION (HT)
+    "\N{U+000A}" => "\N{U+240A}",    # LINE FEED (LF)
+    "\N{U+000B}" => "\N{U+240B}",    # LINE TABULATION (VT)
+    "\N{U+000C}" => "\N{U+240C}",    # FORM FEED (FF)
+    "\N{U+000D}" => "\N{U+240D}",    # CARRIAGE RETURN (CR)
+    "\N{U+000E}" => "\N{U+240E}",    # SHIFT OUT (SO)
+    "\N{U+000F}" => "\N{U+240F}",    # SHIFT IN (SI)
+    "\N{U+0010}" => "\N{U+2410}",    # DATA LINK ESCAPE (DLE)
+    "\N{U+0011}" => "\N{U+2411}",    # DEVICE CONTROL ONE (DC1)
+    "\N{U+0012}" => "\N{U+2412}",    # DEVICE CONTROL TWO (DC2)
+    "\N{U+0013}" => "\N{U+2413}",    # DEVICE CONTROL THREE (DC3)
+    "\N{U+0014}" => "\N{U+2414}",    # DEVICE CONTROL FOUR (DC4)
+    "\N{U+0015}" => "\N{U+2415}",    # NEGATIVE ACKNOWLEDGE (NAK)
+    "\N{U+0016}" => "\N{U+2416}",    # SYNCHRONOUS IDLE (SYN)
+    "\N{U+0017}" => "\N{U+2417}",    # END OF TRANSMISSION BLOCK (ETB)
+    "\N{U+0018}" => "\N{U+2418}",    # CANCEL (CAN)
+    "\N{U+0019}" => "\N{U+2419}",    # END OF MEDIUM (EM)
+    "\N{U+001A}" => "\N{U+241A}",    # SUBSTITUTE (SUB)
+    "\N{U+001B}" => "\N{U+241B}",    # ESCAPE (ESC)
+    "\N{U+001C}" => "\N{U+241C}",    # INFORMATION SEPARATOR FOUR (FS)
+    "\N{U+001D}" => "\N{U+241D}",    # INFORMATION SEPARATOR THREE (GS)
+    "\N{U+001E}" => "\N{U+241E}",    # INFORMATION SEPARATOR TWO (RS)
+    "\N{U+001F}" => "\N{U+241F}",    # INFORMATION SEPARATOR ONE (US)
+    "\N{U+007F}" => "\N{U+2421}",    # DELETE (DEL)
+);
+
+my %basiclatin_picture = (
+    "\N{U+0020}" => "\N{U+2420}",    # SPACE (SP)
+);
+
+my %latin1_picture = (
+    "\N{U+00A0}" => "\N{U+2423}",    # SPACE (NBSP)
+);
 
 sub import {
     my $class = shift;
@@ -378,54 +432,135 @@ sub _is_number {
 }
 
 sub _escape_chars {
-    my ($str, $orig_color, $p) = @_;
+    my ( $str, $orig_color, $p ) = @_;
 
-    $orig_color   = color( $orig_color );
+    $orig_color = color($orig_color);
     my $esc_color = color( $p->{color}{escaped} );
 
-    # if we're escaping everything then we don't need to keep swapping
-    # colors in and out, and we need to return right away because
-    # we no longer need to print_escapes
-    if ($p->{escape_chars} eq 'all') {
-        return $esc_color
-               . join('', map { sprintf '\x{%02x}', ord $_ } split //, $str)
-               . $orig_color
+    # for backward compatibility
+    if ( $p->{escape_chars} eq 'all' ) {
+        $p->{escape}->{c0controls} = 'hex';
+        $p->{escape}->{basiclatin} = 'hex';
+        $p->{escape}->{c1controls} = 'hex';
+        $p->{escape}->{latin1}     = 'hex';
+        $p->{escape}->{multibyte}  = 'hex';
+    }
+    elsif ( $p->{escape_chars} eq 'nonascii' ) {
+        $p->{escape}->{c1controls} = 'hex';
+        $p->{escape}->{latin1}     = 'hex';
+        $p->{escape}->{multibyte}  = 'hex';
+    }
+    elsif ( $p->{escape_chars} eq 'nonlatin1' ) {
+        $p->{escape}->{multibyte} = 'hex';
     }
 
-    $str =~ s/\e/$esc_color\\e$orig_color/g if $p->{print_escapes};
-
-    if ($p->{escape_chars} eq 'nonascii') {
-        $str =~ s{([^\x{00}-\x{7f}]+)}{
-          $esc_color
-          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1)
-          . $orig_color
-        }ge;
-    } elsif ($p->{escape_chars} eq 'nonlatin1') {
-        $str =~ s{([^\x{00}-\x{ff}]+)}{
-          $esc_color
-          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1) . $orig_color
-        }ge;
+    # for backward compatibility
+    if ( $p->{print_escapes} ) {
+        $p->{escape}->{c0controls} = 'char';
     }
 
-    if ($p->{print_escapes}) {
-        my %escaped = (
-            "\n" => '\n',
-            "\r" => '\r',
-            "\t" => '\t',
-            "\f" => '\f',
-            "\b" => '\b',
-            "\a" => '\a',
-        );
-        foreach my $k ( keys %escaped ) {
-            $str =~ s/$k/$esc_color$escaped{$k}$orig_color/g;
+    # color ON/OFF
+    my $color = 0;
+
+    my @str = map {
+        my $esc_char = _escape_char( $_, $p );
+
+        if ($esc_char) {
+            if ( !$color ) {
+                $color = 1;
+                $esc_color . $esc_char;
+            }
+            else {
+                $esc_char;
+            }
         }
-    }
-    # always escape the null character
-    $str =~ s/\0/$esc_color\\0$orig_color/g;
+        else {
+            if ($color) {
+                $color = 0;
+                $orig_color . $_;
+            }
+            else {
+                $_;
+            }
+        }
 
-    return $str;
+    } split //, $str;
+
+    # if the last character had been colored
+    push( @str, $orig_color ) if $color;
+
+    return join( '', @str );
 }
 
+sub _escape_char {
+    my ( $c, $p ) = @_;
+
+    my $n = ord $c;
+
+    # C0 Controls (0..31, 127) (0000..001F, 007F)
+    if ( ( $n >= 0 and $n <= 31 ) or $n == 127 ) {
+        if ( $p->{escape}->{c0controls} ) {
+            if ( $p->{escape}->{c0controls} eq 'hex' ) {
+                sprintf( '\x{%02x}', $n );
+            }
+            elsif ( $p->{escape}->{c0controls} eq 'char' ) {
+                $c0controls_char{$c} if ( exists $c0controls_char{$c} );
+            }
+            elsif ( $p->{escape}->{c0controls} eq 'picture' ) {
+                $c0controls_picture{$c} if ( exists $c0controls_picture{$c} );
+            }
+        }
+        else {
+
+            # always escape the null character (well, almost always...)
+            if ( $c eq "\0" ) {
+                '\0';
+            }
+        }
+    }
+
+    # Basic Latin (32..126) (0020..007E)
+    elsif ( $n >= 32 and $n <= 126 ) {
+        if ( $p->{escape}->{basiclatin} ) {
+            if ( $p->{escape}->{basiclatin} eq 'hex' ) {
+                sprintf( '\x{%02x}', $n );
+            }
+            elsif ( $p->{escape}->{basiclatin} eq 'picture' ) {
+                $basiclatin_picture{$c} if ( exists $basiclatin_picture{$c} );
+            }
+        }
+    }
+
+    # C1 Controls (128..159) (0080..009F)
+    elsif ( $n >= 128 and $n <= 159 ) {
+        if ( $p->{escape}->{c1controls} ) {
+            if ( $p->{escape}->{c1controls} eq 'hex' ) {
+                sprintf( '\x{%02x}', $n );
+            }
+        }
+    }
+
+    # Latin-1 Supplement (160..255) (00A0..00FF)
+    elsif ( $n >= 160 and $n <= 255 ) {
+        if ( $p->{escape}->{latin1} ) {
+            if ( $p->{escape}->{latin1} eq 'hex' ) {
+                sprintf( '\x{%02x}', $n );
+            }
+            elsif ( $p->{escape}->{latin1} eq 'picture' ) {
+                 $latin1_picture{$c} if ( exists $latin1_picture{$c} );
+            }
+        }
+    }
+
+    # To multibyte... and beyond! (256...) (0100...)
+    elsif ( $n >= 256 ) {
+        if ( $p->{escape}->{multibyte} ) {
+            if ( $p->{escape}->{multibyte} eq 'hex' ) {
+                sprintf( '\x{%02x}', $n );
+            }
+        }
+    }
+}
 
 sub ARRAY {
     my ($item, $p) = @_;
