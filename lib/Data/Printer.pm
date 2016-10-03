@@ -44,8 +44,6 @@ my $properties = {
     'show_weak'      => 1,
     'show_readonly'  => 0,
     'show_lvalue'    => 1,
-    'print_escapes'  => 0,
-    'escape_chars'   => 'none',
     'quote_keys'     => 'auto',
     'scalar_quotes'  => '"',
     'use_prototypes' => 1,
@@ -438,20 +436,22 @@ sub _escape_chars {
     my $esc_color = color( $p->{color}{escaped} );
 
     # for backward compatibility
-    if ( $p->{escape_chars} eq 'all' ) {
-        $p->{escape}->{c0controls} = 'hex';
-        $p->{escape}->{basiclatin} = 'hex';
-        $p->{escape}->{c1controls} = 'hex';
-        $p->{escape}->{latin1}     = 'hex';
-        $p->{escape}->{multibyte}  = 'hex';
-    }
-    elsif ( $p->{escape_chars} eq 'nonascii' ) {
-        $p->{escape}->{c1controls} = 'hex';
-        $p->{escape}->{latin1}     = 'hex';
-        $p->{escape}->{multibyte}  = 'hex';
-    }
-    elsif ( $p->{escape_chars} eq 'nonlatin1' ) {
-        $p->{escape}->{multibyte} = 'hex';
+    if ( defined $p->{escape_chars} ) {
+        if ( $p->{escape_chars} eq 'all' ) {
+            $p->{escape}->{c0controls} = 'hex';
+            $p->{escape}->{basiclatin} = 'hex';
+            $p->{escape}->{c1controls} = 'hex';
+            $p->{escape}->{latin1}     = 'hex';
+            $p->{escape}->{multibyte}  = 'hex';
+        }
+        elsif ( $p->{escape_chars} eq 'nonascii' ) {
+            $p->{escape}->{c1controls} = 'hex';
+            $p->{escape}->{latin1}     = 'hex';
+            $p->{escape}->{multibyte}  = 'hex';
+        }
+        elsif ( $p->{escape_chars} eq 'nonlatin1' ) {
+            $p->{escape}->{multibyte} = 'hex';
+        }
     }
 
     # for backward compatibility
