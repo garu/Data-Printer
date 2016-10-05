@@ -1,6 +1,7 @@
 package Data::Printer;
 use strict;
 use warnings;
+use utf8;
 use Term::ANSIColor qw(color colored);
 use Scalar::Util;
 use Sort::Naturally;
@@ -1541,6 +1542,15 @@ customization options available, as shown below (with default values):
       print_escapes  => 0,       # print non-printable chars as "\n", "\t", etc.
       escape_chars   => 'none',  # escape chars into \x{...} form.  Values are
                                  # "none", "nonascii", "nonlatin1", "all"
+
+      escape => {
+          c0controls  => 'picture', # Escape chars "c0controls" into "picture" form,
+          multibyte   => 'hex',     # and "multibyte" into "\x{XX}" form.
+                                    # Keys are "c0controls", "basiclatin",
+                                    # "c1controls", "latin1" and "multibyte".
+                                    # Values are "hex", "char", "picture".
+      },
+
       quote_keys     => 'auto',  # quote hash keys (1 for always, 0 for never).
                                  # 'auto' will quote when key is empty/space-only.
       scalar_quotes  => '"',     # the quote symbols to enclose scalar values
@@ -1583,6 +1593,59 @@ customization options available, as shown below (with default values):
   };
 
 Note: setting C<multiline> to C<0> will also set C<index> and C<indent> to C<0>.
+
+=head2 Escaping of characters
+
+Occasionally there is necessity to display some characters differently from how
+they are stored in the string. For example it can be non-printable characters
+like newline character (LF) or multibyte characters of which you want to know
+what bytes they consist of.
+
+In this case you can point out which characters and how should be displayed.
+
+The key 'which characters' is assigned by names of characters blocks from the Unicode table:
+
+=over 4
+
+=item * C<c0controls> - C0 Controls (U+0000..U+001F, U+007F)
+
+=item * C<basiclatin> - Basic Latin (U+0020..U+007E)
+
+=item * C<c1controls> - C1 Controls (U+0080..U+009F)
+
+=item * C<latin1> - Latin-1 Supplement (U+00A0..U+00FF)
+
+=item * C<multibyte> - All the rest (U+0100...)
+
+=back
+
+Value 'how' is assigned by the following names:
+
+=over 4
+
+=item * C<hex> - Hexadecimal escape sequence (for example C<x{0D}> for the tab character)
+
+=item * C<char> - Character escape sequence (for example C<\t> for the tab character)
+
+=item * C<picture> - Special Unicode pictures (for example C<␉> for the tab character)
+
+=back
+
+You can assign one or several blocks of characters and for each block a way of
+displaying can be set.
+
+For example:
+
+   use Data::Printer {
+     escape => {
+         c0controls => 'picture',
+         multibyte  => 'hex'
+     }
+   };
+
+In this example characters from block C0 Controls will be displayed as special
+Unicode picturess and characters witn numbers more than FF will be displayed as
+hexadecimal escape sequences.
 
 =head1 FILTERS
 
