@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.39 2016-04-15
+    BUG FIXES:
+        - display '-' as a string, not a number (Ivan Bessarabov)
+        - display "123\n" as a string, not a number (Ivan Bessarabov)
+        - fix test failures on newer perls (Sergey Aleynikov)
+    OTHER:
+        - document availability of np() on Data::Printer::Filter (Olaf Alders)
+
 0.38 2016-01-28
     BUG FIXES:
         - removed Test::Most unlisted dependency

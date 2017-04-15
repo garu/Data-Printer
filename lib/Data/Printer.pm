@@ -16,7 +16,7 @@ use Fcntl;
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 
 BEGIN {
     if ($^O =~ /Win32/i) {
@@ -2229,7 +2229,7 @@ If I missed your name, please drop me a line!
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Breno G. de Oliveira C<< <garu at cpan.org> >>. All rights reserved.
+Copyright 2011-2017 Breno G. de Oliveira C<< <garu at cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>.

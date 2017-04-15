@@ -61,7 +61,7 @@ You can also look for information at:
 
 ### LICENSE AND COPYRIGHT ###
 
-Copyright (C) 2011 Breno G. de Oliveira
+Copyright (C) 2011-2017 Breno G. de Oliveira
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
