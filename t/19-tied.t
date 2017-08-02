@@ -77,8 +77,6 @@ sub NEXTKEY {
     return each %$self;
 }
 
-sub SCALAR { }
-
 package Tie::Fighter::Handle;
 
 sub TIEHANDLE {

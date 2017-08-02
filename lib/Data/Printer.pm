@@ -2118,6 +2118,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 
 =item * Chris Prather (perigrin)
 
+=item * Dave Mitchell
+
 =item * David D Lowe (Flimm)
 
 =item * David Golden (xdg)
@@ -2149,6 +2151,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Jay Allen (jayallen)
 
 =item * Jesse Luehrs (doy)
+
+=item * Jim Keenan (jkeenan)
 
 =item * Joel Berger (jberger)
 
@@ -2221,6 +2225,8 @@ with patches, bug reports, wishlists, comments and tests. They are
 =item * Wesley Dal`Col (blabos)
 
 =item * Yanick Champoux (yanick)
+
+=item * Zefram
 
 =back
 
