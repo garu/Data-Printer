@@ -6,12 +6,16 @@ use Scalar::Util;
 use Sort::Naturally;
 use Carp qw(croak);
 use Clone::PP qw(clone);
+use Cwd ();
 use Package::Stash;
 use if $] >= 5.010, 'Hash::Util::FieldHash' => qw(fieldhash);
 use if $] < 5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 use File::Spec;
 use File::HomeDir ();
+use File::Basename ();
 use Fcntl;
+use Data::Printer::ShowVar;
+
 # This causes strangeness wrt UNIVERSAL on Perl 5.8 with some versions of version.pm.
 # Instead, we now require version in the VSTRING() method.
 # use version 0.77 ();
@@ -23,6 +27,20 @@ BEGIN {
         require Win32::Console::ANSI;
         Win32::Console::ANSI->import;
     }
+}
+
+#
+# For background regarding the below $initial_cwd variable, see
+# http://www.perlmonks.org/?node_id=1156424
+# https://rt.perl.org/Public/Bug/Display.html?id=127646
+#
+my $initial_cwd;
+BEGIN {
+    # This code is copied from FindBin::cwd2();
+    $initial_cwd = Cwd::getcwd();
+    # getcwd might fail if it hasn't access to the current directory.
+    # try harder.
+    defined $initial_cwd or $initial_cwd = Cwd::cwd();
 }
 
 # defaults
@@ -71,6 +89,7 @@ my $properties = {
         'format'      => 'bright_cyan',
         'repeated'    => 'white on_red',
         'caller_info' => 'bright_cyan',
+        'caller_info_var' => 'green',
         'weak'        => 'cyan',
         'tainted'     => 'red',
         'unicode'     => 'bright_yellow',
@@ -925,13 +944,40 @@ sub _get_info_message {
 
     my $message = $p->{caller_message};
 
+    my ( $filename, $line ) = @caller[1..2];
+
+    ( $line, $filename, my $line_str, my $filename_str ) 
+      = Data::Printer::ShowVar::handle_filename( $line, $filename );
     $message =~ s/\b__PACKAGE__\b/$caller[0]/g;
-    $message =~ s/\b__FILENAME__\b/$caller[1]/g;
-    $message =~ s/\b__LINE__\b/$caller[2]/g;
-
-    return colored($message, $p->{color}{caller_info}) . $p->{_linebreak};
+    $message =~ s/\b__FILENAME__\b/$filename_str/g;
+    $message =~ s/\b__LINE__\b/$line/g;
+    {
+        my $regex = qr/\b(__VAR__)\b/;
+        if ( $message =~ $regex ) {
+            # try to guess the variable name that is printed by reading
+            # $line in $filename
+            my $replace = Data::Printer::ShowVar::get_caller_print_var(
+                $p, $filename, $line, $line_str, \@caller
+            );
+            # use grep to remove empty items
+            my @parts = grep $_, split $regex, $message;
+            for ( @parts ) {
+                if (/^$regex$/) {
+                    s/$regex/$replace/;
+                    $_ = colored($_, $p->{color}{caller_info_var});
+                }
+                else {
+                    $_ = colored($_, $p->{color}{caller_info});
+                }
+            }
+            $message = join "", @parts;
+        }
+        else {
+            $message = colored($message, $p->{color}{caller_info});
+        }
+    }
+    return $message .  $p->{_linebreak};
 }
-
 
 sub _merge {
     my $p = shift;
@@ -1325,22 +1371,23 @@ Note that both spellings ('color' and 'colour') will work.
 
    use Data::Printer {
      color => {
-        array       => 'bright_white',  # array index numbers
-        number      => 'bright_blue',   # numbers
-        string      => 'bright_yellow', # strings
-        class       => 'bright_green',  # class names
-        method      => 'bright_green',  # method names
-        undef       => 'bright_red',    # the 'undef' value
-        hash        => 'magenta',       # hash keys
-        regex       => 'yellow',        # regular expressions
-        code        => 'green',         # code references
-        glob        => 'bright_cyan',   # globs (usually file handles)
-        vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
-        repeated    => 'white on_red',  # references to seen values
-        caller_info => 'bright_cyan',   # details on what's being printed
-        weak        => 'cyan',          # weak references
-        tainted     => 'red',           # tainted content
-        escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
+        array           => 'bright_white',  # array index numbers
+        number          => 'bright_blue',   # numbers
+        string          => 'bright_yellow', # strings
+        class           => 'bright_green',  # class names
+        method          => 'bright_green',  # method names
+        undef           => 'bright_red',    # the 'undef' value
+        hash            => 'magenta',       # hash keys
+        regex           => 'yellow',        # regular expressions
+        code            => 'green',         # code references
+        glob            => 'bright_cyan',   # globs (usually file handles)
+        vstring         => 'bright_blue',   # version strings (v5.16.0, etc)
+        repeated        => 'white on_red',  # references to seen values
+        caller_info     => 'bright_cyan',   # details on what's being printed
+        caller_info_var => 'green',         # the name of the variable being printed
+        weak            => 'cyan',          # weak references
+        tainted         => 'red',           # tainted content
+        escaped         => 'bright_red',    # escaped characters (\t, \n, etc)
 
         # potential new Perl datatypes, unknown to Data::Printer
         unknown     => 'bright_yellow on_blue',
@@ -1663,8 +1710,7 @@ be interpolated into their according value so you can customize them at will:
     };
 
 As shown above, you may also set a color for "caller_info" in your color
-hash. Default is cyan.
-
+hash. Default is cyan. 
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -1684,6 +1730,22 @@ parameter for p(). For example:
 As of Data::Printer 0.11, you can create complex filters as a separate
 module. Those can even be uploaded to CPAN and used by other people!
 See L<Data::Printer::Filter> for further information.
+
+=head2 Printing name of original variable
+
+Including the special string C<__VAR__> in C<caller_message>, will cause 
+the original variable name that was used when calling C<p()> to be interpolated.
+For example:
+  
+  use Data::Printer  
+     caller_message => 'Printing __VAR__ at line __LINE__ of __FILENAME__:';
+  my $var = 22;
+  p $var;
+
+will give output like:
+
+  Printing "$var" at line 4 of ./test.pl:
+  22
 
 =head1 CAVEATS
 

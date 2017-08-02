@@ -11,17 +11,22 @@ my %options = (
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More'      => 0.88,
+        'Test::Output'    => 0,
         'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
         'Scalar::Util'    => 0,
         'version'         => 0.77, # handling VSTRINGS
         'Sort::Naturally' => 0,
         'Package::Stash'  => 0.30,
         'Carp'            => 0,
+        'Cwd'             => 0,   # we use getcwd()
         'Clone::PP'       => 0,
         'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
+        'File::Basename'  => 0, 
+        'PPI'             => 0, # parse source line to extract variable name
+        'List::Util'      => 0,
         ($] >= 5.010
             ? ()
             : (
