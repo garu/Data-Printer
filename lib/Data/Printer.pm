@@ -187,7 +187,7 @@ sub _print_and_return {
         elsif ($ref eq 'HASH') {
             return %{ $item };
         }
-        elsif ( grep { $ref eq $_ } qw(REF SCALAR CODE Regexp GLOB VSTRING) ) {
+        elsif ( grep { $ref eq $_ } qw(REF SCALAR Regexp GLOB VSTRING) ) {
             return $$item;
         }
         else {
