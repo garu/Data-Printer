@@ -1,5 +1,12 @@
 Revision history for Data-Printer
 
+0.40 2017-08-01
+    BUG FIXES:
+        - fix tied hash test on blead perl (5.27.3)
+          https://rt.perl.org/Ticket/Display.html?id=131824
+          Thanks Jim Keenan, Dave Mitchell and Zefram for reporting
+          and debugging!
+
 0.39 2016-04-15
     BUG FIXES:
         - display '-' as a string, not a number (Ivan Bessarabov)
