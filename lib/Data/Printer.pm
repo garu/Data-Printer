@@ -145,6 +145,10 @@ sub import {
     no strict 'refs';
     *{"$caller\::$imported"} = $exported;
     *{"$caller\::np"} = \&np;
+    if ( $properties->{alias_p_no_prototypes} ) {
+        $imported = $properties->{alias_p_no_prototypes};
+        *{"$caller\::$imported"} = \&p_without_prototypes;
+    }
 }
 
 
@@ -1762,7 +1766,7 @@ structures, like:
   p { foo => $bar };   # this blows up, don't use
 
 and because of prototypes, you can't. If this is your case, just
-set "use_prototypes" option to 0. Note, with this option,
+set C<use_prototypes> option to 0. Note, with this option,
 you B<will> have to pass your variables as references:
 
   use Data::Printer use_prototypes => 0;
@@ -1775,10 +1779,13 @@ you B<will> have to pass your variables as references:
    p [ $foo, $bar, \@baz ]; # this way you can even pass
                             # several variables at once
 
-Versions prior to 0.17 don't have the "use_prototypes" option. If
-you're stuck in an older version you can write C<&p()> instead of C<p()>
-to circumvent prototypes and pass elements (including anonymous variables)
-as B<REFERENCES>. This notation, however, requires enclosing parentheses:
+Yet another alternative to setting C<use_prototypes> option to zero is to import
+a separate function into your namespace, see L<< next section|/"Circumventing prototypes by importing a special function" >>.
+
+ Versions prior to 0.17 don't have the "use_prototypes" option. If
+you're stuck in an older version you can write C<&p()> instead of C<p()> to
+circumvent prototypes and pass elements (including anonymous variables) as
+B<REFERENCES>. This notation, however, requires enclosing parentheses:
 
   &p( { foo => $bar } );        # this is ok, use at will
   &p( \"DEBUGGING THIS BIT" );  # this works too
@@ -1788,6 +1795,35 @@ Or you could just create a very simple wrapper function:
   sub pp { p @_ };
 
 And use it just as you use C<p()>.
+
+=head2 Circumventing prototypes by importing a special function
+
+In some cases, when debugging programs, you might try mix the standard I<"print
+a variable's value">, e.g., C<p $var>, with simple messages to C<STDOUT>, like
+C<say "Hello"> or something similar. Now, you would like to replace the latter
+C<say "Hello"> with C<p "Hello"> in order to get C<Data::Printer>'s
+C<caller_info> attached to the string C<"Hello">. (Other reasons could be
+consistency and that it is 2 character less to type ). The problem is that C<p
+$var>, uses prototypes, whereas C<p "Hello"> would require not using
+prototypes. This means you cannot mix C<p $var> with C<p "Hello"> in a simple
+manner.
+
+What about using a local configuration option (see L<< Local
+Configuration|/"Local Configuration (experimental!)" >>)? First, this requires more
+typing, e.g., C<< p("Hello", use_protypes => 0 ) >>, and secondly, it is simply
+not possible, since the C<use_prototypes> must be set at compile time.
+
+What about C<p ${ \"Hello" }>? This does in fact work, but it still more typing
+than C<p "Hello">.
+
+However, an alternative workaround is now available: It is possible to add a
+configuration option C<alias_p_no_prototypes> that can be set in the L<<
+configuration file|/"CONFIGURATION FILE (RUN CONTROL)" >>.  For example, putting
+C<< alias_p_no_prototypes => 'pp' >> in your C<.dataprinter> configuration file,
+will make C<Data::Printer> import the alias C<pp> into the your current
+namespace. The C<pp> function will act exactly as C<p> would, if option 
+C<use_prototypes> where set to zero. Using this feature you can then write 
+C<pp "Hello">.
 
 =head2 Minding the return value of p()
 
