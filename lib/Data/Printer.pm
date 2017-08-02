@@ -383,45 +383,39 @@ sub _escape_chars {
     $orig_color   = color( $orig_color );
     my $esc_color = color( $p->{color}{escaped} );
 
-    # if we're escaping everything then we don't need to keep swapping
-    # colors in and out, and we need to return right away because
-    # we no longer need to print_escapes
+    my %special_escapes = (
+        "\n" => '\n',
+        "\r" => '\r',
+        "\t" => '\t',
+        "\f" => '\f',
+        "\b" => '\b',
+        "\a" => '\a',
+        "\0" => '\0',
+        "\e" => '\e',
+    );
+
+    my $blacklist;
+
     if ($p->{escape_chars} eq 'all') {
-        return $esc_color
-               . join('', map { sprintf '\x{%02x}', ord $_ } split //, $str)
-               . $orig_color
-    }
-
-    $str =~ s/\e/$esc_color\\e$orig_color/g if $p->{print_escapes};
-
-    if ($p->{escape_chars} eq 'nonascii') {
-        $str =~ s{([^\x{00}-\x{7f}]+)}{
-          $esc_color
-          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1)
-          . $orig_color
-        }ge;
+        # escape everything, and systematically
+        $blacklist = "(.+)";
+        %special_escapes = ();
+    } elsif ($p->{escape_chars} eq 'nonascii') {
+        $blacklist = "([^\x{20}-\x{7e}]+)";
     } elsif ($p->{escape_chars} eq 'nonlatin1') {
-        $str =~ s{([^\x{00}-\x{ff}]+)}{
-          $esc_color
-          . (join '', map { sprintf '\x{%02x}', ord $_ } split //, $1) . $orig_color
-        }ge;
+        $blacklist = "([^\x{20}-\x{7e}\x{a0}-\x{ff}]+)";
+    } elsif ($p->{print_escapes}) {
+        $blacklist = "([\0\e\n\r\t\f\b\a]+)";
+    } else {
+        # always escape nulls and the escape character
+        $blacklist = "([\0\e]+)";
     }
 
-    if ($p->{print_escapes}) {
-        my %escaped = (
-            "\n" => '\n',
-            "\r" => '\r',
-            "\t" => '\t',
-            "\f" => '\f',
-            "\b" => '\b',
-            "\a" => '\a',
-        );
-        foreach my $k ( keys %escaped ) {
-            $str =~ s/$k/$esc_color$escaped{$k}$orig_color/g;
-        }
-    }
-    # always escape the null character
-    $str =~ s/\0/$esc_color\\0$orig_color/g;
+    $str =~ s{$blacklist}{
+      $esc_color
+      . (join '', map { $special_escapes{$_} || sprintf '\x{%02x}', ord $_ } split //, $1)
+      . $orig_color
+    }ge;
 
     return $str;
 }
