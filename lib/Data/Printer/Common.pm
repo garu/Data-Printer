@@ -449,6 +449,9 @@ sub _fetch_indexes_for {
     sub _object_id {
         my ($self) = @_;
 
+
+        #$self = Scalar::Util::refaddr( $self ); # maybe not required - use 
+
         # This is 15% faster than ||=
         return $IDs{$self} if exists $IDs{$self};
         return $IDs{$self} = ++$Last_ID;

@@ -14,7 +14,7 @@ filter 'ARRAY' => sub {
          . $ddp->maybe_colorize(']', 'brackets')
          if $ddp->max_depth && $ddp->current_depth >= $ddp->max_depth;
 
-    Scalar::Util::weaken($array_ref);
+    #Scalar::Util::weaken($array_ref);
     my $string = $ddp->maybe_colorize('[', 'brackets');
 
     my @i = Data::Printer::Common::_fetch_indexes_for($array_ref, 'array', $ddp);
@@ -62,20 +62,15 @@ filter 'ARRAY' => sub {
         # scalar references should be re-referenced to gain
         # a '\' in front of them.
         my $ref = ref $array_ref->[$idx];
-#        my $array_element;
-        if ($ref && $ref eq 'SCALAR') {
-            $string .= $ddp->parse(\\$array_ref->[$idx]);
-#            Scalar::Util::weaken($array_ref->[$idx])
-#                unless Scalar::Util::isweak($array_ref->[$idx]);
-#            $array_element = \$array_ref->[$idx];
-        }
-        else {
-            $string .= $ddp->parse(\$array_ref->[$idx]);
-#            $array_element = $array_ref->[$idx];
-        }
-#        Scalar::Util::weaken($array_element) if $ref;
 
-#        $string .= $ddp->parse(\$array_element);
+        if ( $ref && $ref eq 'SCALAR' ) {
+            $string .= $ddp->parse(\\$array_ref->[$idx]);
+        }
+        elsif ( $ref && $ref ne 'REF' ) {
+            $string .= $ddp->parse($array_ref->[$idx]);
+        } else {
+            $string .= $ddp->parse(\$array_ref->[$idx]);
+        }
 
         $string .= $ddp->maybe_colorize($ddp->separator, 'separator')
             if $idx < $#{$array_ref} || $ddp->end_separator;

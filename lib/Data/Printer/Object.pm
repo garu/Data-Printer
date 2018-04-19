@@ -364,14 +364,42 @@ sub _filters_for_data {
 # (because we have already visited it!)
 sub _see {
     my ($self, $data, %options) = @_;
-    return unless ref $data;
+    return {} unless ref $data;
+
     my $id = Data::Printer::Common::_object_id($data);
     if (!exists $self->{_seen}{$id}) {
-        $self->{_seen}{$id} = $self->current_name;
-        return;
+        $self->{_seen}{$id} = { name => $self->current_name, refcount => _ez_refcnt($data) };
+        return { refcount => $self->{_seen}{$id}->{refcount} };
     }
-    return if $options{seen_override};
+    return { refcount => $self->{_seen}{$id}->{refcount} } if $options{seen_override};
     return $self->{_seen}{$id};
+}
+
+sub _ez_refcnt {
+    my ( $data ) = @_;
+    
+    #use B qw(SVf_ROK);
+    require B;
+    
+    # some SV's are special (represented by B::SPECIAL)
+    # and don't have a ->REFCNT (e.g. \undef)
+    my $count;
+
+
+    # my $count = B::svref_2object(\$data)->RV->REFCNT;
+    # #warn "--- $data";
+    # if ( ref($data) eq 'REF' && ref($$data)) {
+    #     $count = B::svref_2object($data)->RV->REFCNT;
+    # }
+
+    my $rv = B::svref_2object(\$data)->RV;
+    if ( ref($data) eq 'REF' && ref($$data)) {
+        $rv = B::svref_2object($data)->RV;
+    }
+
+    #return 0 if $rv->isa('B::SPECIAL');
+    return 0 unless $rv->can( 'REFCNT' );
+    return $rv->REFCNT - 3;
 }
 
 
@@ -384,25 +412,43 @@ sub parse_as {
 # that's the only way we are able to figure whether the source data
 # is a weak ref or not.
 sub parse {
-    my ($self, $data, %options) = @_;
+    my $self = shift;
 
-    my $refcount = $self->_check_refcount($data);
+    my $str_weak = $self->_check_weak( $_[0] );
+
+    #warn "$str_weak ---\n";
+
+    my ($data, %options) = @_;
+    #my $refcount = $self->_check_refcount($data);
     # make sure we don't influence refcount
 #    Scalar::Util::weaken($data) if ref $data;
+
+    #warn "--  $data";
+
+    # $options{force_type} = 'SCALAR'
+    #     unless ref $data && !exists $options{force_type};
 
     my $parsed_string = '';
 
     # if we've seen this structure before, we return its location
     # instead of going through it again. This avoids infinite loops
     # when parsing circular references:
-    if (my $seen = $self->_see($data, %options)) {
+    my $seen = $self->_see($data, %options);
+    if (my $name = $seen->{name}) {
         # on repeated references, the only extra data we put
         # is whether this reference is weak or not:
-        $parsed_string .= $self->maybe_colorize($seen, 'repeated');
-        $parsed_string .= $self->_check_weak($data);
-        my $after = $self->_check_refcount($data);
-        return $parsed_string . "(had refcount of $refcount, after: $after)";
+        $parsed_string .= $self->maybe_colorize($name, 'repeated');
+        $parsed_string .= $str_weak;
+        #$parsed_string .= "XXX";
+        # if ($self->show_refcount) {
+        #     $parsed_string .=  $self->_check_refcount($data);
+        # }
+
+        #my $after = $self->_check_refcount($data);
+        return $parsed_string;# . "(had refcount of $refcount, after: $after)";
     }
+
+
     #warn "\nrefcount Before for " . $self->current_name . ": $refcount";
     # Each filter type provides an array of potential parsers.
     # Once we find the right kind, we go through all of them,
@@ -414,23 +460,29 @@ sub parse {
           ? $self->_filters_for_type($options{force_type})
           : $self->_filters_for_data($data)
     ) {
-        my $data_ref = ref $data ? $data : \$data;
-        Scalar::Util::weaken($data_ref);
-        if (defined (my $result = $filter->($data_ref, $self))) {
+
+
+        if (defined (my $result = $filter->($data, $self))) {
             $parsed_string .= $result;
             last;
         }
     }
 
+
     $parsed_string .= $self->_check_readonly($data);
-    $parsed_string .= $self->_check_weak($data);
+    $parsed_string .= $str_weak;
+
     $parsed_string .= $self->_check_memsize($data);
-    if ($self->show_refcount) {
-        #$parsed_string .= $self->_check_refcount($data);
-        my $after_count = $self->_check_refcount($data);
-        #warn "\nrefcount after for " . $self->current_name . ": $after_count";
-        $parsed_string .= "(before: $refcount, after: $after_count)";
+    if ($self->show_refcount && ref($data) ne 'SCALAR' && $seen->{refcount} > 1 ) {
+        $parsed_string .= ' (refcount: ' . $seen->{refcount} .')';
+        # $self->_check_refcount($data, $options{extra_ref});
     }
+
+
+#warn $parsed_string;
+#use Devel::Peek; Dump( $data );
+ 
+
     return $parsed_string;
     # FIXME: write_label should be public and not part of
     # parse(), which should do only 1 thing: parse.
@@ -440,10 +492,10 @@ sub parse {
 }
 
 sub _check_refcount {
-    my ($self, $data) = @_;
-    warn "inside!!!\n";
+    my ($self, $data, $extra_ref) = @_;
+return;
     return '' unless ref $data;
-warn "still going\n";
+
     if (!defined $_has_devel_refcount) {
         my $error = Data::Printer::Common::_tryme(sub {
             require Devel::Refcount; 1;
@@ -452,33 +504,51 @@ warn "still going\n";
     }
 
     my $count;
-    if ($_has_devel_refcount) {
-        die;
-        $count = Devel::Refcount::refcount(
-            (ref $data eq 'REF' || ref $data eq 'SCALAR') ? $$data : $data
-        );
-    }
-    else {
+
         use B qw(SVf_ROK);
         # some SV's are special (represented by B::SPECIAL)
         # and don't have a ->REFCNT (e.g. \undef)
-        eval {
+        #eval 
+        {
 #            $count = B::svref_2object(
 #                \$data
                 #(ref $data eq 'REF' || ref $data eq 'SCALAR') ? $$data : $data
 #            )->RV->REFCNT
-            my $rv = B::svref_2object(\$data)->RV;
-            if ($rv->FLAGS & SVf_ROK == SVf_ROK) {
-                $count = $rv->RV->REFCNT + 3;
-            }
-            else {
+            
+#     warn "EXTRA $extra_ref . ". ref($data). " -> ". eval { ref($$data) } . "\n";
+# warn "="x10;
+# use Devel::Peek; Dump $data;
+        my $rv;
+
+            if ( $extra_ref && $extra_ref == 1 && ref($data) && ref($$data)) {
+                $rv = B::svref_2object($data)->RV;
                 $count = $rv->REFCNT;
+                ##warn "EXTRA $extra_ref . ". ref($data). " -> ". eval { ref($$data) } . " --- REFCNT $count\n";
+                #use Devel::Peek; Dump $data;
+                #$count += 3 if ref $$data ne 'REF';
+
+            } else {
+                $rv = B::svref_2object(\$data)->RV;    
+                $count = $rv->REFCNT;    
             }
-        };
-    }
+            
+            # if ( ref $data ne 'REF' && ($rv->FLAGS & SVf_ROK) == SVf_ROK) {
+                
+            #     $count = $rv->RV->REFCNT + 3;
+            # }
+            # else {
+            #     $count = $rv->REFCNT;
+            # }
+            # .... 3 
+
+
+        } ;
+
     # refcount is always 2 more than what the users have on their code,
     # because refcounting increases as we reference it in our own subs:
 #    warn $self->current_name . ' is refcount ' . $count . "\n";
+    #use Carp;
+    #warn Carp::confess;
     return '' unless $count && $count > 4;
     return $self->maybe_colorize(" (refcount: " . ($count - 3) . ")", 'refcount');
 }
@@ -523,15 +593,16 @@ sub _check_memsize {
 }
 
 sub _check_weak {
-    my ($self, $data) = @_;
+    my ($self) = shift;
     return '' unless $self->show_weak;
-    my $realtype = Scalar::Util::reftype($data);
+
+    my $realtype = Scalar::Util::reftype($_[0]);
     my $isweak;
     if ($realtype && ($realtype eq 'REF' || $realtype eq 'SCALAR')) {
-        $isweak = Scalar::Util::isweak($$data);
+        $isweak = Scalar::Util::isweak($_[0] );
     }
     else {
-        $isweak = Scalar::Util::isweak($data);
+        $isweak = Scalar::Util::isweak($_[0]);
     }
     return '' unless $isweak;
     return ' ' . $self->maybe_colorize('(weak)', 'weak');

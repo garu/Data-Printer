@@ -17,7 +17,7 @@ filter 'HASH' => sub {
     my @src_keys = grep !exists $ignore{$_}, keys %$hash_ref;
     return $ddp->maybe_colorize('{}', 'brackets') unless @src_keys;
     @src_keys = Data::Printer::Common::_nsort(@src_keys) if $ddp->sort_keys;
-    Scalar::Util::weaken($hash_ref);
+    #Scalar::Util::weaken($hash_ref);
 
     my $len = 0;
     my $align_keys = $ddp->multiline && $ddp->align_hash;
@@ -28,15 +28,15 @@ filter 'HASH' => sub {
     # first pass, preparing keys and getting largest key size:
     foreach my $idx (@i) {
         next if ref $idx;
-        my $key = $src_keys[$idx];
-        my $colored_key = Data::Printer::Common::_process_string($ddp, $key, 'hash');
+        my $raw_key = $src_keys[$idx];
+        my $colored_key = Data::Printer::Common::_process_string($ddp, $raw_key, 'hash');
         my $new_key = $colored_key;
-        $new_key =~ s/\e.+?m//g; # strip colors
+        $new_key =~ s/(?<![\\])\e.+?m//g; # strip colors
 
         if ($ddp->quote_keys) {
             my $needs_quote = 1;
             if ($ddp->quote_keys eq 'auto') {
-                if ($key eq $new_key && $new_key !~ /\s|\r|\n|\t|\f/) {
+                if ($raw_key eq $new_key && $new_key !~ /\s|\r|\n|\t|\f/) {
                     $needs_quote = 0;
                 }
             }
@@ -47,7 +47,7 @@ filter 'HASH' => sub {
                              ;
             }
         }
-        $processed_keys{$idx} = { raw => $new_key, colored => $colored_key };
+        $processed_keys{$idx} = { raw => $raw_key, colored => $colored_key };
         if ($align_keys) {
             my $l = length $new_key;
             $len = $l if $l > $len;
@@ -79,20 +79,14 @@ filter 'HASH' => sub {
         # scalar references should be re-referenced to gain
         # a '\' in front of them.
         my $ref = ref $hash_ref->{$key->{raw}};
-#        my $hash_value;
-        if ($ref && $ref eq 'SCALAR') {
+        if ( $ref && $ref eq 'SCALAR' ) {
             $string .= $ddp->parse(\\$hash_ref->{ $key->{raw} });
-#            Scalar::Util::weaken($hash_ref->{$key->{raw}})
-#                unless Scalar::Util::isweak($hash_ref->{$key->{raw}});
-#            $hash_value = \$hash_ref->{$key->{raw}};
         }
-        else {
+        elsif ( $ref && $ref ne 'REF' ) {
+            $string .= $ddp->parse( $hash_ref->{ $key->{raw} });
+        } else {
             $string .= $ddp->parse(\$hash_ref->{ $key->{raw} });
-#            $hash_value = $hash_ref->{$key->{raw}};
         }
-#        Scalar::Util::weaken($hash_value) if $ref;
-
-#        $string .= $ddp->parse($hash_value);
 
         $string .= $ddp->maybe_colorize($ddp->separator, 'separator')
             if $total_keys > 0 || $ddp->end_separator;

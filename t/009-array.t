@@ -105,7 +105,6 @@ is $res,
   undef
 ]',
 'array with no index and indent => 2';
-use Test::Differences;
 push @array, [7,8,9];
 $ddp = Data::Printer::Object->new( colored => 0 );
 $res = $ddp->parse(\@array);

@@ -17,8 +17,11 @@ filter 'LVALUE' => sub {
 sub _parse_scalar {
     my ($scalar_ref, $ddp) = @_;  # TODO: ddp object?
 
-    my $value = $$scalar_ref;
+    #my $value =  $$scalar_ref;
     my $ret;
+
+    my $value = ref $scalar_ref ? $$scalar_ref : $scalar_ref;
+
     if (not defined $value) {
         $ret = $ddp->maybe_colorize('undef', 'undef');
     }
