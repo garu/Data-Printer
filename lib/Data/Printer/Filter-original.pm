@@ -1,8 +1,7 @@
 package Data::Printer::Filter;
 use strict;
 use warnings;
-use Data::Printer::Common;
-
+use Clone::PP qw(clone);
 require Carp;
 require Data::Printer;
 
@@ -11,7 +10,9 @@ my %_extras_for    = ();
 
 sub import {
     my $caller = caller;
-    my $id = Data::Printer::Common::_object_id( \$caller );
+    my $id = Data::Printer::_object_id( \$caller );
+
+    my %properties = ();
 
     my $filter = sub {
         my ($type, $code, $extra) = @_;
@@ -30,8 +31,13 @@ sub import {
         }
 
         unshift @{ $_filters_for{$id}{$type} }, sub {
-            my ($item, $ddp) = @_;
-            $code->($item, $ddp);
+            my ($item, $p) = @_;
+
+            # send our closured %properties var instead
+            # so newline(), indent(), etc can work it
+            %properties = %{ clone $p };
+            delete $properties{filters}; # no need to rework filters
+            $code->($item, \%properties);
         };
     };
 
@@ -44,29 +50,29 @@ sub import {
     };
 
     my $newline = sub {
-#TODO FIXME        return $properties{_linebreak} . (' ' x $properties{_current_indent});
+        return $properties{_linebreak} . (' ' x $properties{_current_indent});
     };
 
     my $indent = sub {
-#TODO FIXME        $properties{_current_indent} += $properties{indent};
-#TODO FIXME        $properties{_depth}++;
+        $properties{_current_indent} += $properties{indent};
+        $properties{_depth}++;
         return;
     };
 
     my $outdent = sub {
-#TODO FIXME        $properties{_current_indent} -= $properties{indent};
-#TODO FIXME        $properties{_depth}--;
+        $properties{_current_indent} -= $properties{indent};
+        $properties{_depth}--;
         return;
     };
 
     my $imported_p = sub (\[@$%&];%) {
         my ($item, $p) = @_;
-#TODO FIXME        return Data::Printer::p( $item, %properties );
+        return Data::Printer::p( $item, %properties );
     };
 
     my $imported_np = sub (\[@$%&];%) {
         my ($item, $p) = @_;
-#TODO FIXME        return Data::Printer::np( $item, %properties );
+        return Data::Printer::np( $item, %properties );
     };
     {
         no strict 'refs';

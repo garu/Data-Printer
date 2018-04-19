@@ -1,0 +1,116 @@
+package Data::Printer::Filter::HASH;
+use strict;
+use warnings;
+use Data::Printer::Filter;
+use Data::Printer::Common;
+use Scalar::Util ();
+
+filter 'HASH' => sub {
+    my ($hash_ref, $ddp) = @_;
+    return       $ddp->maybe_colorize('{', 'brackets')
+         . ' ' . $ddp->maybe_colorize('...', 'hash')
+         . ' ' . $ddp->maybe_colorize('}', 'brackets')
+         if $ddp->max_depth && $ddp->current_depth >= $ddp->max_depth;
+
+    my %ignore = map { $_ => 1 } @{$ddp->ignore_keys};
+
+    my @src_keys = grep !exists $ignore{$_}, keys %$hash_ref;
+    return $ddp->maybe_colorize('{}', 'brackets') unless @src_keys;
+    @src_keys = Data::Printer::Common::_nsort(@src_keys) if $ddp->sort_keys;
+    Scalar::Util::weaken($hash_ref);
+
+    my $len = 0;
+    my $align_keys = $ddp->multiline && $ddp->align_hash;
+
+    my @i = Data::Printer::Common::_fetch_indexes_for(\@src_keys, 'hash', $ddp);
+
+    my %processed_keys;
+    # first pass, preparing keys and getting largest key size:
+    foreach my $idx (@i) {
+        next if ref $idx;
+        my $key = $src_keys[$idx];
+        my $colored_key = Data::Printer::Common::_process_string($ddp, $key, 'hash');
+        my $new_key = $colored_key;
+        $new_key =~ s/\e.+?m//g; # strip colors
+
+        if ($ddp->quote_keys) {
+            my $needs_quote = 1;
+            if ($ddp->quote_keys eq 'auto') {
+                if ($key eq $new_key && $new_key !~ /\s|\r|\n|\t|\f/) {
+                    $needs_quote = 0;
+                }
+            }
+            if ($needs_quote) {
+                $colored_key = $ddp->maybe_colorize(q('), 'quotes')
+                             . $colored_key
+                             . $ddp->maybe_colorize(q('), 'quotes')
+                             ;
+            }
+        }
+        $processed_keys{$idx} = { raw => $new_key, colored => $colored_key };
+        if ($align_keys) {
+            my $l = length $new_key;
+            $len = $l if $l > $len;
+        }
+    }
+
+    # second pass, traversing and rendering:
+    $ddp->indent;
+    my $total_keys = scalar @i; # yes, counting messages so ',' appear in between.
+    #keys %processed_keys;
+    my $string = $ddp->maybe_colorize('{', 'brackets');
+    foreach my $idx (@i) {
+        $total_keys--;
+        # $idx is a message to display, not a real index
+        if (ref $idx) {
+            $string .= $ddp->newline . $$idx;
+            next;
+        }
+        my $key = $processed_keys{$idx};
+
+        # update 'var' to 'var{key}':
+        $ddp->current_name( $ddp->current_name . '{' . $key->{raw} . '}' );
+
+        $string .= $ddp->newline
+                . sprintf("%-*s", $len, $key->{colored})
+                . $ddp->maybe_colorize($ddp->hash_separator, 'separator')
+                ;
+
+        # scalar references should be re-referenced to gain
+        # a '\' in front of them.
+        my $ref = ref $hash_ref->{$key->{raw}};
+#        my $hash_value;
+        if ($ref && $ref eq 'SCALAR') {
+            $string .= $ddp->parse(\\$hash_ref->{ $key->{raw} });
+#            Scalar::Util::weaken($hash_ref->{$key->{raw}})
+#                unless Scalar::Util::isweak($hash_ref->{$key->{raw}});
+#            $hash_value = \$hash_ref->{$key->{raw}};
+        }
+        else {
+            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} });
+#            $hash_value = $hash_ref->{$key->{raw}};
+        }
+#        Scalar::Util::weaken($hash_value) if $ref;
+
+#        $string .= $ddp->parse($hash_value);
+
+        $string .= $ddp->maybe_colorize($ddp->separator, 'separator')
+            if $total_keys > 0 || $ddp->end_separator;
+
+        # restore var name back to "var"
+        my $size = 2 + length($key->{raw});
+        my $name = $ddp->current_name;
+        substr $name, -$size, $size, '';
+        $ddp->current_name($name);
+    }
+    $ddp->outdent;
+    $string .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
+    return $string;
+};
+
+#######################################
+### Private auxiliary helpers below ###
+#######################################
+
+
+1;
