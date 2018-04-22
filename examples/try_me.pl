@@ -7,8 +7,11 @@ use Scalar::Util qw(weaken);
 # can see Data::Printer working out of the box.
 # It can be used as a quick way to test your
 # color palette scheme!
+package My::BaseClass;
+sub whatever {}
 
 package My::SampleClass;
+use base 'My::BaseClass';
 sub new { bless {}, shift }
 sub public_method { 42 }
 sub _private_method { 'sample' }
@@ -18,7 +21,7 @@ package main;
 
 my $obj = My::SampleClass->new;
 
-my %sample = (
+my $sample = {
   number => 123.456,
   string => 'a string',
   array  => [ "foo\0has\tescapes", 6, undef ],
@@ -26,13 +29,21 @@ my %sample = (
     foo => 'bar',
     baz => 789,
   },
+  readonly => \2,
   regexp => qr/foo.*bar/i,
   glob   => \*STDOUT,
   code   => sub { return 42 },
   class  => $obj,
-);
+};
 
-$sample{ref} = \%sample;
-weaken $sample{ref};
+$sample->{weakref} = $sample;
+weaken $sample->{weakref};
 
-use DDP; p %sample;
+use DDP show_memsize  => 1,
+        show_refcount => 1,
+        class => {
+            format_inheritance => 'lines',
+            inherited  => 'public',
+            linear_isa => 1
+        };
+p $sample;
