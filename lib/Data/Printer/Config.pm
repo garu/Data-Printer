@@ -71,6 +71,52 @@ sub _str2data {
     return $config;
 }
 
+# converts the old format to the new one
+sub convert {
+    my ($filename) = @_;
+    Data::Printer::Common::_die("please provide a .dataprinter file path")
+        unless $filename;
+    Data::Printer::Common::_die("file '$filename' not found")
+        unless -e $filename && !-d $filename;
+    open my $fh, '<', $filename
+        or Data::Printer::Common::_die("error reading file '$filename': $!");
+
+    my $rc_data;
+    { local $/; $rc_data = <$fh> }
+    close $fh;
+
+    my $config = eval $rc_data;
+    if ( $@ ) {
+        Data::Printer::Common::_die("error loading file '$filename': $@");
+    }
+    elsif (!ref $config or ref $config ne 'HASH') {
+        Data::Printer::Common::_die("error loading file '$filename': config file must return a hash reference");
+    }
+    else {
+        print _convert('', $config);
+    }
+}
+
+sub _convert {
+    my ($key_str, $value) = @_;
+    if (ref $value eq 'HASH') {
+        my $str = '';
+        foreach my $k (sort keys %$value) {
+            $str .= _convert(($key_str ? "$key_str.$k" : $k), $value->{$k});
+        }
+        return $str;
+    }
+    elsif (ref $value) {
+        warn(
+            " [*] path '$key_str': expected scalar, found " . ref($value)
+          . ". Filters must be in their own class now, loaded with 'filter'\n"
+        );
+    }
+    else {
+        return "$key_str = $value\n";
+    }
+}
+
 1;
 __END__
 
