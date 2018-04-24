@@ -92,6 +92,35 @@ sub p (\[@$%&];%) {
     return _handle_output($printer, $output, !!defined wantarray, $_[0]);
 }
 
+# This is a p() clone without prototypes. Just like regular Data::Dumper,
+# this version expects a reference as its first argument. We make a single
+# exception for when we only get one argument, in which case we ref it
+# for the user and keep going.
+sub p_without_prototypes  {
+    my (undef, %properties) = @_;
+
+    my $item;
+    if (!ref $_[0] && @_ == 1) {
+        my $item_value = $_[0];
+        $item = \$item_value;
+    }
+
+    _initialize();
+
+    my $caller = caller;
+    my $args_to_use = _fetch_args_with($caller, \%properties);
+    my $printer = Data::Printer::Object->new($args_to_use);
+    my $ref = ref( defined $item ? $item : $_[0] );
+    if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF'
+        && ref(defined $item ? $item : ${$_[0]}) eq 'REF')) {
+        $printer->{_refcount_base}++;
+    }
+    my $output = $printer->write_label . $printer->parse((defined $item ? $item : $_[0]));
+
+    return _handle_output($printer, $output, !!defined wantarray, $_[0]);
+}
+
+
 sub _handle_output {
     my ($printer, $output, $wantarray, $data) = @_;
 
