@@ -140,7 +140,7 @@ sub _parse_color {
             'bright_white'   => 97,   'on_bright_white'   => 107,
         );
         $color_code = "\e["
-                    . join ';' => map $ansi_colors{$_}, split(/\s+/, $color_label)
+                    . join(';' => map $ansi_colors{$_}, split(/\s+/, $color_label))
                     . 'm'
                     ;
     }
