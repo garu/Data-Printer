@@ -59,6 +59,22 @@ sub _initialize {
     $rc_arguments = Data::Printer::Config::load_rc_file();
 }
 
+sub np (\[@$%&];%) {
+    my ($data, %properties) = @_;
+
+    _initialize();
+
+    my $caller = caller;
+    my $args_to_use = _fetch_args_with($caller, \%properties);
+    my $printer = Data::Printer::Object->new($args_to_use);
+    my $ref = ref $_[0];
+    if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
+        $printer->{_refcount_base}++;
+    }
+    return $printer->write_label . $printer->parse($data);
+}
+
+
 sub p (\[@$%&];%) {
     my (undef, %properties) = @_;
 
@@ -102,17 +118,6 @@ sub p (\[@$%&];%) {
         print { $printer->output_handle } $output . "\n" unless defined wantarray;
         return $output;
     }
-}
-
-sub np (\[@$%&];%) {
-    my ($data, %properties) = @_;
-
-    _initialize();
-
-    my $caller = caller;
-    my $args_to_use = _fetch_args_with($caller, \%properties);
-    my $printer = Data::Printer::Object->new($args_to_use);
-    return $printer->write_label . $printer->parse($data);
 }
 
 sub _fetch_args_with {
