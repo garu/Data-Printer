@@ -1,5 +1,70 @@
 Revision history for Data-Printer
 
+0.99_001 2018-04-21
+    BACKWARDS-INCOMPATIBLE CHANGE
+        - new format for the .dataprinterrc file
+    NEW FEATURES:
+        - Data::Printer::Object available for public usage!
+          (big thanks to frew && rjbs)
+        - use DDP; p $foo, as => 'this is a label';
+          Hopefully this helps people tag their debug code without having
+          to write caller_info => 1, caller_message => '...'
+        - theme => 'XXX' will try and load Data::Printer::Theme::XXX,
+          which you can create to share your colour scheme with the world!
+        - speaking of colours, you can now use up to 256 of them
+          (if your terminal supports them, of course)
+        - print only a slice of arrays and hashes with:
+           - array_max => 10 (default is 50, set it to 0 for unlimited)
+           - array_overflow => '(...skipping __SKIPPED__ items...)'
+           - array_preserve => 'begin'
+             if the array has more than array_max elements, preserve the first
+             array_max elements and replace the rest with '(...skipping XX items...)'.
+             Other available options are 'end', 'middle', 'extremes', and 'none'.
+           - hash_max / hash_overflow / hash_preserve (same! note however that
+             preserved keys will only be the same if hash keys are sorted)
+             Defaults to 50.
+        - ignore_keys to skip their dump (feature by Eugen Konkov)
+        - string_max/string_overflow/string_preserve to limit string entries (scalars),
+          just like arrays and hashes. Defaults to 1024 and 'begin'. Set it
+          to 0 for unlimited size.
+        - new 'separator', 'brackets' and 'overflow' colors to control
+        - unicode_charnames, when set to 1 (together with escape_chars)
+          will try and use the Unicode name when escaping strings.
+          So `$s = "\x{2603}"; p $s` will output "\N{SNOWMAN}"
+        - show_refcount => 1 exposes the reference count for the data structure
+          (and inner data) if the count is greater than 1. (default 0, showing no refcounts).
+        - show_memsize => 1 shows the (approximated) amount of memory the variable
+          occupies for all variables on that level. This means that '1' will show
+          the size of the entire data structure, while 2 will also show sizes of
+          inner data, 3 will go even deeper and so on. To get the size of everything,
+          use 'all' - though usually you'll probably want to just use '1'.
+          This requires Devel::Size, so the default is 0 for none.
+        - memsize_unit defined in which unit to show the memory usage. Can be
+          set to 'b'(ytes), 'k'(ilobytes), 'm'(egabytes) or 'auto' (the default).
+        - format_inheritance => 'string' (to preserve backwards compatibility)
+          But now with a shiny 'lines' alternative that separates methods per
+          inherited package!
+        - inheritance tree is considered when filtering objects (Ovid)
+        - new option 'stringify' (default: 1) will return the stringified version
+          of the object, if one is available. It will try overloaded strings/numbers,
+          as_string() and stringify() calls, respectively. Note that this will efectivelly
+          ignore all other class details you may have chosen.
+          (Sergey Aleynikov, Benct Philip Jonsson)
+        - new option show_overloads (default: 1) will list all overloads
+          from the object's class.
+        - the standard class filter is now able to show internals in blessed subs
+        - support for faster natural sorting via Sort::Key::Natural
+          and Sort::Naturally::XS, if the user has them installed
+          (feature request by @grr on github)
+    BUG FIXES:
+        - fix array subelement alignment when index is shown (GARU)
+        - show UNIVERSAL in linear ISA if it's on (GARU)
+        - use "\n" instead of $/ as default line separator (Håkon Hægland)
+        * https://github.com/garu/Data-Printer/issues/75
+        - show_methods is now independent from show_inherited, meaning you can
+          check all inherited methods and no local ones, or any combination thereof.
+          This is the expected behaviour from the documentation, but was not happening.
+
 0.40 2017-08-01
     BUG FIXES:
         - fix tied hash test on blead perl (5.27.3)
