@@ -87,10 +87,14 @@ sub p (\[@$%&];%) {
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
     }
-
     my $output = $printer->write_label . $printer->parse($_[0]);
 
-    my $data = $_[0];
+    return _handle_output($printer, $output, !!defined wantarray, $_[0]);
+}
+
+sub _handle_output {
+    my ($printer, $output, $wantarray, $data) = @_;
+
     if ($printer->return_value eq 'pass') {
         print { $printer->output_handle } $output . "\n";
         my $ref = ref $data;
@@ -115,7 +119,7 @@ sub p (\[@$%&];%) {
         return;
     }
     else {
-        print { $printer->output_handle } $output . "\n" unless defined wantarray;
+        print { $printer->output_handle } $output . "\n" unless $wantarray;
         return $output;
     }
 }
