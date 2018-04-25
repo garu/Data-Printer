@@ -466,7 +466,6 @@ sub parse_as {
 # is a weak ref or not.
 sub parse {
     my $self = shift;
-    $self->{_position}++;
 
     my $str_weak = $self->_check_weak( $_[0] );
 
@@ -478,13 +477,13 @@ sub parse {
     # when parsing circular references:
     my $seen = $self->_see($data, %options);
     if (my $name = $seen->{name}) {
-        # on repeated references, the only extra data we put
-        # is whether this reference is weak or not:
         $parsed_string .= $self->maybe_colorize($name, 'repeated');
+        # on repeated references, the only extra data we put
+        # is whether this reference is weak or not.
         $parsed_string .= $str_weak;
-        $self->{_position}--;
         return $parsed_string;
     }
+    $self->{_position}++;
 
     # Each filter type provides an array of potential parsers.
     # Once we find the right kind, we go through all of them,
@@ -503,14 +502,19 @@ sub parse {
     }
 
     $parsed_string .= $self->_check_readonly($data);
-    $parsed_string .= $str_weak;
+    $parsed_string .= $str_weak if ref($data) ne 'REF';
 
     $parsed_string .= $self->_check_memsize($data);
     if ($self->show_refcount && ref($data) ne 'SCALAR' && $seen->{refcount} > 1 ) {
         $parsed_string .= ' (refcount: ' . $seen->{refcount} .')';
     }
 
-    $self->{_position}--;
+    if (--$self->{'_position'} == 0) {
+        $self->{'_seen'} = {};
+        $self->{'_refcount_base'} = 3;
+        $self->{'_position'} = 0;
+    }
+
     return $parsed_string;
 }
 
