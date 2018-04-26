@@ -22,6 +22,7 @@ my $ddp = Data::Printer::Object->new(
 
 if ($ddp->color_level) {
     plan tests => 1;
+    diag("testing color level: " . $ddp->color_level);
 }
 else {
     plan skip_all => 'console does not have enough colors to test';
