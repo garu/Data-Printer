@@ -238,14 +238,12 @@ sub _methods_of {
     my ($class_name, $namespace) = @_;
     my @methods;
     foreach my $subref (_get_all_subs_from($class_name, $namespace)) {
-        my $m;
-        if ($subref
-            and $m = B::svref_2object($subref)
-            and $m->isa('B::CV')
-            and not $m->GV->isa('B::Special')
-        ) {
-            push @methods, [ $m->GV->STASH->NAME, $m->GV->NAME ]
-        }
+        next unless $subref;
+        my $m = B::svref_2object($subref);
+        next unless $m && $m->isa('B::CV');
+        my $gv = $m->GV;
+        next unless $gv && !$gv->isa('B::Special') && $gv->NAME;
+        push @methods, [ $gv->STASH->NAME, $gv->NAME ];
     }
     return @methods;
 }
