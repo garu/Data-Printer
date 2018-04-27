@@ -1,67 +1,98 @@
-## Data::Printer ##
+Data::Printer
+=============
 
-Data::Printer is a Perl module to pretty-print Perl data structures
-and objects in full color. It is meant to display variables on
-screen, properly formatted to be inspected by a human.
+[![Build status](https://travis-ci.org/garu/Data-Printer.svg?branch=master)](https://travis-ci.org/garu/Data-Printer)
+[![Coverage Status](https://coveralls.io/repos/garu/Data-Printer/badge.png)](https://coveralls.io/r/garu/Data-Printer)
+[![CPAN version](https://badge.fury.io/pl/Data-Printer.png)](http://badge.fury.io/pl/Data-Printer)
 
-Data::Printer is highly customizable, from indentation size to
-depth level. You can even rename the exported p() function!
+Data::Printer is a Perl module to
+*pretty-print Perl data structures and objects* in full color.
+It is meant to display variables on screen,
+*properly formatted to be inspected by a human*.
 
-Data::Printer also lets you create filters to help debugging
-your objects easily.
+Basic Usage:
+------------
+
+```perl
+    my $data = get_some_data_from_somewhere();
+    ...
+    use DDP; p $data;  # <-- pretty-prints $data's content to STDERR
+```
+
+Main features:
+--------------
+
+* Variable dumps designed for _easy parsing by the human brain_, not a machine;
+
+* _Highly customizable_, from indentation size to depth level.
+You can even rename the exported p() function!
+
+* Beautiful (and customizable) colors to highlight variable dumps and make
+issues stand-out quickly on your console. Comes bundled with 4 themes for you
+to pick.
+
+* Filters for specific data structures and objects to make debugging much,
+much easier. Includes filters for several popular classes from CPAN like
+JSON::\*, URI, HTTP::\*, LWP, Digest::\*, DBI and DBIx::Class. Also lets you
+create your own custom filters easily.
+
+* Lets you inspect information that's otherwise difficult to find/debug
+in Perl 5, like circular references, reference counting (refcount),
+weak/read-only information, even estimated data size - all to help you
+spot issues with your data like leaks without having to know a lot about
+internal data structures or install heavy-weight tools like Devel::Gladiator.
+
+* output to many different targets like files, variables or open handles
+(defaults to STDERR)
+
+* keep your customized settings on a `.dataprinter` file that allows
+_different options per module_ being analyzed!
+
+* Best of all? *No non-core dependencies*, Zero. Nada. so don't worry about
+adding extra weight to your project, as Data::Printer can be easily
+added/removed.
+
+Please refer to [Data::Printer's complete documentation](https://metacpan.org/pod/Data::Printer)
+for details on how to customize the output to your needs. Or (after installation) type:
+
+    perldoc Data::Printer
+
+To view the complete docs on your terminal.
 
 
-### INSTALLATION ###
+Installation
+------------
 
-   # from CPAN
-   $ cpan Data::Printer
+To install this module via cpanm:
 
-   # from cpanm
-   $ cpanm Data::Printer
+    > cpanm Data::Printer
 
-   # cloning the repository
-   $ git clone git://github.com/garu/Data-Printer.git
+Or, at the cpan shell:
 
-   # manual installation, after downloading
-   perl Build.PL
-   ./Build
-   ./Build test
-   ./Build install
+    cpan> install Data::Printer
 
+If you wish to install it manually, download and unpack the tarball and
+run the following commands:
 
-### USAGE ###
+	perl Makefile.PL
+	make
+	make test
+	make install
 
-   use Data::Printer;
-   p $data;
+Of course, instead of downloading the tarball you may simply clone the
+git repository:
 
-Please refer to http://search.cpan.org/perldoc?Data::Printer for
-complete documentation, or type:
-
-   perldoc Data::Printer
-
-after the installation.
+    $ git clone git://github.com/garu/Data-Printer.git
 
 
-### SUPPORT AND DOCUMENTATION ###
-
-You can also look for information at:
-
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Printer
-
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Data-Printer
-
-    CPAN Ratings
-        http://cpanratings.perl.org/d/Data-Printer
-
-    Search CPAN
-        http://search.cpan.org/dist/Data-Printer/
+Thank you for using Data::Printer! Please let me know of potential issues,
+bugs and wishlists :)
 
 
-### LICENSE AND COPYRIGHT ###
+LICENSE AND COPYRIGHT
+---------------------
 
-Copyright (C) 2011-2017 Breno G. de Oliveira
+Copyright (C) 2011-2018 Breno G. de Oliveira
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
