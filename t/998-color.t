@@ -31,7 +31,7 @@ else {
 sub testsub {}
 
 my $data = {
-    arrayref => [[10], DDPTestObject->new],
+   arrayref => [[10], DDPTestObject->new],
    hashref => {
        string  => "this is a string",
        special => "one\t\x{2603}two\0\n\e[0m\x{2603}" . ('B' x 100),
@@ -45,7 +45,9 @@ my $data = {
    },
 };
 push @{$data->{arrayref}}, $data->{arrayref}[0];
-is $ddp->parse(\$data), qq{\e[0;38;2;137;221;243m{\e[0m
+
+my $got = $ddp->parse(\$data);
+my $expected = qq{\e[0;38;2;137;221;243m{\e[0m
     \e[0;38;2;121;134;203marrayref\e[0m\e[0;38;2;137;221;243m   \e[0m\e[0;38;2;137;221;243m[\e[0m
         \e[0;38;2;178;204;214m[0] \e[0m\e[0;38;2;137;221;243m[\e[0m
                 \e[0;38;2;178;204;214m[0] \e[0m\e[0;38;2;247;140;106m10\e[0m
@@ -68,6 +70,12 @@ is $ddp->parse(\$data), qq{\e[0;38;2;137;221;243m{\e[0m
         \e[0;38;2;121;134;203mundef\e[0m                     \e[0;38;2;137;221;243m   \e[0m\e[0;38;2;255;83;112mundef\e[0m\e[0;38;2;137;221;243m,\e[0m
         \e[0;38;2;137;221;243m'\e[0m\e[0;38;2;121;134;203mwe\e[0;38;2;0;150;136m\\e\e[0;38;2;121;134;203m[0mird\e[0;38;2;0;150;136m\\0\e[0;38;2;121;134;203mkey\e[0;38;2;0;150;136m\\x{2603}\e[0;38;2;121;134;203m!\e[0m\e[0;38;2;137;221;243m'\e[0m\e[0;38;2;137;221;243m   \e[0m\e[0;38;2;247;140;106m1\e[0m
     \e[0;38;2;137;221;243m}\e[0m
-\e[0;38;2;137;221;243m}\e[0m}, 'colored output';
+\e[0;38;2;137;221;243m}\e[0m};
+
+is($got, $expected, 'colored output');
+if ($got ne $expected) {
+    $got =~ s{\e}{\\e}gsm;
+    diag("escaped version for debug:\n$got");
+}
 
 done_testing;
