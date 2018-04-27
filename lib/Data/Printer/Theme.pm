@@ -8,6 +8,11 @@ sub name {
     return $self->{name};
 }
 
+sub customized {
+    my ($self) = @_;
+    return exists $self->{is_custom} ? 1 : 0;
+}
+
 sub color_for {
     my ($self, $color_type) = @_;
     return $self->{colors}{$color_type} || '';
