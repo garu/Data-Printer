@@ -43,10 +43,12 @@ sub _maybe_override_theme_colors {
     my $error = Data::Printer::Common::_tryme(sub {
         foreach my $kind (keys %$colors_to_override ) {
             my $override = $colors_to_override->{$kind};
-            die "color for '$kind' must be a scalar" if ref $override;
-            $theme->{colors}{$kind} = $override;
-            $theme->{sgr_colors}{$kind} = _parse_color($override);
-            $theme->{is_custom}{$kind} = 1;
+            die "invalid color for '$kind': must be scalar not ref" if ref $override;
+            if (my $parsed = _parse_color($override)) {
+                $theme->{colors}{$kind}     = $override;
+                $theme->{sgr_colors}{$kind} = $parsed;
+                $theme->{is_custom}{$kind}  = 1;
+            }
         }
     });
     if ($error) {
@@ -76,8 +78,10 @@ sub _load_theme {
             my $loaded_color = $class_colors->{$kind};
             die "color for '$kind' must be a scalar in theme '$theme_name'"
                 if ref $loaded_color;
-            $loaded_colors->{$kind} = $loaded_color;
-            $loaded_colors_sgr->{$kind} = _parse_color($loaded_color);
+            if (my $parsed_color = _parse_color($loaded_color)) {
+                $loaded_colors->{$kind}     = $loaded_color;
+                $loaded_colors_sgr->{$kind} = $parsed_color;
+            }
         }
     });
     if ($error) {
@@ -150,10 +154,9 @@ sub _parse_color {
                     ;
     }
     else {
-        Data::Printer::Common::_warn("unrecognized color '$color_label'");
+        Data::Printer::Common::_warn("invalid color '$color_label'");
     }
     return $color_code;
 }
-
 
 1;
