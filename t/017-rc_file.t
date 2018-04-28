@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 4;
 use Data::Printer::Config;
 
 my $content = <<'EOTEXT';
@@ -43,3 +43,27 @@ is_deeply($data, {
     'Some::Module' => { meep => 'moop' },
     'Other::Module' => { hard => { times => 'come.easy' } },
 }, 'parsed rc file');
+
+my $warn_count = 0;
+use Data::Printer::Common;
+{ no warnings 'redefine';
+    *Data::Printer::Common::_warn = sub {
+        my $message = shift;
+        $warn_count++;
+        if ($warn_count == 1) {
+            like $message, qr/error reading rc file/, 'message about parse error found';
+        }
+        else {
+            like $message, qr/RC file format changed in/, 'helper message found';
+        }
+    };
+}
+
+$content = <<'EOLEGACY';
+{
+    foo => 123
+}
+EOLEGACY
+
+my $data2 = Data::Printer::Config::_str2data('data.rc', $content);
+is_deeply($data2, {}, 'parse error returns valid structure');

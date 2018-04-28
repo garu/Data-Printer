@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 13;
 use Scalar::Util;
 
 BEGIN {
@@ -22,10 +22,9 @@ use Data::Printer colored       => 0,
 
 my $has_devel_size = !Data::Printer::Common::_tryme(sub { require Devel::Size; 1; });
 
-#test_tainted();
-#test_weak_ref();
+test_tainted();
+test_weak_ref();
 test_refcount();
-done_testing;
 
 sub test_tainted {
     SKIP: {

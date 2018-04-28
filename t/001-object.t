@@ -9,7 +9,6 @@ pass 'Data::Printer::Object loaded successfully';
 test_defaults();
 test_customization();
 test_aliases();
-done_testing;
 exit;
 
 sub test_defaults {

@@ -78,7 +78,7 @@ sub stringify { 'second!' };
 
 
 package main;
-use Test::More;
+use Test::More tests => 34;
 use Data::Printer::Object;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );

@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 6;
 use Data::Printer::Object;
 use Data::Printer::Common;
 use File::Spec;
@@ -61,5 +61,3 @@ SKIP: {
     like $ddp->parse(\$var), qr{read-only}, 'read-only handle';
     close $var;
 };
-
-done_testing();

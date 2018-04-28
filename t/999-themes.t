@@ -1,12 +1,11 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 31;
 use Data::Printer::Theme;
 
 test_basic_load();
 test_color_override();
 test_invalid_colors();
-done_testing;
 exit;
 
 sub test_invalid_colors {

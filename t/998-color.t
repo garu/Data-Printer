@@ -77,5 +77,3 @@ if ($got ne $expected) {
     $got =~ s{\e}{\\e}gsm;
     diag("escaped version for debug:\n$got");
 }
-
-done_testing;

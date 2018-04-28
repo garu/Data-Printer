@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 12;
 use Data::Printer::Common;
 
 is_deeply(
@@ -80,8 +80,6 @@ is_deeply(
 );
 
 
-done_testing;exit;
-
 is_deeply(
     Data::Printer::Common::merge_options(
         { foo => 1, bar => 2, baz => { meep => 666, moop => [444], bla => [3,2,1] } },
@@ -99,5 +97,3 @@ is_deeply(
     },
     'merged complex data structures'
 );
-
-done_testing;

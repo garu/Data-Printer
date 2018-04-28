@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 18;
 use Data::Printer::Object;
 use Scalar::Util ();
 
@@ -199,7 +199,3 @@ $ddp = Data::Printer::Object->new( colored => 0, array_max => 7, array_preserve 
 is( $ddp->parse(\@array), '[
     (...skipping 51 items...)
 ]', 'max_array preserving none');
-
-
-
-done_testing;

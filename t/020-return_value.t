@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 27;
 
 BEGIN {
     use Data::Printer::Config;
@@ -159,6 +159,3 @@ is $stdout, '', 'STDOUT should be empty after p() (object, indirect)';
 is $stderr, $expected, 'pass-through STDERR (object, indirect)';
 
 is $foo->{meep}, 3, 'pass-through return (object, indirect)';
-
-
-done_testing;
