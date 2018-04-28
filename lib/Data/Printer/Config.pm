@@ -23,7 +23,6 @@ sub load_rc_file {
         my $rc_data;
         { local $/ = undef; $rc_data = <$fh> }
         close $fh;
-
         return _str2data($filename, $rc_data);
     }
     else {
@@ -100,7 +99,7 @@ sub convert {
         Data::Printer::Common::_die("error loading file '$filename': config file must return a hash reference");
     }
     else {
-        print _convert('', $config);
+        return _convert('', $config);
     }
 }
 
@@ -114,10 +113,11 @@ sub _convert {
         return $str;
     }
     elsif (ref $value) {
-        warn(
+        Data::Printer::Common::_warn(
             " [*] path '$key_str': expected scalar, found " . ref($value)
           . ". Filters must be in their own class now, loaded with 'filter'\n"
         );
+        return '';
     }
     else {
         return "$key_str = $value\n";
