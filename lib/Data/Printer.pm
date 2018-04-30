@@ -36,7 +36,7 @@ sub import {
             ? $rc_arguments->{'_'}{use_prototypes}
         : 1
         ;
-    my $exported = ($use_prototypes ? \&p : \&p_without_prototypes);
+    my $exported = ($use_prototypes ? \&p : \&_p_without_prototypes);
 
     my $imported = exists $args->{alias}
             ? $args->{alias}
@@ -96,7 +96,7 @@ sub p (\[@$%&];%) {
 # this version expects a reference as its first argument. We make a single
 # exception for when we only get one argument, in which case we ref it
 # for the user and keep going.
-sub p_without_prototypes  {
+sub _p_without_prototypes  {
     my (undef, %properties) = @_;
 
     my $item;
