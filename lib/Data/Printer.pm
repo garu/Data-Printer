@@ -60,7 +60,7 @@ sub _initialize {
 }
 
 sub np (\[@$%&];%) {
-    my ($data, %properties) = @_;
+    my (undef, %properties) = @_;
 
     _initialize();
 
@@ -71,7 +71,7 @@ sub np (\[@$%&];%) {
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
     }
-    return $printer->write_label . $printer->parse($data);
+    return $printer->write_label . $printer->parse($_[0]);
 }
 
 
