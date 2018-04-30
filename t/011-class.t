@@ -409,7 +409,3 @@ is( $ddp->parse( ICanHazStringMethodTwo->new ),
 }',
 'object with stringify => 0 expands normally'
 );
-
-
-
-done_testing;
