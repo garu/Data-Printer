@@ -375,10 +375,7 @@ sub _my_home {
     }
     else { # unix/linux/bsd/...
         my $home;
-        if (exists $ENV{HOME} and defined $ENV{HOME}) {
-            $home = $ENV{HOME};
-        }
-        elsif (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
+        if (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
             $home = $ENV{LOGDIR};
         }
         else {
