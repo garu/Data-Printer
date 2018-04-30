@@ -216,7 +216,7 @@ sub _nsort {
     return $nsort_initialized->(@_);
 }
 
-# this is a very simple 'natural-ish' sorter, heavily inspired on
+# this is a very simple 'natural-ish' sorter, heavily inspired in
 # http://www.perlmonks.org/?node_id=657130 by thundergnat and tye
 sub _nsort_pp {
     my $i;
