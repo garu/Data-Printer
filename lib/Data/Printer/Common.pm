@@ -2,8 +2,6 @@ package Data::Printer::Common;
 # Private library of shared Data::Printer code.
 use strict;
 use warnings;
-use if $] >= 5.010, 'Hash::Util::FieldHash'         => qw(fieldhash);
-use if $] <  5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
 
 my $mro_initialized = 0;
 my $nsort_initialized;

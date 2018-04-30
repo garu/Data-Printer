@@ -10,25 +10,14 @@ my %options = (
     LICENSE             => 'perl',
     PL_FILES            => {},
     PREREQ_PM => {
-        'Test::More'      => 0.88,
-        'Term::ANSIColor' => 3.0,  # introduces 'bright_*' colors
+        'Test::More'      => 0,
         'Scalar::Util'    => 0,
         'version'         => 0.77, # handling VSTRINGS
-        'Sort::Naturally' => 0,
-        'Package::Stash'  => 0.30,
         'Carp'            => 0,
-        'Clone::PP'       => 0,
-        'File::HomeDir'   => 0.91, # introduces File::HomeDir::Test
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
-        ($] >= 5.010
-            ? ()
-            : (
-                'MRO::Compat' => 0.09,
-                'Hash::Util::FieldHash::Compat' => 0.03,
-              )
-        ),
+      ( 'MRO::Compat'    => 0.09 )x!! ($] >= 5.010),
     },
     META_MERGE => {
         resources => {
@@ -46,6 +35,4 @@ if ($^O =~ /Win32/i) {
     $options{PREREQ_PM}{'Win32::Console::ANSI'} = 1.0;
 }
 
-
 WriteMakefile( %options );
-
