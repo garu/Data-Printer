@@ -125,7 +125,6 @@ sub _reduce_string {
         # nothing to do? ok, then escape any colors already present:
         $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
             if $ddp->print_escapes;
-#        $string =~ s{\e}{$escape_color\\e$main_color}g if $ddp->print_escapes;
     }
     return $string;
 }
@@ -340,7 +339,6 @@ sub _my_home {
     elsif (exists $ENV{HOME} && defined $ENV{HOME}) {
         return $ENV{HOME};
     }
-
     elsif ($^O eq 'MSWin32') {
         return $ENV{USERPROFILE} if exists $ENV{USERPROFILE} and $ENV{USERPROFILE};
         if (exists $ENV{HOMEDRIVE} and exists $ENV{HOMEPATH} and $ENV{HOMEDRIVE} and $ENV{HOMEPATH} ) {
@@ -452,15 +450,10 @@ sub _fetch_indexes_for {
 }
 
 {
-#    fieldhash my %IDs;
     my %IDs;
-
     my $Last_ID = "a";
     sub _object_id {
-        my ($self) = @_;
-
-        $self = Scalar::Util::refaddr( $self ); # maybe not required - use 
-
+        my $self = Scalar::Util::refaddr( $_[0] );
         # This is 15% faster than ||=
         return $IDs{$self} if exists $IDs{$self};
         return $IDs{$self} = ++$Last_ID;
