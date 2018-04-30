@@ -232,7 +232,7 @@ sub _nsort_pp {
 sub _linear_ISA_for {
     my ($class, $ddp) = @_;
     _initialize_mro() unless $mro_initialized;
-    my $isa = mro::get_linear_isa($class) if $mro_initialized > 0;
+    my $isa = $mro_initialized > 0 ? mro::get_linear_isa($class) : [];
     return [@$isa, ($ddp->class->universal ? 'UNIVERSAL' : ())];
 }
 
