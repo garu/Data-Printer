@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More tests => 14;
 use Data::Printer::Config;
+use Data::Printer::Common;
 
 my $good_content = <<'EOTEXT';
 
@@ -48,7 +49,6 @@ is_deeply($data, $expected, 'parsed rc file');
 
 
 my $warn_count = 0;
-use Data::Printer::Common;
 { no warnings 'redefine';
     *Data::Printer::Common::_warn = sub {
         my $message = shift;
@@ -71,15 +71,11 @@ EOLEGACY
 my $data2 = Data::Printer::Config::_str2data('data.rc', $bad_content);
 is_deeply($data2, {}, 'parse error returns valid structure');
 
-
-use File::Temp qw(tempdir);
-use File::Spec;
-use Data::Printer::Common;
-
 SKIP: {
     my $skipped_tests = 4;
-    my $dir = tempdir( CLEANUP => 1 );
+    my $dir = Data::Printer::Common::_my_home('testing');
     skip "unable to create temp dir", $skipped_tests unless $dir && -d $dir;
+    require File::Spec;
     my $filename = File::Spec->catfile($dir, '.dataprinter');
 
     my $error = Data::Printer::Common::_tryme(sub {
