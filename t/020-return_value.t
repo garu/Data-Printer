@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 27;
+use Test::More tests => 32;
 
 BEGIN {
     use Data::Printer::Config;
@@ -13,120 +13,133 @@ use Data::Printer colored => 0;
 eval { require Capture::Tiny; 1; }
     or plan skip_all => 'Capture::Tiny not found';
 
-my $string = 'All your base are belong to us.';
-my $return = 1;
-my ($stdout, $stderr) = Capture::Tiny::capture( sub {
-    $return = p $string, return_value => 'void';
-});
+test_return_value_dump_on_scalar();
+test_return_value_void_on_scalar();
+test_return_value_pass_on_hashes();
+test_return_value_pass_on_arrays();
+test_return_value_pass_on_scalar();
+test_method_chaining();
+exit;
 
-is $stdout, '', 'STDOUT should be empty after p() (scalar, scalar)';
-is $stderr, qq("$string"\n), 'pass-through STDERR (scalar, scalar)';
-is $return, undef, 'pass-through return (scalar scalar)';
+sub test_return_value_dump_on_scalar {
+    my $string = 'All your base are belong to us.';
+    my $return = 1;
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $return = p $string, return_value => 'dump';
+        1;
+    });
+    is $stdout, '', 'on dump STDOUT should be empty after p() (scalar, scalar)';
+    is $stderr, '', 'on dump STDERR also empty (scalar, scalar)';
+    is $return, qq("$string") , 'on dump returned variable (scalar scalar)';
 
-##############
-### hashes ###
-##############
-my %foo = ( answer => 42, question => 24 );
+    ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        p $string, return_value => 'dump';
+        1;
+    });
+    is $stdout, '', 'on dump (no return) STDOUT should be empty after p() (scalar, scalar)';
+    is $stderr, qq("$string"\n), 'on dump (no return) STDERR (scalar, scalar)';
+}
 
-my $expected = <<'EOT';
+sub test_return_value_void_on_scalar {
+    my $string = 'All your base are belong to us.';
+    my $return = 1;
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $return = p $string, return_value => 'void';
+    });
+
+    is $stdout, '', 'STDOUT should be empty after p() (scalar, scalar)';
+    is $stderr, qq("$string"\n), 'pass-through STDERR (scalar, scalar)';
+    is $return, undef, 'pass-through return (scalar scalar)';
+}
+
+sub test_return_value_pass_on_hashes {
+    my %foo = ( answer => 42, question => 24 );
+    my $expected = <<'EOT';
 {
     answer     42,
     question   24
 }
 EOT
 
-my (%return_list, $return_scalar);
+    my (%return_list, $return_scalar);
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        %return_list = p %foo;
+    });
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    %return_list = p %foo;
-});
+    is $stdout, '', 'STDOUT should be empty after p() (hash, list)';
+    is $stderr, $expected, 'pass-through STDERR (hash, list)';
 
-is $stdout, '', 'STDOUT should be empty after p() (hash, list)';
-is $stderr, $expected, 'pass-through STDERR (hash, list)';
+    is_deeply \%return_list, \%foo, 'pass-through return (hash list)';
 
-is_deeply \%return_list, \%foo, 'pass-through return (hash list)';
+    ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $return_scalar = p %foo;
+    });
+    is $stdout, '', 'STDOUT should be empty after p() (hash, scalar)';
+    is $stderr, $expected, 'pass-through STDERR (hash, scalar)';
+    is $return_scalar, scalar %foo, 'pass-through return (hash scalar)';
+}
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    $return_scalar = p %foo;
-});
-
-is $stdout, '', 'STDOUT should be empty after p() (hash, scalar)';
-is $stderr, $expected, 'pass-through STDERR (hash, scalar)';
-
-is $return_scalar, scalar %foo, 'pass-through return (hash scalar)';
-
-
-##############
-### arrays ###
-##############
-
-my @return_list;
-my @foo = qw(foo bar);
-$expected = <<'EOT';
+sub test_return_value_pass_on_arrays {
+    my @return_list;
+    my $return_scalar;
+    my @foo = qw(foo bar);
+    my $expected = <<'EOT';
 [
     [0] "foo",
     [1] "bar"
 ]
 EOT
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    @return_list = p @foo;
-});
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        @return_list = p @foo;
+    });
 
-is $stdout, '', 'STDOUT should be empty after p() (array, list)';
-is $stderr, $expected, 'pass-through STDERR (array, list)';
+    is $stdout, '', 'STDOUT should be empty after p() (array, list)';
+    is $stderr, $expected, 'pass-through STDERR (array, list)';
+    is_deeply \@return_list, \@foo, 'pass-through return (array list)';
 
-is_deeply \@return_list, \@foo, 'pass-through return (array list)';
+    ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $return_scalar = p @foo;
+    });
+    is $stdout, '', 'STDOUT should be empty after p() (array, scalar)';
+    is $stderr, $expected, 'pass-through STDERR (array, scalar)';
+    is $return_scalar, 2, 'pass-through return (array scalar)';
+}
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    $return_scalar = p @foo;
-});
+sub test_return_value_pass_on_scalar {
+    my $foo = 'how much wood would a woodchuck chuck if a woodchuck could chuck wood?';
+    my $expected = qq{"$foo"$/};
+    my $return_scalar;
+    my @return_list;
 
-is $stdout, '', 'STDOUT should be empty after p() (array, scalar)';
-is $stderr, $expected, 'pass-through STDERR (array, scalar)';
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        @return_list = p $foo;
+    });
 
-is $return_scalar, 2, 'pass-through return (array scalar)';
+    is $stdout, '', 'STDOUT should be empty after p() (scalar, list)';
+    is $stderr, $expected, 'pass-through STDERR (scalar, list)';
+    is_deeply \@return_list, [ $foo ], 'pass-through return (scalar list)';
 
+    ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $return_scalar = p $foo;
+    });
 
-##############
-### scalar ###
-##############
+    is $stdout, '', 'STDOUT should be empty after p() (scalar, scalar)';
+    is $stderr, $expected, 'pass-through STDERR (scalar, scalar)';
+    is $return_scalar, $foo, 'pass-through return (scalar scalar)';
+}
 
-my $foo = 'how much wood would a woodchuck chuck if a woodchuck could chuck wood?';
-$expected = qq{"$foo"$/};
+sub test_method_chaining {
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    @return_list = p $foo;
-});
+    package Foo;
+    sub new  { bless {}, shift }
+    sub bar  { $_[0]->{meep}++; $_[0] }
+    sub baz  { $_[0]->{meep}++; $_[0] }
+    sub biff { $_[0]->{meep}++; $_[0] }
 
-is $stdout, '', 'STDOUT should be empty after p() (scalar, list)';
-is $stderr, $expected, 'pass-through STDERR (scalar, list)';
+    package main;
 
-is_deeply \@return_list, [ $foo ], 'pass-through return (scalar list)';
-
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    $return_scalar = p $foo;
-});
-
-is $stdout, '', 'STDOUT should be empty after p() (scalar, scalar)';
-is $stderr, $expected, 'pass-through STDERR (scalar, scalar)';
-
-is $return_scalar, $foo, 'pass-through return (scalar scalar)';
-
-
-#######################
-### method chaining ###
-#######################
-
-package Foo;
-sub new  { bless {}, shift }
-sub bar  { $_[0]->{meep}++; $_[0] }
-sub baz  { $_[0]->{meep}++; $_[0] }
-sub biff { $_[0]->{meep}++; $_[0] }
-
-package main;
-
-$expected =<<'EOT';
+    my $expected =<<'EOT';
 Foo  {
     public methods (4): bar, baz, biff, new
     private methods (0)
@@ -136,26 +149,20 @@ Foo  {
 }
 EOT
 
-$foo = Foo->new;
+    my $foo = Foo->new;
+    my ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        (Data::Printer::p $foo->bar->baz)->biff;
+    });
+    is $stdout, '', 'STDOUT should be empty after p() (object, direct)';
+    is $stderr, $expected, 'pass-through STDERR (object, direct)';
+    is $foo->{meep}, 3, 'pass-through return (object, direct)';
 
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    (Data::Printer::p $foo->bar->baz)->biff;
-});
-
-is $stdout, '', 'STDOUT should be empty after p() (object, direct)';
-is $stderr, $expected, 'pass-through STDERR (object, direct)';
-
-is $foo->{meep}, 3, 'pass-through return (object, direct)';
-
-# once again, but this time in indirect object notation
-
-$foo = Foo->new;
-
-($stdout, $stderr) = Capture::Tiny::capture( sub {
-    $foo->bar->baz->Data::Printer::p->biff;
-});
-
-is $stdout, '', 'STDOUT should be empty after p() (object, indirect)';
-is $stderr, $expected, 'pass-through STDERR (object, indirect)';
-
-is $foo->{meep}, 3, 'pass-through return (object, indirect)';
+    # once again, but this time in indirect object notation
+    $foo = Foo->new;
+    ($stdout, $stderr) = Capture::Tiny::capture( sub {
+        $foo->bar->baz->Data::Printer::p->biff;
+    });
+    is $stdout, '', 'STDOUT should be empty after p() (object, indirect)';
+    is $stderr, $expected, 'pass-through STDERR (object, indirect)';
+    is $foo->{meep}, 3, 'pass-through return (object, indirect)';
+}
