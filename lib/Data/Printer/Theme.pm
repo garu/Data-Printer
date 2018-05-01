@@ -85,7 +85,7 @@ sub _load_theme {
         }
     });
     if ($error) {
-        Data::Printer::Common::_warn("Error loading theme '$theme_name': $error. Output will have no colors");
+        Data::Printer::Common::_warn("error loading theme '$theme_name': $error. Output will have no colors");
         return { colors => {}, sgr_colors => {} };
     }
     return {
