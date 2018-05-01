@@ -1,9 +1,10 @@
 use strict;
 use warnings;
-use Test::More tests => 31;
+use Test::More tests => 35;
 use Data::Printer::Theme;
 
 test_basic_load();
+test_invalid_load();
 test_color_override();
 test_invalid_colors();
 exit;
@@ -85,4 +86,28 @@ sub test_basic_load {
     $sgr = $theme->sgr_color_for('class');
     $sgr =~ s{\e}{\\e};
     is $sgr, '\e[0;38;2;199;146;234m', 'fetched SGR variant for class color';
+}
+
+package
+    Data::Printer::Theme::InvalidTheme;
+    sub colors { return [] }
+
+package main;
+sub test_invalid_load {
+    my $warning;
+    require Data::Printer::Common;
+    no warnings 'redefine';
+    *Data::Printer::Common::_warn = sub {
+        $warning = shift;
+    };
+    my $theme = Data::Printer::Theme->new('InvalidTheme');
+    is_deeply $theme, { colors => {}, sgr_colors => {} }, 'unknown theme loads no colors';
+    like($warning, qr/error loading theme 'InvalidTheme'/, 'got right warning message (1)');
+
+    undef $warning;
+    undef $theme;
+    $INC{'Data/Printer/Theme/InvalidTheme.pm'} = 'mock loaded, make use/require pass';
+    $theme = Data::Printer::Theme->new('InvalidTheme');
+    is_deeply $theme, { colors => {}, sgr_colors => {} }, 'invalid theme loads no colors';
+    like($warning, qr/error loading theme 'InvalidTheme'/, 'got right warning message (2)');
 }
