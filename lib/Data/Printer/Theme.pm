@@ -111,12 +111,7 @@ sub _parse_color {
     }
     elsif ($color_label =~ /\A#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\z/i) {
         my ($r, $g, $b) = map hex($_), ($1, $2, $3);
-        if ($r < 256 && $g < 256 && $b < 256) {
-            $color_code = "\e[0;38;2;$r;$g;${b}m";
-        }
-        else {
-            Data::Printer::Common::_warn("invalid color '$color_label': all colors must be between 00 and FF");
-        }
+        $color_code = "\e[0;38;2;$r;$g;${b}m";
     }
     elsif ($color_label =~ /\A\e\[\d+(:?;\d+)*m\z/) {
         $color_code = $color_label;
