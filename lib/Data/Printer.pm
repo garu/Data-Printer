@@ -148,7 +148,9 @@ sub _handle_output {
         return;
     }
     else {
-        print { $printer->output_handle } $output . "\n" unless $wantarray;
+        if (!$wantarray) {
+            print { $printer->output_handle } $output . "\n";
+        }
         return $output;
     }
 }
