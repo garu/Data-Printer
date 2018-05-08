@@ -6,9 +6,8 @@ Data::Printer
 [![CPAN version](https://badge.fury.io/pl/Data-Printer.png)](http://badge.fury.io/pl/Data-Printer)
 
 Data::Printer is a Perl module to
-*pretty-print Perl data structures and objects* in full color.
-It is meant to display variables on screen,
-*properly formatted to be inspected by a human*.
+*pretty-print Perl data structures and objects* in full color,
+in a way that is *properly formatted to be inspected by a human*.
 
 Basic Usage:
 ------------
