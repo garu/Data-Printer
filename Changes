@@ -1,5 +1,23 @@
 Revision history for Data-Printer
 
+0.99_002 2018-05-10
+    BUG FIXES:
+        - fix tests when bogus RC file is present
+        - fix colored tests on travis
+        - fix refcount test on perls <= 5.12
+        - reset internal state after parsing
+        - when scouting for methods, ensure GVs are named
+        - synced p() and np() code so they behave exactly the same
+        - fix use_prototypes => 0
+        - prevent "double plan" warninga on tests
+    OTHER:
+        - extra tests to increase code coverage
+        - improved error handling in themes
+        - function to convert old RC format to the new one
+        - improved README
+        - extra debug info on test failures
+        - cleanup on unreachable code
+
 0.99_001 2018-04-21
     BACKWARDS-INCOMPATIBLE CHANGE
         - new format for the .dataprinterrc file
@@ -41,10 +59,11 @@ Revision history for Data-Printer
           This requires Devel::Size, so the default is 0 for none.
         - memsize_unit defined in which unit to show the memory usage. Can be
           set to 'b'(ytes), 'k'(ilobytes), 'm'(egabytes) or 'auto' (the default).
-        - format_inheritance => 'string' (to preserve backwards compatibility)
-          But now with a shiny 'lines' alternative that separates methods per
-          inherited package!
-        - inheritance tree is considered when filtering objects (Ovid)
+        - new property 'format_inheritance', defaults to "lines", a shiny and much
+          clearer new way to displays methods per inherited package. You may also
+          set it to 'string' to preserve the old behaviour.
+        - inheritance tree is considered when filtering objects unless you disable
+          it with 'parent_filters => 0' (Ovid)
         - new option 'stringify' (default: 1) will return the stringified version
           of the object, if one is available. It will try overloaded strings/numbers,
           as_string() and stringify() calls, respectively. Note that this will efectivelly
