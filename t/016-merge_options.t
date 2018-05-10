@@ -34,9 +34,6 @@ is_deeply(
     'merge hash and array'
 );
 
-use Data::Printer::Object;
-my $ddp = Data::Printer::Object->new;
-
 is_deeply(
     Data::Printer::Common::merge_options(
         { foo => 42, bar => 27 },
