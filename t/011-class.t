@@ -89,7 +89,10 @@ is(
     $ddp->parse($object),
 'Foo  {
     Parents       Bar
-    public methods (4): baz, borg, foo, new
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
     private methods (1): _other
     internals: {
         test   42
@@ -101,8 +104,11 @@ is(
 $ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 1 } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
-    Linear @ISA   Foo, Bar, UNIVERSAL
-    public methods (4): baz, borg, foo, new
+    Linear @ISA   Foo, Bar
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
     private methods (1): _other
     internals: {
         test   42
@@ -111,7 +117,10 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { parents => 0 } );
 is( $ddp->parse($object), 'Foo  {
-    public methods (4): baz, borg, foo, new
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
     private methods (1): _other
     internals: {
         test   42
@@ -129,7 +138,10 @@ is( $ddp->parse($object), 'Foo  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'public' } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
-    public methods (4): baz, borg, foo, new
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
     internals: {
         test   42
     }
@@ -138,17 +150,47 @@ is( $ddp->parse($object), 'Foo  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private' } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
+    public methods (1):
+        Bar:
+            bar
     private methods (1): _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (show_methods private, show_inherited public)' );
+
+$ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private', inherited => 'private' } );
+is( $ddp->parse($object), 'Foo  {
+    Parents       Bar
+    private methods (2):
+        _other
+        Bar:
+            _moo
     internals: {
         test   42
     }
 }', 'testing objects (only private methods)' );
 
-$ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'all' } );
+$ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private', inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
-    public methods (4): baz, borg, foo, new
     private methods (1): _other
+    internals: {
+        test   42
+    }
+}', 'testing objects (only public private methods)' );
+
+$ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'all', inherited => 'all' } );
+is( $ddp->parse($object), 'Foo  {
+    Parents       Bar
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
+    private methods (2):
+        _other
+        Bar:
+            _moo
     internals: {
         test   42
     }
@@ -157,7 +199,10 @@ is( $ddp->parse($object), 'Foo  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { internals => 0 } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
-    public methods (4): baz, borg, foo, new
+    public methods (5):
+        baz, borg, foo, new
+        Bar:
+            bar
     private methods (1): _other
 }', 'testing objects (no internals)' );
 
@@ -169,11 +214,11 @@ is( $ddp->parse($object), 'Foo  {
     internals: {
         test   42
     }
-}', 'testing objects (inherited => "none") (default)' );
+}', 'testing objects (inherited => "none")' );
 
 my ($n, $extra_field) = $] < 5.010 ? (8, '') : (9, ' DOES (UNIVERSAL),');
 
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all' } );
+$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'string' } );
 is( $ddp->parse($object), "Foo  {
     Parents       Bar
     public methods ($n): bar (Bar), baz, borg, can (UNIVERSAL),$extra_field foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
@@ -181,9 +226,9 @@ is( $ddp->parse($object), "Foo  {
     internals: {
         test   42
     }
-}", 'testing objects (inherited => "all")' );
+}", 'testing objects (inherited => "all", universal => 1, format_inheritance => string)' );
 
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', format_inheritance => 'lines' } );
+$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'lines' } );
 my $lines_extra = ($extra_field? ' DOES,' : '');
 is( $ddp->parse($object), "Foo  {
     Parents       Bar
@@ -200,47 +245,7 @@ is( $ddp->parse($object), "Foo  {
     internals: {
         test   42
     }
-}", 'testing objects (inherited => "all", format_inheritance => "lines")' );
-
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 0 } );
-is( $ddp->parse($object), "Foo  {
-    Parents       Bar
-    public methods (5): bar (Bar), baz, borg, foo, new
-    private methods (2): _moo (Bar), _other
-    internals: {
-        test   42
-    }
-}", 'testing objects (inherited => "all", universal => 0)' );
-
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'public' } );
-is( $ddp->parse($object), "Foo  {
-    Parents       Bar
-    public methods ($n): bar (Bar), baz, borg, can (UNIVERSAL),$extra_field foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
-    private methods (1): _other
-    internals: {
-        test   42
-    }
-}", 'testing objects (inherited => "public")' );
-
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'public', universal => 0 } );
-is( $ddp->parse($object), "Foo  {
-    Parents       Bar
-    public methods (5): bar (Bar), baz, borg, foo, new
-    private methods (1): _other
-    internals: {
-        test   42
-    }
-}", 'testing objects (inherited => "public", universal => 0)' );
-
-$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'private' } );
-is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
-    public methods (4): baz, borg, foo, new
-    private methods (2): _moo (Bar), _other
-    internals: {
-        test   42
-    }
-}', 'testing objects (inherited => "private")' );
+}", 'testing objects (inherited => "all", universal => 1, format_inheritance => "lines")' );
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { expand => 0 } );
 is( $ddp->parse($object), 'Foo',
@@ -248,7 +253,7 @@ is( $ddp->parse($object), 'Foo',
 
 $object->borg( Foo->new );
 
-$ddp = Data::Printer::Object->new( colored => 0 );
+$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
     public methods (4): baz, borg, foo, new
@@ -259,7 +264,7 @@ is( $ddp->parse($object), 'Foo  {
     }
 }', 'testing nested objects' );
 
-$ddp = Data::Printer::Object->new( colored => 0, class => { expand => 'all' } );
+$ddp = Data::Printer::Object->new( colored => 0, class => { expand => 'all', inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
     Parents       Bar
     public methods (4): baz, borg, foo, new
@@ -282,15 +287,41 @@ my $obj_with_isa = Meep->new;
 $ddp = Data::Printer::Object->new( colored => 0 );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     Parents       Foo, Baz
-    Linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
-    public methods (0)
+    Linear @ISA   Meep, Foo, Bar, Baz
+    public methods (5):
+        Foo:
+            baz, borg, foo, new
+        Bar:
+            bar
     private methods (0)
     internals: {
         test   42
     }
 }', 'testing objects with @ISA' );
 
-$ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 0 } );
+$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
+is( $ddp->parse($obj_with_isa), 'Meep  {
+    Parents       Foo, Baz
+    Linear @ISA   Meep, Foo, Bar, Baz
+    public methods (0)
+    private methods (0)
+    internals: {
+        test   42
+    }
+}', 'testing objects with @ISA and no inheritance' );
+
+$ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none', universal => 1 } );
+is( $ddp->parse($obj_with_isa), 'Meep  {
+    Parents       Foo, Baz
+    Linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
+    public methods (0)
+    private methods (0)
+    internals: {
+        test   42
+    }
+}', 'testing objects with @ISA and no inheritance but with universal' );
+
+$ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 0, inherited => 'none' } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     Parents       Foo, Baz
     public methods (0)
@@ -301,17 +332,6 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 }', 'testing objects with @ISA, opting out the @ISA' );
 
 $ddp = Data::Printer::Object->new( colored => 0 );
-is( $ddp->parse($obj_with_isa), 'Meep  {
-    Parents       Foo, Baz
-    Linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
-    public methods (0)
-    private methods (0)
-    internals: {
-        test   42
-    }
-}', 'testing objects with @ISA' );
-
-$ddp = Data::Printer::Object->new( colored => 0 );
 my $parentless = ParentLess->new;
 
 is( $ddp->parse($parentless), 'ParentLess  {
@@ -319,7 +339,6 @@ is( $ddp->parse($parentless), 'ParentLess  {
     private methods (0)
     internals: {}
 }', 'testing parentless object' );
-
 
 $ddp = Data::Printer::Object->new( colored => 0 );
 my $scalar_obj = FooScalar->new;
@@ -377,7 +396,17 @@ is( $ddp->parse($unrelated), 'UnrelatedOverload  {
     overloads: +, <
     internals: {}
 }',
-    'object with different overload (should not stringify)'
+    'object with different overload (should not stringify - lines inheritance)'
+);
+
+$ddp = Data::Printer::Object->new( colored => 0, class => { format_inheritance => 'string' } );
+is( $ddp->parse($unrelated), 'UnrelatedOverload  {
+    public methods (1): new
+    private methods (0)
+    overloads: +, <
+    internals: {}
+}',
+    'object with different overload (should not stringify - string inheritance)'
 );
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_overloads => 0 } );
