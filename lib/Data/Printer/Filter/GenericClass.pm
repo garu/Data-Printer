@@ -147,7 +147,6 @@ sub _show_methods {
     my @all_methods = map _methods_of($_, _get_namespace($_)), @$linear_ISA;
     my $show_methods   = $ddp->class->show_methods;
     my $show_inherited = $ddp->class->inherited;
-
     my %seen_method_name;
     foreach my $method (@all_methods) {
         my ($package_string, $method_string) = @$method;
@@ -206,11 +205,12 @@ sub _show_methods {
                     . ($total_methods ? ':' : '')
                     ;
             if (@base_methods) {
-                $ddp->indent;
-                $string .= $ddp->newline . join(', ' => map {
+                my $base_string = join(', ' => map {
                     $ddp->maybe_colorize($_, 'method')
-                  } @base_methods
-                );
+                } @base_methods);
+                $ddp->indent;
+                # newline only if we have parent methods to show:
+                $string .= (keys %lined_methods ? $ddp->newline : ' ') . $base_string;
                 $ddp->outdent;
             }
             foreach my $pkg (@$linear_ISA) {
@@ -252,6 +252,9 @@ sub _get_all_subs_from {
     my ($class_name, $namespace) = @_;
     my @subs;
     foreach my $key (keys %$namespace) {
+        # perlsub says any sub starting with '(' is reserved for overload,
+        # so we skip those:
+        next if substr($key, 0, 1) eq '(';
         if (
             # any non-typeglob in the symbol table is a constant or stub
             ref(\$namespace->{$key}) ne 'GLOB'
