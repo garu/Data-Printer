@@ -285,14 +285,24 @@ sub _fetch_scalar_or_default {
 
 sub _die {
     my ($message) = @_;
-    require Carp;
-    Carp::croak('[Data::Printer] ' . $message);
+    my $frame = 2;
+    while (my @caller = caller($frame++)) {
+        if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
+            die '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
+            return;
+        }
+    }
 }
 
 sub _warn {
     my ($message) = @_;
-    require Carp;
-    Carp::carp('[Data::Printer] ' . $message);
+    my $frame = 2;
+    while (my @caller = caller($frame++)) {
+        if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
+            warn '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
+            return;
+        }
+    }
 }
 
 # simple eval++ adapted from Try::Tiny.

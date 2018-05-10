@@ -1,16 +1,19 @@
 use strict;
 use warnings;
 use Test::More tests => 1;
-use Carp;
 use Data::Printer::Common;
 
-my $message = 'hello!';
-my $got;
-my $expected = '[Data::Printer] hello!';
-
-{ no warnings 'redefine';
-    *Carp::carp = sub { $got = shift };
+sub warnings(&) {
+    my $code = shift;
+    my $got;
+    local $SIG{__WARN__} = sub {
+        $got = shift;
+    };
+    $code->();
+    return $got
 }
 
-Data::Printer::Common::_warn($message);
-is $got, $expected, 'common warning code';
+my $got = warnings { Data::Printer::Common::_warn("HA!") };
+
+is( $got, "[Data::Printer] HA! at t/000.2-warn.t line 16.\n", 'warn with proper caller/line' );
+
