@@ -40,7 +40,7 @@ package # hide from pause
     sub test_no_prototypes_on_pass {
         SKIP: {
             my $has_capture_tiny = eval { require Capture::Tiny; 1; };
-            skip 'Capture::Tiny not found', 1 unless $has_capture_tiny;
+            skip 'Capture::Tiny not found', 3 unless $has_capture_tiny;
             my $val = 123;
             my $ret;
             my ($stdout, $stderr) = Capture::Tiny::capture( sub {
@@ -52,5 +52,3 @@ package # hide from pause
             is $stderr, "123\n", 'pass STDERR works without prototypes';
         };
     }
-
-

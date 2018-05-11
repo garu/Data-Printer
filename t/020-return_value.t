@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 32;
+use Test::More;
 
 BEGIN {
     use Data::Printer::Config;
@@ -10,8 +10,12 @@ BEGIN {
 
 use Data::Printer colored => 0;
 
-eval { require Capture::Tiny; 1; }
-    or plan skip_all => 'Capture::Tiny not found';
+if (!eval { require Capture::Tiny; 1; }) {
+    plan skip_all => 'Capture::Tiny not found';
+}
+else {
+    plan tests => 32;
+}
 
 test_return_value_dump_on_scalar();
 test_return_value_void_on_scalar();
