@@ -170,10 +170,11 @@ sub _show_methods {
         if ($ddp->class->format_inheritance eq 'string') {
             my @method_list = keys %{$methods{$type}};
             @method_list = Data::Printer::Common::_nsort(@method_list)
-                if $ddp->class->sort_methods;
+                if $ddp->class->sort_methods && @method_list;
 
-            $string .= $ddp->newline . "$type methods (" . scalar(@method_list) . ')'
-                    . (@method_list ? ': ' : '')
+            $string .= $ddp->newline . "$type methods (" . scalar(@method_list) . ')';
+            if (@method_list) {
+                $string .= ': '
                     . join(', ' => map {
                         $ddp->maybe_colorize(
                             $_ . (defined $methods{$type}{$_} ? " ($methods{$type}{$_})" : ''),
@@ -181,6 +182,7 @@ sub _show_methods {
                         )
                       } @method_list)
                     ;
+            }
         }
         else { # 'lines'
             # first we convert our hash to { pkg => [ @methods ] }
@@ -197,9 +199,10 @@ sub _show_methods {
                 }
                 $total_methods++;
             }
+
             # then we print them, starting with our own methods:
             @base_methods = Data::Printer::Common::_nsort(@base_methods)
-                if $ddp->class->sort_methods;
+                if $ddp->class->sort_methods && @base_methods;
 
             $string .= $ddp->newline . "$type methods ($total_methods)"
                     . ($total_methods ? ':' : '')
