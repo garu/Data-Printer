@@ -218,10 +218,19 @@ is( $ddp->parse($object), 'Foo  {
 
 my ($n, $extra_field) = $] < 5.010 ? (8, '') : (9, ' DOES (UNIVERSAL),');
 
+my $public_method_list = "bar (Bar), baz, borg, can (UNIVERSAL),$extra_field foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)";
+
+my $sort_class = Data::Printer::Common::_initialize_nsort();
+my $has_uc_sort = $sort_class eq 'Sort::Key::Natural';
+
+if ($has_uc_sort) {
+    $public_method_list = "DOES (UNIVERSAL), VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new";
+}
+
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'string' } );
 is( $ddp->parse($object), "Foo  {
     Parents       Bar
-    public methods ($n): bar (Bar), baz, borg, can (UNIVERSAL),$extra_field foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)
+    public methods ($n): $public_method_list
     private methods (2): _moo (Bar), _other
     internals: {
         test   42
@@ -229,7 +238,12 @@ is( $ddp->parse($object), "Foo  {
 }", 'testing objects (inherited => "all", universal => 1, format_inheritance => string)' );
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'lines' } );
-my $lines_extra = ($extra_field? ' DOES,' : '');
+
+my $universal_methods = $has_uc_sort
+    ? $extra_field ? 'DOES, VERSION, can, isa' : 'VERSION, can, isa'
+    : $extra_field ? 'can, DOES, isa, VERSION' : 'can, isa, VERSION'
+    ;
+
 is( $ddp->parse($object), "Foo  {
     Parents       Bar
     public methods ($n):
@@ -237,7 +251,7 @@ is( $ddp->parse($object), "Foo  {
         Bar:
             bar
         UNIVERSAL:
-            can,$lines_extra isa, VERSION
+            $universal_methods
     private methods (2):
         _other
         Bar:
