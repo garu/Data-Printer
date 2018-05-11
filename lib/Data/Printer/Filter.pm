@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use Data::Printer::Common;
 
-require Carp;
-
 my %_filters_for   = ();
 my %_extras_for    = ();
 
@@ -15,11 +13,11 @@ sub import {
     my $filter = sub {
         my ($type, $code, $extra) = @_;
 
-        Carp::croak( "syntax: filter 'Class', sub { ... }" )
+        Data::Printer::Common::_die( "syntax: filter 'Class', sub { ... }" )
           unless $type and $code and ref $code eq 'CODE';
 
         if ($extra) {
-            Carp::croak( 'extra filter field must be a hashref' )
+            Data::Printer::Common::_die( 'extra filter field must be a hashref' )
                 unless ref $extra and ref $extra eq 'HASH';
 
             $_extras_for{$id}{$type} = $extra;

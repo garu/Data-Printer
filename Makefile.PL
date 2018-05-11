@@ -13,7 +13,6 @@ my %options = (
         'Test::More'      => 0,
         'Scalar::Util'    => 0,
         'version'         => 0.77, # handling VSTRINGS
-        'Carp'            => 0,
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
