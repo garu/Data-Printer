@@ -1,5 +1,11 @@
 Revision history for Data-Printer
 
+0.99_003 2018-05-11
+    BUG FIXES:
+        - fix test plan issue on some versions of Test::More
+        - die from caller perspective on filter error
+        - drop support for Sort::Naturally::XS
+
 0.99_002 2018-05-10
     BUG FIXES:
         - fix tests when bogus RC file is present
@@ -73,8 +79,7 @@ Revision history for Data-Printer
           from the object's class.
         - the standard class filter is now able to show internals in blessed subs
         - support for faster natural sorting via Sort::Key::Natural
-          and Sort::Naturally::XS, if the user has them installed
-          (feature request by @grr on github)
+          if the user has it installed (feature request by @grr on github)
     BUG FIXES:
         - fix array subelement alignment when index is shown (GARU)
         - show UNIVERSAL in linear ISA if it's on (GARU)
