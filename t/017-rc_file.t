@@ -113,7 +113,7 @@ SKIP: {
     $error = Data::Printer::Common::_tryme(sub {
         Data::Printer::Config::convert($dir);
     });
-    like $error, qr/file '$dir' not found/, 'convert() with dir, not file';
+    like $error, qr/file '\Q$dir\E' not found/, 'convert() with dir, not file';
     $error = Data::Printer::Common::_tryme(sub {
         open my $fh, '>', $filename
             or die "error creating test rc file $filename: $!";
