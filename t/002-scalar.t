@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 33;
+use Test::More tests => 32;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -30,10 +30,6 @@ sub test_basic_values {
     is $object->parse(\undef)  , 'undef (read-only)'  , 'hardcoded undef value';
     is $object->parse(\123)    , '123 (read-only)'    , 'hardcoded integer value';
     is $object->parse(\0)      , '0 (read-only)'      , 'hardcoded integer value';
-    TODO: {
-        local $TODO = '\-1 was not marked read-only by perl';
-        is $object->parse(\-1)     , '-1 (read-only)'     , 'hardcoded integer value';
-    };
     is $object->parse(\123.456), '123.456 (read-only)', 'hardcoded floating point value';
     is $object->parse(\'meep!'), '"meep!" (read-only)', 'hardcoded string value';
 
