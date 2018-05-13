@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+0.99_004 2018-05-12
+    BUG FIXES:
+        - fix tests on win32
+
 0.99_003 2018-05-11
     BUG FIXES:
         - fix test plan issue on some versions of Test::More
