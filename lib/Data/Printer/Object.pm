@@ -446,7 +446,13 @@ sub _filters_for_data {
 
     # first, try class name + full inheritance for a specific name.
     # NOTE: blessed() is returning true for regexes.
-    if ($ref_kind ne 'Regexp' and my $class = Scalar::Util::blessed($data)) {
+    my $class = $ref_kind eq 'Regexp' ? () : Scalar::Util::blessed($data);
+    # before 5.10 regexes are blessed SCALARs:
+    if ($] < 5.010 && $ref_kind && $ref_kind eq 'SCALAR' && $class && $class eq 'Regexp') {
+        $ref_kind = 'Regexp';
+        undef $class;
+    }
+    if ($class) {
         if ($self->class->parent_filters) {
             my $linear_ISA = Data::Printer::Common::_linear_ISA_for($class, $self);
             foreach my $candidate_class (@$linear_ISA) {
