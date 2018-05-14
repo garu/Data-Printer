@@ -257,6 +257,9 @@ B<< different options per module >> being analyzed!
 =item * B<< Easy to learn, easy to master >>. Seriously, the synopsis above
 and the customization section below cover about 90% of all use cases.
 
+=item * Works on B<< Perl 5.8 and later >>. Because you can't control where
+you debug, we try our best to be compatible with all versions of Perl 5.
+
 =item * Best of all? All that with B<< No non-core dependencies >>,
 Zero. Nada. So don't worry about adding extra weight to your project, as
 Data::Printer can be easily added/removed.
