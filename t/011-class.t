@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Bar;
-sub bar    { 666 }
+sub bar    { 'Bar' }
 sub borg   { }
 sub _moo   { }
 1;
@@ -17,7 +17,7 @@ sub _other { }
 1;
 
 package Baz;
-sub bar { 42 }
+sub bar { 'Baz' }
 1;
 
 package Meep;
@@ -80,6 +80,7 @@ sub stringify { 'second!' };
 package main;
 use Test::More tests => 34;
 use Data::Printer::Object;
+use Data::Printer::Common;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );
 
@@ -298,6 +299,10 @@ is( $ddp->parse($object), 'Foo  {
 
 my $obj_with_isa = Meep->new;
 
+SKIP: {
+    my $has_mro = Data::Printer::Common::_initialize_mro();
+    skip 'MRO::Compat not available, linear ISA not reliable', 3 unless $has_mro == 1;
+
 $ddp = Data::Printer::Object->new( colored => 0 );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     Parents       Foo, Baz
@@ -334,6 +339,7 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
         test   42
     }
 }', 'testing objects with @ISA and no inheritance but with universal' );
+};
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 0, inherited => 'none' } );
 is( $ddp->parse($obj_with_isa), 'Meep  {

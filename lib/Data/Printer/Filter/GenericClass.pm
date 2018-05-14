@@ -46,8 +46,7 @@ filter '-class' => sub {
         $ddp->indent;
         $string .= '  ' . $ddp->maybe_colorize('{', 'brackets');
 
-        my $namespace = _get_namespace($class_name);
-        my @superclasses = _get_superclasses_for($class_name, $namespace);
+        my @superclasses = Data::Printer::Common::_get_superclasses_for($class_name);
         if (@superclasses && $ddp->class->parents) {
             $string .= $ddp->newline . 'Parents       '
                     . join(', ', map $ddp->maybe_colorize($_, 'class'), @superclasses)
@@ -144,7 +143,9 @@ sub _show_methods {
     my ($class_name, $linear_ISA, $ddp) = @_;
 
     my %methods = ( public => {}, private => {} );
-    my @all_methods = map _methods_of($_, _get_namespace($_)), @$linear_ISA;
+    my @all_methods = map _methods_of(
+        $_, Data::Printer::Common::_get_namespace($_)
+    ), @$linear_ISA;
     my $show_methods   = $ddp->class->show_methods;
     my $show_inherited = $ddp->class->inherited;
     my %seen_method_name;
@@ -269,50 +270,9 @@ sub _get_all_subs_from {
     }
     my @symbols;
     foreach my $sub (@subs) {
-        push @symbols, _get_symbol($class_name, $namespace, $sub, 'CODE');
+        push @symbols, Data::Printer::Common::_get_symbol($class_name, $namespace, $sub, 'CODE');
     }
     return @symbols;
 }
-
-sub _get_namespace {
-    my ($class_name) = @_;
-    my $namespace;
-    {
-        no strict 'refs';
-        $namespace = \%{ $class_name . '::' }
-    }
-    # before 5.10, stashes don't ever seem to drop to a refcount of zero,
-    # so weakening them isn't helpful
-    Scalar::Util::weaken($namespace) if $] < 5.010;
-    return $namespace;
-}
-
-# inspired on Package::Stash:
-# TODO: test on XS objects 
-sub _get_superclasses_for {
-    my ($class_name, $namespace) = @_;
-
-    my $res = _get_symbol($class_name, $namespace, 'ISA', 'ARRAY');
-    return @{ $res || [] };
-}
-
-sub _get_symbol {
-    my ($class_name, $namespace, $symbol_name, $symbol_kind) = @_;
-
-    if (exists $namespace->{$symbol_name}) {
-        my $entry_ref = \$namespace->{$symbol_name};
-        if (ref($entry_ref) eq 'GLOB') {
-            return *{$entry_ref}{$symbol_kind};
-        }
-        else {
-            if ($symbol_kind eq 'CODE') {
-                no strict 'refs';
-                return \&{ $class_name . '::' . $symbol_name };
-            }
-        }
-    }
-    return;
-}
-
 
 1;

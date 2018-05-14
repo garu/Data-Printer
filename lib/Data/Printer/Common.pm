@@ -2,6 +2,7 @@ package Data::Printer::Common;
 # Private library of shared Data::Printer code.
 use strict;
 use warnings;
+use Scalar::Util;
 
 my $mro_initialized = 0;
 my $nsort_initialized;
@@ -227,23 +228,6 @@ sub _nsort_pp {
     return @_[ map { (split)[-1] } sort @unsorted ];
 }
 
-sub _linear_ISA_for {
-    my ($class, $ddp) = @_;
-    _initialize_mro() unless $mro_initialized;
-    my $isa = $mro_initialized > 0 ? mro::get_linear_isa($class) : [];
-    return [@$isa, ($ddp->class->universal ? 'UNIVERSAL' : ())];
-}
-
-sub _initialize_mro {
-    my $error= _tryme(sub {
-        if ($] < 5.009_005) { require MRO::Compat }
-        else { require mro }
-        1;
-    });
-    $mro_initialized = $error ? -1 : 1;
-}
-
-
 sub _fetch_arrayref_of_scalars {
     my ($props, $name) = @_;
     return [] unless exists $props->{$name} && ref $props->{$name} eq 'ARRAY';
@@ -454,6 +438,79 @@ sub _fetch_indexes_for {
     }
 }
 
+# helpers below strongly inspired by the excellent Package::Stash:
+sub _linear_ISA_for {
+    my ($class, $ddp) = @_;
+    _initialize_mro() unless $mro_initialized;
+    my $isa;
+    if ($mro_initialized > 0) {
+        $isa = mro::get_linear_isa($class);
+    }
+    else {
+        # minimal fallback in case Class::MRO isn't available
+        # (should only matter for perl < 5.009_005):
+        $isa = [ $class, _get_superclasses_for($class) ];
+    }
+    push @$isa, 'UNIVERSAL' if $ddp->class->universal;
+    return $isa;
+}
+
+sub _initialize_mro {
+    my $error= _tryme(sub {
+        if ($] < 5.009_005) { require MRO::Compat }
+        else { require mro }
+        1;
+    });
+    if ($error && index($error, 'in @INC') != -1 && $mro_initialized == 0) {
+        _warn(
+            ($] < 5.009_005 ? 'MRO::Compat' : 'mro') . ' not found in @INC.'
+          . ' Objects may display inaccurate/incomplete ISA and method list'
+        );
+    }
+    $mro_initialized = $error ? -1 : 1;
+}
+
+sub _get_namespace {
+    my ($class_name) = @_;
+    my $namespace;
+    {
+        no strict 'refs';
+        $namespace = \%{ $class_name . '::' }
+    }
+    # before 5.10, stashes don't ever seem to drop to a refcount of zero,
+    # so weakening them isn't helpful
+    Scalar::Util::weaken($namespace) if $] >= 5.010;
+
+    return $namespace;
+}
+
+# TODO: test on XS objects
+sub _get_superclasses_for {
+    my ($class_name) = @_;
+    my $namespace = _get_namespace($class_name);
+    my $res = _get_symbol($class_name, $namespace, 'ISA', 'ARRAY');
+    return @{ $res || [] };
+}
+
+sub _get_symbol {
+    my ($class_name, $namespace, $symbol_name, $symbol_kind) = @_;
+
+    if (exists $namespace->{$symbol_name}) {
+        my $entry_ref = \$namespace->{$symbol_name};
+        if (ref($entry_ref) eq 'GLOB') {
+            return *{$entry_ref}{$symbol_kind};
+        }
+        else {
+            if ($symbol_kind eq 'CODE') {
+                no strict 'refs';
+                return \&{ $class_name . '::' . $symbol_name };
+            }
+        }
+    }
+    return;
+}
+
+# inspired on Object::Id
 {
     my %IDs;
     my $Last_ID = "a";
