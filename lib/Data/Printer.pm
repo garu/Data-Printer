@@ -227,18 +227,34 @@ Here are Data::Printer's main features:
 =item * Variable dumps designed for I<< easy parsing by the human brain >>,
 not a machine.
 
+=back
+
+=over 4
+
 =item * B<< Highly customizable >>, from indentation size to depth level.
 You can even rename the exported C<p()> function!
+
+=back
+
+=over 4
 
 =item * B<< Beautiful (and customizable) colors >> to highlight variable dumps
 and make issues stand-out quickly on your console. Comes bundled with 4
 themes for you to pick that work on light and dark terminal backgrounds,
 and you can create your own as well.
 
+=back
+
+=over 4
+
 =item * B<< Filters for specific data structures and objects >> to make
 debugging much, much easier. Includes filters for several popular classes
 from CPAN like JSON::\*, URI, HTTP::\*, LWP, Digest::\*, DBI and DBIx::Class.
 Also lets you create your own custom filters easily.
+
+=back
+
+=over 4
 
 =item * Lets you B<< inspect information that's otherwise difficult to find/debug >>
 in Perl 5, like circular references, reference counting (refcount),
@@ -247,18 +263,38 @@ dual vars, even estimated data size - all to help you spot issues with your
 data like leaks without having to know a lot about internal data structures
 or install hardcore tools like Devel::Peek and Devel::Gladiator.
 
+=back
+
+=over 4
+
 =item * B<< output to many different targets >> like files, variables or open
 handles (defaults to STDERR). You can send your dumps to the screen
 or anywhere else.
 
+=back
+
+=over 4
+
 =item * keep your customized settings on a `.dataprinter` file that allows
 B<< different options per module >> being analyzed!
+
+=back
+
+=over 4
 
 =item * B<< Easy to learn, easy to master >>. Seriously, the synopsis above
 and the customization section below cover about 90% of all use cases.
 
+=back
+
+=over 4
+
 =item * Works on B<< Perl 5.8 and later >>. Because you can't control where
 you debug, we try our best to be compatible with all versions of Perl 5.
+
+=back
+
+=over 4
 
 =item * Best of all? All that with B<< No non-core dependencies >>,
 Zero. Nada. So don't worry about adding extra weight to your project, as
