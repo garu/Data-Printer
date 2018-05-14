@@ -306,7 +306,6 @@ Data::Printer can be easily added/removed.
 
 The ever-popular Data::Dumper is a fantastic tool, meant to stringify
 data structures in a way they are suitable for being "eval"'ed back in.
-
 The thing is, a lot of people keep using it (and similar ones, like
 Data::Dump) to print data structures and objects on screen for inspection
 and debugging, and while you I<can> use those modules for that, it doesn't
