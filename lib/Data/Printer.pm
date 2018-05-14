@@ -574,8 +574,8 @@ Many thanks to everyone who helped design and develop this module with
 patches, bug reports, wishlists, comments and tests. They are (alphabetically):
 
 Adam Rosenstein, Alexandr Ciornii (chorny), Allan Whiteford,
-Anatoly (Snelius30), Andreas König (andk), Andy Bach, Árpád Szász,
-Athanasios Douitsis (aduitsis), Baldur Kristinsson,
+Anatoly (Snelius30), Andreas König (andk), Andy Bach, Anthony DeRobertis,
+Árpád Szász, Athanasios Douitsis (aduitsis), Baldur Kristinsson,
 Benct Philip Jonsson (bpj), brian d foy, Chad Granum (exodist),
 Chris Prather (perigrin), Curtis Poe (Ovid), David D Lowe (Flimm),
 David Golden (xdg), David Precious (bigpresh), David Raab,
