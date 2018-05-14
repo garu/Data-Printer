@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_005 2018-05-13
+    BUG FIXES:
+        - fix regex filter on perl 5.8
+        - improve ISA detection in perl 5.8 without MRO::Compat
+
 0.99_004 2018-05-12
     BUG FIXES:
         - fix tests on win32
