@@ -451,8 +451,7 @@ sub _linear_ISA_for {
         # (should only matter for perl < 5.009_005):
         $isa = [ $class, _get_superclasses_for($class) ];
     }
-    push @$isa, 'UNIVERSAL' if $ddp->class->universal;
-    return $isa;
+    return [@$isa, ($ddp->class->universal ? 'UNIVERSAL' : ())];
 }
 
 sub _initialize_mro {
