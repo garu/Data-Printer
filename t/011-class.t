@@ -217,15 +217,24 @@ is( $ddp->parse($object), 'Foo  {
     }
 }', 'testing objects (inherited => "none")' );
 
-my ($n, $extra_field) = $] < 5.010 ? (8, '') : (9, ' DOES (UNIVERSAL),');
-
-my $public_method_list = "bar (Bar), baz, borg, can (UNIVERSAL),$extra_field foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)";
-
+my $universal_DOES = $ddp->can('DOES');
 my $sort_class = Data::Printer::Common::_initialize_nsort();
 my $has_uc_sort = $sort_class eq 'Sort::Key::Natural';
 
-if ($has_uc_sort) {
-    $public_method_list = "DOES (UNIVERSAL), VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new";
+my ($n, $public_method_list);
+if ($universal_DOES) {
+    $n = 9;
+    $public_method_list = $has_uc_sort
+        ? 'DOES (UNIVERSAL), VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new'
+        : 'bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)'
+    ;
+}
+else {
+    $n = 8;
+    $public_method_list = $has_uc_sort
+        ? 'VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new'
+        : 'bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)'
+    ;
 }
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'string' } );
@@ -241,8 +250,8 @@ is( $ddp->parse($object), "Foo  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'lines' } );
 
 my $universal_methods = $has_uc_sort
-    ? $extra_field ? 'DOES, VERSION, can, isa' : 'VERSION, can, isa'
-    : $extra_field ? 'can, DOES, isa, VERSION' : 'can, isa, VERSION'
+    ? $universal_DOES ? 'DOES, VERSION, can, isa' : 'VERSION, can, isa'
+    : $universal_DOES ? 'can, DOES, isa, VERSION' : 'can, isa, VERSION'
     ;
 
 is( $ddp->parse($object), "Foo  {
