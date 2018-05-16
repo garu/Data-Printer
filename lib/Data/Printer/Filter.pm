@@ -4,27 +4,16 @@ use warnings;
 use Data::Printer::Common;
 
 my %_filters_for   = ();
-my %_extras_for    = ();
 
 sub import {
     my $caller = caller;
     my $id = Data::Printer::Common::_object_id( \$caller );
 
     my $filter = sub {
-        my ($type, $code, $extra) = @_;
+        my ($type, $code) = @_;
 
         Data::Printer::Common::_die( "syntax: filter 'Class', sub { ... }" )
           unless $type and $code and ref $code eq 'CODE';
-
-        if ($extra) {
-            Data::Printer::Common::_die( 'extra filter field must be a hashref' )
-                unless ref $extra and ref $extra eq 'HASH';
-
-            $_extras_for{$id}{$type} = $extra;
-        }
-        else {
-            $_extras_for{$id}{$type} = {};
-        }
 
         unshift @{ $_filters_for{$id}{$type} }, sub {
             my ($item, $ddp) = @_;
@@ -34,10 +23,6 @@ sub import {
 
     my $filters = sub {
         return $_filters_for{$id};
-    };
-
-    my $extras = sub {
-        return $_extras_for{$id};
     };
 
     my $newline = sub {
@@ -75,11 +60,9 @@ sub import {
         *{"$caller\::np"} = $imported_np;
         *{"$caller\::p"} = $imported_p;
 
-        *{"$caller\::_filter_list"}   = $filters;
-        *{"$caller\::_extra_options"} = $extras;
+        *{"$caller\::_filter_list"} = $filters;
     }
 };
-
 
 1;
 __END__
