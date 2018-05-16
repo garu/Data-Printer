@@ -496,11 +496,15 @@ For a quick reference, below are all available properties and their
     },
 
     # filters (see Filters below)
-    filter => {
-       SCALAR => sub { ... }, # HASH, ARRAY, SUB, etc.
-       -class => sub { ... }.
-       -external => [ 'Filter1', 'Filter2', ... ],
-    },
+    filters => [
+        {
+            SCALAR    => sub { ... }, # <-- inline filter for SCALARs
+            SomeClass => sub { ... }, # <-- inline filter for class 'SomeClass'
+            -class    => sub { ... }. # <-- inline filter for all classes
+        },
+        'DB',  # <-- loads Data::Printer::Filter::DB
+        'Web', # <-- loads Data::Printer::Filter::Web
+    ],
 
 =head3 Settings shortcuts
 
@@ -554,15 +558,22 @@ Data::Printer works by passing your variable to a different set of filters,
 depending on whether it's a scalar, a hash, an array, an object, etc. It
 comes bundled with filters for all native data types and several others for
 the most common objects on CPAN. To set your own filter, simply add it to the
-C<filters> list:
+C<filters>. The list may receive named filters:
 
-    use DDP filters => {
+    use DDP filters => [ 'DB', 'Web' ];
+
+Which will load C<< <Data::Printer::Filter::DB >> and C<< ::Web >>,
+respectively. It may also get a hashref of inline filters:
+
+    use DDP filters => [{
         SCALAR       => sub { ... },
         'My::Module' => sub { ... },
-    };
+    }];
 
-Creating your custom filters is very easy, and you're encouraged to upload
-them to CPAN. Check L<Data::Printer::Filter> for extra information!
+Or any combination of those. Creating your custom filters is very easy, and
+you're encouraged to upload them to CPAN. There are many options available
+under the C<< Data::Printer::Filter::* >> namespace. Check
+L<Data::Printer::Filter> for extra information!
 
 =head1 TIPS & TRICKS
 
