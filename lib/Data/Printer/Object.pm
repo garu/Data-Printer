@@ -454,8 +454,8 @@ sub _filters_for_data {
     # first, try class name + full inheritance for a specific name.
     # NOTE: blessed() is returning true for regexes.
     my $class = $ref_kind eq 'Regexp' ? () : Scalar::Util::blessed($data);
-    # before 5.10 regexes are blessed SCALARs:
-    if ($] < 5.010 && $ref_kind eq 'SCALAR' && defined $class && $class eq 'Regexp') {
+    # before 5.11 regexes are blessed SCALARs:
+    if ($] < 5.011 && $ref_kind eq 'SCALAR' && defined $class && $class eq 'Regexp') {
         $ref_kind = 'Regexp';
         undef $class;
     }
