@@ -5,7 +5,7 @@ use Data::Printer::Object;
 use Data::Printer::Common;
 use Data::Printer::Config;
 
-our $VERSION = '0.99_006';
+our $VERSION = '0.99_007';
 
 my $rc_arguments;
 my %arguments_for;

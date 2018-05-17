@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_007 2018-05-17
+    BUG FIXES:
+        - fix regex parsing in 5.10.1
+        - test fixes for 5.11
+
 0.99_006 2018-05-17
     BUG FIXES:
         - fix longstanding issue of displaying weirdly-named objects
