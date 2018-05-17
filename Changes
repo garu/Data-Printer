@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.99_006 2018-05-17
+    BUG FIXES:
+        - fix longstanding issue of displaying weirdly-named objects
+          like 'HASH' or "0" (github issue #105) (bessarabov + dur-randir)
+        - fix test for UNIVERSAL::DOES
+    OTHER:
+        - documentation improvements
+        - remove undocumented and unsupported extra option in
+          external filters.
+
 0.99_005 2018-05-13
     BUG FIXES:
         - fix regex filter on perl 5.8
