@@ -78,12 +78,46 @@ sub stringify { 'second!' };
 
 
 package main;
-use Test::More tests => 34;
+use Test::More tests => 37;
 use Data::Printer::Object;
 use Data::Printer::Common;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );
 
+# first we try some very weird edge cases
+# https://github.com/garu/Data-Printer/issues/105
+my $weird = bless {}, 'HASH';
+
+is(
+    $ddp->parse($weird),
+'HASH  {
+    public methods (0)
+    private methods (0)
+    internals: {}
+}', 'empty "HASH" object'
+);
+
+$weird = bless [], 'ARRAY';
+is(
+    $ddp->parse($weird),
+'ARRAY  {
+    public methods (0)
+    private methods (0)
+    internals: []
+}', 'empty "ARRAY" object'
+);
+
+$weird = bless {}, "0";
+is(
+    $ddp->parse($weird),
+'0  {
+    public methods (0)
+    private methods (0)
+    internals: {}
+}', 'empty "0" object'
+);
+
+# okay, now back to testing "proper" objects :)
 my $object = Foo->new;
 
 is(

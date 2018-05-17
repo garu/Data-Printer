@@ -38,6 +38,13 @@ sub merge_options {
     }
 }
 
+sub _filter_category_for {
+    my ($name) = @_;
+    my %core_types = map { $_ => 1 }
+        qw(SCALAR LVALUE ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE);
+    return exists $core_types{$name} ? 'type_filters' : 'class_filters';
+}
+
 # strings are tough to process: there are control characters like "\t",
 # unicode characters to name or escape (or do nothing), max_string to
 # worry about, and every single piece of that could have its own color.

@@ -2,27 +2,24 @@ package Data::Printer::Filter;
 use strict;
 use warnings;
 use Data::Printer::Common;
-
-my %_filters_for   = ();
+use Scalar::Util;
 
 sub import {
     my $caller = caller;
-    my $id = Data::Printer::Common::_object_id( \$caller );
 
+    my %_filters_for  = ();
     my $filter = sub {
-        my ($type, $code) = @_;
-
+        my ($name, $code) = @_;
         Data::Printer::Common::_die( "syntax: filter 'Class', sub { ... }" )
-          unless $type and $code and ref $code eq 'CODE';
+          unless defined $name
+              && defined $code
+              && Scalar::Util::reftype($code) eq 'CODE';
 
-        unshift @{ $_filters_for{$id}{$type} }, sub {
+        my $target = Data::Printer::Common::_filter_category_for($name);
+        unshift @{$_filters_for{$target}{$name}}, sub {
             my ($item, $ddp) = @_;
             $code->($item, $ddp);
         };
-    };
-
-    my $filters = sub {
-        return $_filters_for{$id};
     };
 
     my $newline = sub {
@@ -60,7 +57,9 @@ sub import {
         *{"$caller\::np"} = $imported_np;
         *{"$caller\::p"} = $imported_p;
 
-        *{"$caller\::_filter_list"} = $filters;
+        *{"$caller\::_filter_list"} = sub {
+            return \%_filters_for;
+        };
     }
 };
 

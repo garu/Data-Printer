@@ -290,12 +290,11 @@ sub multiline {
 sub _load_filters {
     my ($self, $props) = @_;
 
-    # load our core filters
+    # load our core filters (LVALUE is under the 'SCALAR' filter module)
     my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE GenericClass);
     foreach my $class (@core_filters) {
         $self->_load_external_filter($class);
     }
-
     my @filters;
     # load any custom filters provided by the user
     if (exists $props->{filters}) {
@@ -313,10 +312,11 @@ sub _load_filters {
         }
     }
     foreach my $filter (@filters) {
-        if (!ref $filter) {
+        my $filter_reftype = Scalar::Util::reftype($filter);
+        if (!defined $filter_reftype) {
             $self->_load_external_filter($filter);
         }
-        elsif (ref $filter eq 'HASH') {
+        elsif ($filter_reftype eq 'HASH') {
             foreach my $k (keys %$filter) {
                 if ($k eq '-external') {
                     Data::Printer::Common::_warn(
@@ -326,8 +326,9 @@ sub _load_filters {
                     );
                     next;
                 }
-                if (ref $filter->{$k} eq 'CODE') {
-                    unshift @{ $self->{filters}{$k} }, $filter->{$k};
+                if (Scalar::Util::reftype($filter->{$k}) eq 'CODE') {
+                    my $type = Data::Printer::Common::_filter_category_for($k);
+                    unshift @{ $self->{$type}{$k} }, $filter->{$k};
                 }
                 else {
                     Data::Printer::Common::_warn(
@@ -351,12 +352,13 @@ sub _load_external_filter {
         Data::Printer::Common::_warn("error loading filter '$class': $error");
         return;
     }
-    my %from_module = %{$module->_filter_list};
-    my %extras      = %{$module->_extra_options};
-
-    foreach my $k (keys %from_module) {
-        unshift @{ $self->{filters}{$k} }, @{ $from_module{$k} };
+    my $from_module = $module->_filter_list;
+    foreach my $kind (keys %$from_module) {
+        foreach my $name (keys %{$from_module->{$kind}}) {
+            unshift @{ $self->{$kind}{$name} }, @{ $from_module->{$kind}{$name} };
+        }
     }
+    return;
 }
 
 sub _detect_color_level {
@@ -426,7 +428,12 @@ sub _load_colors {
 
 sub _filters_for_type {
     my ($self, $type) = @_;
-    return exists $self->{filters}{$type} ? @{ $self->{filters}{$type} } : ();
+    return exists $self->{type_filters}{$type} ? @{ $self->{type_filters}{$type} } : ();
+}
+
+sub _filters_for_class {
+    my ($self, $type) = @_;
+    return exists $self->{class_filters}{$type} ? @{ $self->{class_filters}{$type} } : ();
 }
 
 sub _filters_for_data {
@@ -448,22 +455,22 @@ sub _filters_for_data {
     # NOTE: blessed() is returning true for regexes.
     my $class = $ref_kind eq 'Regexp' ? () : Scalar::Util::blessed($data);
     # before 5.10 regexes are blessed SCALARs:
-    if ($] < 5.010 && $ref_kind && $ref_kind eq 'SCALAR' && $class && $class eq 'Regexp') {
+    if ($] < 5.010 && $ref_kind eq 'SCALAR' && defined $class && $class eq 'Regexp') {
         $ref_kind = 'Regexp';
         undef $class;
     }
-    if ($class) {
+    if (defined $class) {
         if ($self->class->parent_filters) {
             my $linear_ISA = Data::Printer::Common::_linear_ISA_for($class, $self);
             foreach my $candidate_class (@$linear_ISA) {
-                push @potential_filters, $self->_filters_for_type($candidate_class);
+                push @potential_filters, $self->_filters_for_class($candidate_class);
             }
         }
         else {
-            push @potential_filters, $self->_filters_for_type($class);
+            push @potential_filters, $self->_filters_for_class($class);
         }
         # next, let any '-class' filters have a go:
-        push @potential_filters, $self->_filters_for_type('-class');
+        push @potential_filters, $self->_filters_for_class('-class');
     }
 
     # then, try regular data filters
@@ -471,7 +478,7 @@ sub _filters_for_data {
 
     # finally, if it's neither a class nor a known core type,
     # we must be in a future perl with some type we're unaware of:
-    push @potential_filters, $self->_filters_for_type('-unknown');
+    push @potential_filters, $self->_filters_for_class('-unknown');
 
     return @potential_filters;
 }
