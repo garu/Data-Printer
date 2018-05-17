@@ -16,7 +16,6 @@ my %options = (
         'File::Spec'      => 0,
         'File::Temp'      => 0,
         'Fcntl'           => 0,
-      ( 'MRO::Compat'    => 0.09 )x!! ($] >= 5.010),
     },
     META_MERGE => {
         resources => {
@@ -28,7 +27,6 @@ my %options = (
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Data-Printer-*' },
 );
-
 
 if ($^O =~ /Win32/i) {
     $options{PREREQ_PM}{'Win32::Console::ANSI'} = 1.0;
