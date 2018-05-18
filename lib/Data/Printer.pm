@@ -607,7 +607,7 @@ Paul Evans (LeoNerd), Pedro Melo (melo), Przemysław Wesołek (jest),
 Rebecca Turner (iarna), Renato Cron (renatoCRON), Ricardo Signes (rjbs),
 Rob Hoelz (hoelzro), sawyer, Sebastian Willing (Sewi),
 Sergey Aleynikov (randir), Slaven Rezić, Stanislaw Pusep (syp),
-Stephen Thirlwall (sdt), sugyan, Tatsuhiko Miyagawa (miyagawa),
+Stephen Thirlwall (sdt), sugyan, Tai Paul, Tatsuhiko Miyagawa (miyagawa),
 Thomas Sibley (tsibley), Tim Heaney (oylenshpeegul), Torsten Raudssus (Getty),
 Tokuhiro Matsuno (tokuhirom), trapd00r, Tsai Chung-Kuan, vividsnow,
 Wesley Dal`Col (blabos), y, Yanick Champoux (yanick).
