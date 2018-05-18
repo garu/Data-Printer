@@ -602,15 +602,15 @@ Kartik Thakore (kthakore), Kevin Dawson (bowtie), Kevin McGrath (catlgrep),
 Kip Hampton (ubu), Londran, Marcel Grünauer (hanekomu),
 Marco Masetti (grubert65), Mark Fowler (Trelane), Martin J. Evans,
 Matt S. Trout (mst), Maxim Vuets, Michael Conrad, Mike Doherty (doherty),
-Nuba Princigalli (nuba), Olaf Alders (oalders), Paul Evans (LeoNerd),
-Pedro Melo (melo), Przemysław Wesołek (jest), Rebecca Turner (iarna),
-Renato Cron (renatoCRON), Ricardo Signes (rjbs), Rob Hoelz (hoelzro),
-sawyer, Sebastian Willing (Sewi), Sergey Aleynikov (randir), Slaven Rezić,
-Stanislaw Pusep (syp), Stephen Thirlwall (sdt), sugyan,
-Tatsuhiko Miyagawa (miyagawa), Thomas Sibley (tsibley),
-Tim Heaney (oylenshpeegul), Torsten Raudssus (Getty),
-Tokuhiro Matsuno (tokuhirom), trapd00r, vividsnow, Wesley Dal`Col (blabos),
-y, Yanick Champoux (yanick).
+Nicolas R (atoomic), Nuba Princigalli (nuba), Olaf Alders (oalders),
+Paul Evans (LeoNerd), Pedro Melo (melo), Przemysław Wesołek (jest),
+Rebecca Turner (iarna), Renato Cron (renatoCRON), Ricardo Signes (rjbs),
+Rob Hoelz (hoelzro), sawyer, Sebastian Willing (Sewi),
+Sergey Aleynikov (randir), Slaven Rezić, Stanislaw Pusep (syp),
+Stephen Thirlwall (sdt), sugyan, Tatsuhiko Miyagawa (miyagawa),
+Thomas Sibley (tsibley), Tim Heaney (oylenshpeegul), Torsten Raudssus (Getty),
+Tokuhiro Matsuno (tokuhirom), trapd00r, Tsai Chung-Kuan, vividsnow,
+Wesley Dal`Col (blabos), y, Yanick Champoux (yanick).
 
 If I missed your name, please drop me a line!
 

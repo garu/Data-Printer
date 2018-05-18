@@ -107,8 +107,9 @@ Revision history for Data-Printer
     BUG FIXES:
         - fix array subelement alignment when index is shown (GARU)
         - show UNIVERSAL in linear ISA if it's on (GARU)
-        - use "\n" instead of $/ as default line separator (Håkon Hægland)
-        * https://github.com/garu/Data-Printer/issues/75
+        - use "\n" instead of $/ as default line separator (Håkon Hægland && Chung-Kuan Tsai)
+        - less magic added to internal Perl representation of variables
+          (Jarrod Funnell, Sergey Aleynikov, Michael Conrad, Nicolas R.)
         - show_methods is now independent from show_inherited, meaning you can
           check all inherited methods and no local ones, or any combination thereof.
           This is the expected behaviour from the documentation, but was not happening.
