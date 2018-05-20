@@ -136,7 +136,7 @@ sub _handle_output {
         elsif ($ref eq 'HASH') {
             return %$data;
         }
-        elsif ( grep { $ref eq $_ } qw(REF SCALAR CODE Regexp GLOB VSTRING) ) {
+        elsif ( grep { $ref eq $_ } qw(REF SCALAR Regexp GLOB VSTRING) ) {
             return $$data;
         }
         else {
