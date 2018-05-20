@@ -20,6 +20,7 @@ sub color_for {
 
 sub sgr_color_for {
     my ($self, $color_type) = @_;
+    return unless exists $self->{sgr_colors}{$color_type};
     return $self->{sgr_colors}{$color_type} || ''
 }
 
@@ -44,7 +45,8 @@ sub _maybe_override_theme_colors {
         foreach my $kind (keys %$colors_to_override ) {
             my $override = $colors_to_override->{$kind};
             die "invalid color for '$kind': must be scalar not ref" if ref $override;
-            if (my $parsed = _parse_color($override)) {
+            my $parsed = Data::Printer::Theme->_parse_color($override);
+            if (defined $parsed) {
                 $theme->{colors}{$kind}     = $override;
                 $theme->{sgr_colors}{$kind} = $parsed;
                 $theme->{is_custom}{$kind}  = 1;
@@ -78,7 +80,8 @@ sub _load_theme {
             my $loaded_color = $class_colors->{$kind};
             die "color for '$kind' must be a scalar in theme '$theme_name'"
                 if ref $loaded_color;
-            if (my $parsed_color = _parse_color($loaded_color)) {
+            my $parsed_color = Data::Printer::Theme->_parse_color($loaded_color);
+            if (defined $parsed_color) {
                 $loaded_colors->{$kind}     = $loaded_color;
                 $loaded_colors_sgr->{$kind} = $parsed_color;
             }
@@ -96,8 +99,9 @@ sub _load_theme {
 }
 
 sub _parse_color {
-    my ($color_label) = @_;
-    return unless $color_label;
+    my ($theme, $color_label) = @_;
+    return unless defined $color_label;
+    return '' unless $color_label;
 
     my $color_code;
     if ($color_label =~ /\Argb\((\d+),(\d+),(\d+)\)\z/) {

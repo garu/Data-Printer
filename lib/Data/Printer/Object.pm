@@ -673,17 +673,18 @@ sub write_label {
 sub maybe_colorize {
     my ($self, $output, $color_type, $default_color, $end_color) = @_;
 
-    if ($self->color_level) {
-        my $sgr_color = $self->theme->sgr_color_for($color_type);
+    if ($self->color_level && defined $color_type) {
+        my $theme = $self->theme;
+        my $sgr_color = $theme->sgr_color_for($color_type);
         if (!defined $sgr_color && defined $default_color) {
-            $sgr_color = $self->theme->_parse_color($default_color);
+            $sgr_color = $theme->_parse_color($default_color);
         }
-        if (defined $sgr_color) {
+        if ($sgr_color) {
             $output = $sgr_color
                 . $output
                 . (defined $end_color
-                    ? $self->theme->sgr_color_for($end_color)
-                    : $self->theme->color_reset
+                    ? $theme->sgr_color_for($end_color)
+                    : $theme->color_reset
                 );
         }
     }
