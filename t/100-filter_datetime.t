@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::More tests => 23;
 use Data::Printer::Object;
 
 my $has_timepiece;
@@ -24,6 +24,7 @@ test_date_simple();
 test_mojo_date();
 test_date_manip();
 test_class_date();
+test_panda_date();
 
 sub test_time_piece {
     SKIP: {
@@ -271,4 +272,41 @@ sub test_class_date {
     };
 }
 
+sub test_panda_date {
+    SKIP: {
+        skip 'Panda::Date not found', 4, unless eval 'use Panda::Date; 1';
+        my $d = Panda::Date->new(
+            { year => 2003, month => 3, day => 11 },
+            'America/New_York'
+        );
 
+        my $ddp = Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DateTime'],
+        );
+
+        is( $ddp->parse($d), '2003-02-11 00:00:00 [EST]', 'Panda::Date' );
+
+        $ddp = Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DateTime'],
+            filter_datetime => { show_timezone => 0 },
+        );
+        is( $ddp->parse($d), '2003-02-11 00:00:00', 'Panda::Date (no timezone)' );
+
+        $ddp = Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DateTime'],
+        );
+
+        my $delta = Panda::Date::Rel->new('1M 2D 7h');
+        is( $ddp->parse($delta), "1M 2D 7h", 'Panda::Date::Rel' );
+
+        my $interval = Panda::Date::Int->new($d, $d + $delta);
+        is(
+            $ddp->parse($interval),
+            '2003-02-11 00:00:00 [EST] ~ 2003-03-13 07:00:00 [EST]',
+            'Panda::Date::Int'
+        );
+    };
+}

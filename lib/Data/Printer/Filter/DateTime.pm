@@ -17,6 +17,29 @@ filter 'Date::Simple'         => sub { _format("$_[0]"            , @_) };
 filter 'Mojo::Date'           => sub { _format($_[0]->to_datetime , @_) };
 filter 'Date::Manip::Obj'     => sub { _format(scalar $_[0]->value, @_) };
 
+filter 'Panda::Date'      => sub { _format(_filter_Panda_Date(@_), @_) };
+filter 'Panda::Date::Rel' => sub { _format( "$_[0]", @_) };
+filter 'Panda::Date::Int' => sub {
+    my ($date, $ddp) = @_;
+    _format(
+          _filter_Panda_Date($date->from, $ddp)
+        . ' ~ '
+        . _filter_Panda_Date($date->till, $ddp),
+        @_
+    );
+};
+
+sub _filter_Panda_Date {
+    my ($date, $ddp) = @_;
+    my $string = $date->iso;
+    if (!exists $ddp->extra_config->{filter_datetime}{show_timezone}
+        || $ddp->extra_config->{filter_datetime}{show_timezone}
+    ) {
+        $string .= ' [' . $date->tzabbr . ']';
+    }
+    return $string;
+}
+
 filter 'Class::Date::Rel' => sub {
     my ($obj, $ddp) = @_;
     my $string = '';
