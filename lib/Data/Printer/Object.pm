@@ -59,7 +59,7 @@ use Data::Printer::Filter::CODE;
 use Data::Printer::Filter::GenericClass;
 
 # create our basic accessors:
-foreach my $method_name (qw(
+my @method_names =qw(
     name show_tainted show_unicode show_readonly show_lvalue show_refcount
     show_memsize memsize_unit print_escapes scalar_quotes escape_chars
     caller_info caller_message string_max string_overflow string_preserve
@@ -67,13 +67,15 @@ foreach my $method_name (qw(
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value
-)) {
+);
+foreach my $method_name (@method_names) {
     no strict 'refs';
     *{__PACKAGE__ . "::$method_name"} = sub {
         $_[0]->{$method_name} = $_[1] if @_ > 1;
         return $_[0]->{$method_name};
     }
 }
+sub extra_config { $_[0]->{extra_config} }
 
 sub current_depth { $_[0]->{_depth}   }
 sub indent        { $_[0]->{_depth}++ }
@@ -212,6 +214,14 @@ sub _init {
     $self->_load_colors($props);
     $self->_load_filters($props);
     $self->output($props->{output} || 'stderr');
+
+    my %extra_config;
+    my %core_options = map { $_ => 1 }
+        (@method_names, qw(as multiline output colors filters));
+    foreach my $key (keys %$props) {
+        $extra_config{$key} = $props->{$key} unless exists $core_options{$key};
+    }
+    $self->{extra_config} = \%extra_config;
 
     return $self;
 }
