@@ -19,9 +19,31 @@ sub _parse_scalar {
 
     my $ret;
     my $value = ref $scalar_ref ? $$scalar_ref : $scalar_ref;
+    my $numified = do { no warnings 'numeric'; 0+ $value };
 
     if (not defined $value) {
         $ret = $ddp->maybe_colorize('undef', 'undef');
+    }
+    elsif ( $ddp->show_dualvar ) {
+        if ( $numified ) {
+            if ( $value eq "$numified" ) {
+                $ret = $ddp->maybe_colorize($value, 'number');
+            }
+            else {
+                $ret = Data::Printer::Common::_process_string( $ddp, "$value", 'string' );
+                my $quote = $ddp->maybe_colorize( $ddp->scalar_quotes, 'quotes' );
+                $ret = $quote . $ret . $quote;
+                $ret .= ' (dualvar: ' . $ddp->maybe_colorize( $numified, 'number' ) . ')';
+            }
+        }
+        elsif ( !$numified && _is_number($value) ) {
+            $ret = $ddp->maybe_colorize($value, 'number');
+        }
+        else {
+            $ret = Data::Printer::Common::_process_string($ddp, $value, 'string');
+            my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
+            $ret = $quote . $ret . $quote;
+        }
     }
     elsif (_is_number($value)) {
         $ret = $ddp->maybe_colorize($value, 'number');

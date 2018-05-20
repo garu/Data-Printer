@@ -66,7 +66,7 @@ my @method_names =qw(
     array_max array_overflow array_preserve hash_max hash_overflow
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
-    align_hash sort_keys quote_keys deparse return_value
+    align_hash sort_keys quote_keys deparse return_value show_dualvar
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -199,6 +199,7 @@ sub _init {
                              'pass',
                              [qw(pass dump void)]
                        );
+    $self->{'show_dualvar'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_dualvar', 1);
 
 
     if (exists $props->{as}) {

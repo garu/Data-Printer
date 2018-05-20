@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 32;
+use Test::More tests => 42;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -14,6 +14,7 @@ test_print_escapes();
 test_max_string();
 test_weak_ref();
 test_readonly();
+test_dualvar();
 
 sub test_weak_ref {
     my $num = 3.14;
@@ -182,4 +183,34 @@ sub test_readonly {
     my $foo = 42;
     &Internals::SvREADONLY( \$foo, 1 );
     is $ddp->parse(\$foo), '42 (read-only)', 'readonly variables';
+}
+
+sub test_dualvar {
+    for my $t (
+        [ 0,     'number' ],
+        [ 0.0,   'number' ],
+        [ '0.0', 'number' ],
+        [ '3',   'number' ],
+        [
+            Scalar::Util::dualvar( 42, "The Answer" ),
+            'dualvar',
+            '"The Answer" (dualvar: 42)'
+        ],
+        [ "Nil",  'string',  '"Nil"' ],
+        [ 0123,   'number' ],
+        [ "0123", 'dualvar', '"0123" (dualvar: 123)' ],
+      )
+    {
+        my ( $var, $type, $expected ) = @$t;
+        my $ddp = Data::Printer::Object->new( colored => 0 );
+        is $ddp->parse( \$var ), $expected // "$var", "$var is a $type";
+    }
+
+    # one very specific Perl dualvar
+    $! = 2;
+    is(
+        Data::Printer::Object->new( colored => 0 )->parse( \$! ),
+        '"No such file or directory" (dualvar: 2)',
+        '$! is a dualvar'
+    );
 }
