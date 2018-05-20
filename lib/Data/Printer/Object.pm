@@ -454,8 +454,6 @@ sub _filters_for_data {
     my $ref_kind = Scalar::Util::reftype($data);
     $ref_kind = 'SCALAR' unless $ref_kind;
 
-    # globs don't play nice
-    $ref_kind = 'GLOB' if "$ref_kind" =~ /GLOB\([^()]+\)$/;
     # Huh. ref() returns 'Regexp' but reftype() returns 'REGEXP'
     $ref_kind = 'Regexp' if $ref_kind eq 'REGEXP';
 
