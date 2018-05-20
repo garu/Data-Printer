@@ -19,12 +19,13 @@ sub _parse_scalar {
 
     my $ret;
     my $value = ref $scalar_ref ? $$scalar_ref : $scalar_ref;
-    my $numified = do { no warnings 'numeric'; 0+ $value };
 
     if (not defined $value) {
         $ret = $ddp->maybe_colorize('undef', 'undef');
     }
     elsif ( $ddp->show_dualvar ) {
+        my $numified;
+        $numified = do { no warnings 'numeric'; 0+ $value } if defined $value;
         if ( $numified ) {
             if ( $value eq "$numified" ) {
                 $ret = $ddp->maybe_colorize($value, 'number');
