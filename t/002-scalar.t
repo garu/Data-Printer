@@ -203,7 +203,11 @@ sub test_dualvar {
     {
         my ( $var, $type, $expected ) = @$t;
         my $ddp = Data::Printer::Object->new( colored => 0 );
-        is $ddp->parse( \$var ), $expected // "$var", "$var is a $type";
+        is(
+            $ddp->parse( \$var ),
+            defined $expected ? $expected : "$var",
+            "$var is a $type"
+        );
     }
 
     # one very specific Perl dualvar
