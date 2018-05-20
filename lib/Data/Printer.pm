@@ -126,7 +126,8 @@ sub _handle_output {
 
     if ($printer->return_value eq 'pass') {
         print { $printer->output_handle } $output . "\n";
-        my $ref = ref $data;
+        require Scalar::Util;
+        my $ref = Scalar::Util::reftype($data);
         if (!$ref) {
             return $data;
         }
@@ -136,7 +137,7 @@ sub _handle_output {
         elsif ($ref eq 'HASH') {
             return %$data;
         }
-        elsif ( grep { $ref eq $_ } qw(REF SCALAR Regexp GLOB VSTRING) ) {
+        elsif ( grep { $ref eq $_ } qw(REF SCALAR VSTRING) ) {
             return $$data;
         }
         else {
