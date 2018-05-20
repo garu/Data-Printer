@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 35;
+use Test::More tests => 37;
 use Data::Printer::Theme;
 
 test_basic_load();
@@ -43,6 +43,7 @@ sub test_color_override {
         hash   => '#B2CCD6',
         string => "\e[0;38;2m",
         number => 'bright_green on_yellow',
+        empty  => '',
     }), 'able to load theme with customization';
     is $theme->name, 'Material', 'customized theme keeps its name';
     is $theme->customized, 1, 'customized flag is set';
@@ -50,6 +51,9 @@ sub test_color_override {
     is $theme->color_for('hash'), '#B2CCD6', 'custom color for hash';
     is $theme->color_for('string'), "\e[0;38;2m", 'custom color for string';
     is $theme->color_for('number'), 'bright_green on_yellow', 'custom color for number';
+
+    is $theme->sgr_color_for('this is an invalid tag'), undef, 'invalid tag';
+    is $theme->sgr_color_for('empty'), '', 'empty tag';
 
     my $sgr = $theme->sgr_color_for('array');
     $sgr =~ s{\e}{\\e};

@@ -1,7 +1,7 @@
 #### this script tests basic object instantiation (arguments validation)
 use strict;
 use warnings;
-use Test::More tests => 120;
+use Test::More tests => 124;
 
 use Data::Printer::Object;
 pass 'Data::Printer::Object loaded successfully';
@@ -9,6 +9,7 @@ pass 'Data::Printer::Object loaded successfully';
 test_defaults();
 test_customization();
 test_aliases();
+test_colorization();
 exit;
 
 sub test_defaults {
@@ -154,4 +155,26 @@ sub test_aliases {
     my $ddp = Data::Printer::Object->new( as => 'this is a test' );
     is $ddp->caller_info, 1, '"as" will set caller_info';
     is $ddp->caller_message, 'this is a test', '"as" will set caller_message';
+}
+
+sub test_colorization {
+    my $ddp = Data::Printer::Object->new( colorized => 1 );
+    is $ddp->maybe_colorize('x'), 'x', 'no color unless tag is provided';
+    is $ddp->maybe_colorize('x', 'invalid tag'), 'x', 'no color unless valid tag';
+    is(
+        $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m"),
+        "\e[0;38;2mx\e[0m",
+        'fallback to default color'
+    );
+
+    $ddp = Data::Printer::Object->new(
+        colorized => 1,
+        colors    => { 'invalid tag' => '' }
+    );
+    is(
+        $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m"),
+        'x',
+        'color has fallback but user declined'
+    );
+
 }
