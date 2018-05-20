@@ -155,13 +155,7 @@ as a string.
 
 =item * L<Time::Piece>
 
-=item * L<DateTime>
-
-=item * L<DateTime::Duration>
-
-=item * L<DateTime::Incomplete>
-
-=item * L<DateTime::TimeZone>
+=item * L<DateTime>,  L<DateTime::Duration>, L<DateTime::Incomplete>, L<DateTime::TimeZone>
 
 =item * L<DateTime::Tiny>
 
@@ -171,19 +165,17 @@ as a string.
 
 =item * L<Date::Pcalc::Object>
 
-=item * L<Date::Handler>
-
-=item * L<Date::Handler::Delta>
+=item * L<Date::Handler>, L<Date::Handler::Delta>
 
 =item * L<Date::Simple>
 
 =item * L<Mojo::Date>
 
-=item * L<Class::Date>
-
-=item * L<Class::Date::Rel>
+=item * L<Class::Date>, L<Class::Date::Rel>
 
 =item * L<Date::Manip>
+
+=item * L<Panda::Date>, L<Panda::Date::Rel>, L<Panda::Date::Int>
 
 =back
 
