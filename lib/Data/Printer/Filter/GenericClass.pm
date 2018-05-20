@@ -46,8 +46,7 @@ filter '-class' => sub {
         $ddp->indent;
         $string .= '  ' . $ddp->maybe_colorize('{', 'brackets');
 
-        my $namespace = _get_namespace($class_name);
-        my @superclasses = _get_superclasses_for($class_name, $namespace);
+        my @superclasses = Data::Printer::Common::_get_superclasses_for($class_name);
         if (@superclasses && $ddp->class->parents) {
             $string .= $ddp->newline . 'Parents       '
                     . join(', ', map $ddp->maybe_colorize($_, 'class'), @superclasses)
@@ -144,10 +143,11 @@ sub _show_methods {
     my ($class_name, $linear_ISA, $ddp) = @_;
 
     my %methods = ( public => {}, private => {} );
-    my @all_methods = map _methods_of($_, _get_namespace($_)), @$linear_ISA;
+    my @all_methods = map _methods_of(
+        $_, Data::Printer::Common::_get_namespace($_)
+    ), @$linear_ISA;
     my $show_methods   = $ddp->class->show_methods;
     my $show_inherited = $ddp->class->inherited;
-
     my %seen_method_name;
     foreach my $method (@all_methods) {
         my ($package_string, $method_string) = @$method;
@@ -171,10 +171,11 @@ sub _show_methods {
         if ($ddp->class->format_inheritance eq 'string') {
             my @method_list = keys %{$methods{$type}};
             @method_list = Data::Printer::Common::_nsort(@method_list)
-                if $ddp->class->sort_methods;
+                if $ddp->class->sort_methods && @method_list;
 
-            $string .= $ddp->newline . "$type methods (" . scalar(@method_list) . ')'
-                    . (@method_list ? ': ' : '')
+            $string .= $ddp->newline . "$type methods (" . scalar(@method_list) . ')';
+            if (@method_list) {
+                $string .= ': '
                     . join(', ' => map {
                         $ddp->maybe_colorize(
                             $_ . (defined $methods{$type}{$_} ? " ($methods{$type}{$_})" : ''),
@@ -182,6 +183,7 @@ sub _show_methods {
                         )
                       } @method_list)
                     ;
+            }
         }
         else { # 'lines'
             # first we convert our hash to { pkg => [ @methods ] }
@@ -198,19 +200,21 @@ sub _show_methods {
                 }
                 $total_methods++;
             }
+
             # then we print them, starting with our own methods:
             @base_methods = Data::Printer::Common::_nsort(@base_methods)
-                if $ddp->class->sort_methods;
+                if $ddp->class->sort_methods && @base_methods;
 
             $string .= $ddp->newline . "$type methods ($total_methods)"
                     . ($total_methods ? ':' : '')
                     ;
             if (@base_methods) {
-                $ddp->indent;
-                $string .= $ddp->newline . join(', ' => map {
+                my $base_string = join(', ' => map {
                     $ddp->maybe_colorize($_, 'method')
-                  } @base_methods
-                );
+                } @base_methods);
+                $ddp->indent;
+                # newline only if we have parent methods to show:
+                $string .= (keys %lined_methods ? $ddp->newline : ' ') . $base_string;
                 $ddp->outdent;
             }
             foreach my $pkg (@$linear_ISA) {
@@ -238,14 +242,12 @@ sub _methods_of {
     my ($class_name, $namespace) = @_;
     my @methods;
     foreach my $subref (_get_all_subs_from($class_name, $namespace)) {
-        my $m;
-        if ($subref
-            and $m = B::svref_2object($subref)
-            and $m->isa('B::CV')
-            and not $m->GV->isa('B::Special')
-        ) {
-            push @methods, [ $m->GV->STASH->NAME, $m->GV->NAME ]
-        }
+        next unless $subref;
+        my $m = B::svref_2object($subref);
+        next unless $m && $m->isa('B::CV');
+        my $gv = $m->GV;
+        next unless $gv && !$gv->isa('B::Special') && $gv->NAME;
+        push @methods, [ $gv->STASH->NAME, $gv->NAME ];
     }
     return @methods;
 }
@@ -254,6 +256,9 @@ sub _get_all_subs_from {
     my ($class_name, $namespace) = @_;
     my @subs;
     foreach my $key (keys %$namespace) {
+        # perlsub says any sub starting with '(' is reserved for overload,
+        # so we skip those:
+        next if substr($key, 0, 1) eq '(';
         if (
             # any non-typeglob in the symbol table is a constant or stub
             ref(\$namespace->{$key}) ne 'GLOB'
@@ -265,50 +270,9 @@ sub _get_all_subs_from {
     }
     my @symbols;
     foreach my $sub (@subs) {
-        push @symbols, _get_symbol($class_name, $namespace, $sub, 'CODE');
+        push @symbols, Data::Printer::Common::_get_symbol($class_name, $namespace, $sub, 'CODE');
     }
     return @symbols;
 }
-
-sub _get_namespace {
-    my ($class_name) = @_;
-    my $namespace;
-    {
-        no strict 'refs';
-        $namespace = \%{ $class_name . '::' }
-    }
-    # before 5.10, stashes don't ever seem to drop to a refcount of zero,
-    # so weakening them isn't helpful
-    Scalar::Util::weaken($namespace) if $] < 5.010;
-    return $namespace;
-}
-
-# inspired on Package::Stash:
-# TODO: test on XS objects 
-sub _get_superclasses_for {
-    my ($class_name, $namespace) = @_;
-
-    my $res = _get_symbol($class_name, $namespace, 'ISA', 'ARRAY');
-    return @{ $res || [] };
-}
-
-sub _get_symbol {
-    my ($class_name, $namespace, $symbol_name, $symbol_kind) = @_;
-
-    if (exists $namespace->{$symbol_name}) {
-        my $entry_ref = \$namespace->{$symbol_name};
-        if (ref($entry_ref) eq 'GLOB') {
-            return *{$entry_ref}{$symbol_kind};
-        }
-        else {
-            if ($symbol_kind eq 'CODE') {
-                no strict 'refs';
-                return \&{ $class_name . '::' . $symbol_name };
-            }
-        }
-    }
-    return;
-}
-
 
 1;

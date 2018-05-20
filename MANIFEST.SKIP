@@ -1,6 +1,6 @@
 ^\.git
 ^[^/]+\.pl$
-^\ignore.txt
+^ignore.txt
 ^_build
 ^Build$
 ^blib
@@ -12,10 +12,11 @@ cover_db
 ^Makefile$
 ^pm_to_blib$
 ^blibdirs$
-\.old$
+\.old
 ^#.*#$
 ^\.#
 ^TODO$
 ^\._.*$
-^MYMETA.yml$
-^MYMETA\.json$
+^\.travis\.yml
+^MYMETA\.yml
+^MYMETA\.json

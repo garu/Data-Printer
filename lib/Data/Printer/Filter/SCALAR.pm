@@ -15,11 +15,9 @@ filter 'LVALUE' => sub {
 };
 
 sub _parse_scalar {
-    my ($scalar_ref, $ddp) = @_;  # TODO: ddp object?
+    my ($scalar_ref, $ddp) = @_;
 
-    #my $value =  $$scalar_ref;
     my $ret;
-
     my $value = ref $scalar_ref ? $$scalar_ref : $scalar_ref;
     my $numified = do { no warnings 'numeric'; 0+ $value };
 
@@ -55,11 +53,6 @@ sub _parse_scalar {
         $ret = Data::Printer::Common::_process_string($ddp, $value, 'string');
         my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
         $ret = $quote . $ret . $quote;
-#        $ret = Data::Printer::Common::_print_escapes($ddp, $value, 'string');
-#        $ret = $ddp->maybe_colorize($value, 'string');
-#        $ret = Data::Printer::Common::_escape_chars($ddp, $ret, 'string');
-#        $ret = _reduce_string($ddp, $ret);
-#        $ret = $ddp->maybe_colorize($ret, 'string')
     }
     $ret .= _check_tainted($ddp, $scalar_ref);
     $ret .= _check_unicode($ddp, $scalar_ref);
@@ -70,7 +63,6 @@ sub _parse_scalar {
 #######################################
 ### Private auxiliary helpers below ###
 #######################################
-
 
 sub _check_tainted {
     my ($self, $var) = @_;
@@ -107,6 +99,5 @@ sub _is_number {
 
     return $is_number;
 }
-
 
 1;

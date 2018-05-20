@@ -15,6 +15,7 @@ package # hide from pause
     sub sort_methods       { $_[0]->{'sort_methods'}       }
     sub inherited          { $_[0]->{'inherited'}          }
     sub format_inheritance { $_[0]->{'format_inheritance'} }
+    sub parent_filters     { $_[0]->{'parent_filters'}     }
     sub internals          { $_[0]->{'internals'}          }
     sub new {
         my ($class, $params) = @_;
@@ -28,12 +29,13 @@ package # hide from pause
                 $params, 'show_methods', 'all', [qw(none all private public)]
             ),
             'inherited' => Data::Printer::Common::_fetch_anyof(
-                $params, 'inherited', 'none', [qw(none all private public)]
+                $params, 'inherited', 'public', [qw(none all private public)]
             ),
             'format_inheritance' => Data::Printer::Common::_fetch_anyof(
-                $params, 'format_inheritance', 'string', [qw(string lines)]
+                $params, 'format_inheritance', 'lines', [qw(string lines)]
             ),
-            'universal'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'universal', 1),
+            'parent_filters' => Data::Printer::Common::_fetch_scalar_or_default($params, 'parent_filters', 1),
+            'universal'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'universal', 0),
             'sort_methods' => Data::Printer::Common::_fetch_scalar_or_default($params, 'sort_methods', 1),
             'internals'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'internals', 1),
             'parents'      => Data::Printer::Common::_fetch_scalar_or_default($params, 'parents', 1),
@@ -57,7 +59,7 @@ use Data::Printer::Filter::CODE;
 use Data::Printer::Filter::GenericClass;
 
 # create our basic accessors:
-foreach my $method_name (qw(
+my @method_names =qw(
     name show_tainted show_unicode show_readonly show_lvalue show_refcount
     show_memsize memsize_unit print_escapes scalar_quotes escape_chars
     caller_info caller_message string_max string_overflow string_preserve
@@ -65,13 +67,15 @@ foreach my $method_name (qw(
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar
-)) {
+);
+foreach my $method_name (@method_names) {
     no strict 'refs';
     *{__PACKAGE__ . "::$method_name"} = sub {
         $_[0]->{$method_name} = $_[1] if @_ > 1;
         return $_[0]->{$method_name};
     }
 }
+sub extra_config { $_[0]->{extra_config} }
 
 sub current_depth { $_[0]->{_depth}   }
 sub indent        { $_[0]->{_depth}++ }
@@ -212,6 +216,14 @@ sub _init {
     $self->_load_filters($props);
     $self->output($props->{output} || 'stderr');
 
+    my %extra_config;
+    my %core_options = map { $_ => 1 }
+        (@method_names, qw(as multiline output colors filters));
+    foreach my $key (keys %$props) {
+        $extra_config{$key} = $props->{$key} unless exists $core_options{$key};
+    }
+    $self->{extra_config} = \%extra_config;
+
     return $self;
 }
 
@@ -289,19 +301,76 @@ sub multiline {
 sub _load_filters {
     my ($self, $props) = @_;
 
+    # load our core filters (LVALUE is under the 'SCALAR' filter module)
     my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE GenericClass);
     foreach my $class (@core_filters) {
-        my $module = "Data::Printer::Filter::$class";
-        my %from_module = %{$module->_filter_list};
-        my %extras      = %{$module->_extra_options};
-
-        foreach my $k (keys %from_module) {
-            unshift @{ $self->{filters}{$k} }, @{ $from_module{$k} };
+        $self->_load_external_filter($class);
+    }
+    my @filters;
+    # load any custom filters provided by the user
+    if (exists $props->{filters}) {
+        if (ref $props->{filters} eq 'HASH') {
+            Data::Printer::Common::_warn(
+                'please update your code: filters => { ... } is now filters => [{ ... }]'
+            );
+            push @filters, $props->{filters};
+        }
+        elsif (ref $props->{filters} eq 'ARRAY') {
+            @filters = @{ $props->{filters} };
+        }
+        else {
+            Data::Printer::Common::_warn('filters must be an ARRAY reference');
+        }
+    }
+    foreach my $filter (@filters) {
+        my $filter_reftype = Scalar::Util::reftype($filter);
+        if (!defined $filter_reftype) {
+            $self->_load_external_filter($filter);
+        }
+        elsif ($filter_reftype eq 'HASH') {
+            foreach my $k (keys %$filter) {
+                if ($k eq '-external') {
+                    Data::Printer::Common::_warn(
+                        'please update your code: '
+                      . 'filters => { -external => [qw(Foo Bar)}'
+                      . ' is now filters => [qw(Foo Bar)]'
+                    );
+                    next;
+                }
+                if (Scalar::Util::reftype($filter->{$k}) eq 'CODE') {
+                    my $type = Data::Printer::Common::_filter_category_for($k);
+                    unshift @{ $self->{$type}{$k} }, $filter->{$k};
+                }
+                else {
+                    Data::Printer::Common::_warn(
+                        'hash filters must point to a CODE reference'
+                    );
+                }
+            }
+        }
+        else {
+            Data::Printer::Common::_warn('filters must be a name or { type => sub {...} }');
         }
     }
     return;
 }
 
+sub _load_external_filter {
+    my ($self, $class) = @_;
+    my $module = "Data::Printer::Filter::$class";
+    my $error = Data::Printer::Common::_tryme("use $module; 1;");
+    if ($error) {
+        Data::Printer::Common::_warn("error loading filter '$class': $error");
+        return;
+    }
+    my $from_module = $module->_filter_list;
+    foreach my $kind (keys %$from_module) {
+        foreach my $name (keys %{$from_module->{$kind}}) {
+            unshift @{ $self->{$kind}{$name} }, @{ $from_module->{$kind}{$name} };
+        }
+    }
+    return;
+}
 
 sub _detect_color_level {
     my ($self) = @_;
@@ -370,7 +439,12 @@ sub _load_colors {
 
 sub _filters_for_type {
     my ($self, $type) = @_;
-    return exists $self->{filters}{$type} ? @{ $self->{filters}{$type} } : ();
+    return exists $self->{type_filters}{$type} ? @{ $self->{type_filters}{$type} } : ();
+}
+
+sub _filters_for_class {
+    my ($self, $type) = @_;
+    return exists $self->{class_filters}{$type} ? @{ $self->{class_filters}{$type} } : ();
 }
 
 sub _filters_for_data {
@@ -381,8 +455,6 @@ sub _filters_for_data {
     my $ref_kind = Scalar::Util::reftype($data);
     $ref_kind = 'SCALAR' unless $ref_kind;
 
-    # globs don't play nice
-    $ref_kind = 'GLOB' if "$ref_kind" =~ /GLOB\([^()]+\)$/;
     # Huh. ref() returns 'Regexp' but reftype() returns 'REGEXP'
     $ref_kind = 'Regexp' if $ref_kind eq 'REGEXP';
 
@@ -390,13 +462,24 @@ sub _filters_for_data {
 
     # first, try class name + full inheritance for a specific name.
     # NOTE: blessed() is returning true for regexes.
-    if ($ref_kind ne 'Regexp' and my $class = Scalar::Util::blessed($data)) {
-        my $linear_ISA = Data::Printer::Common::_linear_ISA_for($class, $self);
-        foreach my $candidate_class (@$linear_ISA) {
-            push @potential_filters, $self->_filters_for_type($candidate_class);
+    my $class = $ref_kind eq 'Regexp' ? () : Scalar::Util::blessed($data);
+    # before 5.11 regexes are blessed SCALARs:
+    if ($] < 5.011 && $ref_kind eq 'SCALAR' && defined $class && $class eq 'Regexp') {
+        $ref_kind = 'Regexp';
+        undef $class;
+    }
+    if (defined $class) {
+        if ($self->class->parent_filters) {
+            my $linear_ISA = Data::Printer::Common::_linear_ISA_for($class, $self);
+            foreach my $candidate_class (@$linear_ISA) {
+                push @potential_filters, $self->_filters_for_class($candidate_class);
+            }
+        }
+        else {
+            push @potential_filters, $self->_filters_for_class($class);
         }
         # next, let any '-class' filters have a go:
-        push @potential_filters, $self->_filters_for_type('-class');
+        push @potential_filters, $self->_filters_for_class('-class');
     }
 
     # then, try regular data filters
@@ -404,7 +487,7 @@ sub _filters_for_data {
 
     # finally, if it's neither a class nor a known core type,
     # we must be in a future perl with some type we're unaware of:
-    push @potential_filters, $self->_filters_for_type('-unknown');
+    push @potential_filters, $self->_filters_for_class('-unknown');
 
     return @potential_filters;
 }
@@ -467,8 +550,6 @@ sub parse_as {
 # is a weak ref or not.
 sub parse {
     my $self = shift;
-    $self->{_position}++;
-
     my $str_weak = $self->_check_weak( $_[0] );
 
     my ($data, %options) = @_;
@@ -479,13 +560,13 @@ sub parse {
     # when parsing circular references:
     my $seen = $self->_see($data, %options);
     if (my $name = $seen->{name}) {
-        # on repeated references, the only extra data we put
-        # is whether this reference is weak or not:
         $parsed_string .= $self->maybe_colorize($name, 'repeated');
+        # on repeated references, the only extra data we put
+        # is whether this reference is weak or not.
         $parsed_string .= $str_weak;
-        $self->{_position}--;
         return $parsed_string;
     }
+    $self->{_position}++;
 
     # Each filter type provides an array of potential parsers.
     # Once we find the right kind, we go through all of them,
@@ -504,14 +585,19 @@ sub parse {
     }
 
     $parsed_string .= $self->_check_readonly($data);
-    $parsed_string .= $str_weak;
+    $parsed_string .= $str_weak if ref($data) ne 'REF';
 
     $parsed_string .= $self->_check_memsize($data);
     if ($self->show_refcount && ref($data) ne 'SCALAR' && $seen->{refcount} > 1 ) {
         $parsed_string .= ' (refcount: ' . $seen->{refcount} .')';
     }
 
-    $self->{_position}--;
+    if (--$self->{'_position'} == 0) {
+        $self->{'_seen'} = {};
+        $self->{'_refcount_base'} = 3;
+        $self->{'_position'} = 0;
+    }
+
     return $parsed_string;
 }
 
@@ -584,15 +670,22 @@ sub write_label {
 }
 
 sub maybe_colorize {
-    my ($self, $output, $color_type, $end_color) = @_;
+    my ($self, $output, $color_type, $default_color, $end_color) = @_;
 
-    if ($self->color_level) {
-        $output = $self->theme->sgr_color_for($color_type)
-             . $output
-             . (defined $end_color
-                 ? $self->theme->sgr_color_for($end_color)
-                 : $self->theme->color_reset
-             );
+    if ($self->color_level && defined $color_type) {
+        my $theme = $self->theme;
+        my $sgr_color = $theme->sgr_color_for($color_type);
+        if (!defined $sgr_color && defined $default_color) {
+            $sgr_color = $theme->_parse_color($default_color);
+        }
+        if ($sgr_color) {
+            $output = $sgr_color
+                . $output
+                . (defined $end_color
+                    ? $theme->sgr_color_for($end_color)
+                    : $theme->color_reset
+                );
+        }
     }
     return $output;
 }

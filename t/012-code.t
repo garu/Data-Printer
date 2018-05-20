@@ -1,4 +1,4 @@
-use Test::More;
+use Test::More tests => 4;
 use Data::Printer::Object;
 
 # use strict;   # <-- messes with B::Deparse
@@ -31,5 +31,3 @@ is( $ddp->parse(\$data), '[
         },
     [2] 10
 ]', 'subref in array');
-
-done_testing;

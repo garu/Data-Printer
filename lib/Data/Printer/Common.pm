@@ -2,8 +2,7 @@ package Data::Printer::Common;
 # Private library of shared Data::Printer code.
 use strict;
 use warnings;
-use if $] >= 5.010, 'Hash::Util::FieldHash'         => qw(fieldhash);
-use if $] <  5.010, 'Hash::Util::FieldHash::Compat' => qw(fieldhash);
+use Scalar::Util;
 
 my $mro_initialized = 0;
 my $nsort_initialized;
@@ -37,6 +36,13 @@ sub merge_options {
     else {
         return $new;
     }
+}
+
+sub _filter_category_for {
+    my ($name) = @_;
+    my %core_types = map { $_ => 1 }
+        qw(SCALAR LVALUE ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE);
+    return exists $core_types{$name} ? 'type_filters' : 'class_filters';
 }
 
 # strings are tough to process: there are control characters like "\t",
@@ -76,17 +82,22 @@ sub _reduce_string {
     if ($max && $str_len && $str_len > $max) {
         my $preserve = $ddp->string_preserve;
         my $skipped_chars = $str_len - ($preserve eq 'none' ? 0 : $max);
-        my $skip_message = $ddp->maybe_colorize($ddp->string_overflow, 'caller_info', $src_color);
+        my $skip_message = $ddp->maybe_colorize(
+            $ddp->string_overflow,
+            'caller_info',
+            undef,
+            $src_color
+        );
         $skip_message =~ s/__SKIPPED__/$skipped_chars/g;
         if ($preserve eq 'end') {
             substr $string, 0, $skipped_chars, '';
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
             $string = $skip_message . $string;
         }
         elsif ($preserve eq 'begin') {
             $string = substr($string, 0, $max);
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
             $string = $string . $skip_message;
         }
@@ -96,8 +107,8 @@ sub _reduce_string {
             my $leftside = substr($string, 0, $leftside_chars);
             my $rightside = substr($string, -$rightside_chars);
             if ($ddp->print_escapes) {
-                $leftside  =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge;
-                $rightside =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge;
+                $leftside  =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge;
+                $rightside =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge;
             }
             $string = $leftside . $skip_message . $rightside;
         }
@@ -111,11 +122,11 @@ sub _reduce_string {
             my $message_end = $ddp->string_overflow;
             $message_end =~ s/__SKIPPED__/$chars_left/gs;
             $string = substr($string, $substr_begin, $max);
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
-            $string = $ddp->maybe_colorize($message_begin, 'caller_info', $src_color)
+            $string = $ddp->maybe_colorize($message_begin, 'caller_info', undef, $src_color)
                     . $string
-                    . $ddp->maybe_colorize($message_end, 'caller_info', $src_color)
+                    . $ddp->maybe_colorize($message_end, 'caller_info', undef, $src_color)
                     ;
         }
         else {
@@ -125,9 +136,8 @@ sub _reduce_string {
     }
     else {
         # nothing to do? ok, then escape any colors already present:
-        $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+        $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
             if $ddp->print_escapes;
-#        $string =~ s{\e}{$escape_color\\e$main_color}g if $ddp->print_escapes;
     }
     return $string;
 }
@@ -152,7 +162,7 @@ sub _escape_chars {
             $scalar = $ddp->maybe_colorize($scalar, 'escaped');
         }
         else {
-            $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize( (join '', map { sprintf '\N{%s}', charnames::viacode(ord $_) } split //, $1), 'escaped', $src_color)}ge if exists $target_for{$escape_kind};
+            $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize( (join '', map { sprintf '\N{%s}', charnames::viacode(ord $_) } split //, $1), 'escaped', undef, $src_color)}ge if exists $target_for{$escape_kind};
         }
     }
     elsif ($escape_kind eq 'all') {
@@ -160,7 +170,7 @@ sub _escape_chars {
         $scalar = $ddp->maybe_colorize($scalar, 'escaped');
     }
     else {
-        $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize((join '', map { sprintf '\x{%02x}', ord $_ } split //, $1), 'escaped', $src_color)}ge if exists $target_for{$escape_kind};
+        $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize((join '', map { sprintf '\x{%02x}', ord $_ } split //, $1), 'escaped', undef, $src_color)}ge if exists $target_for{$escape_kind};
     }
     return $scalar;
 }
@@ -175,7 +185,7 @@ sub _print_escapes {
     my ($ddp, $string, $src_color) = @_;
 
     # always escape the null character
-    $string =~ s/\0/$ddp->maybe_colorize('\\0', 'escaped', $src_color)/ge;
+    $string =~ s/\0/$ddp->maybe_colorize('\\0', 'escaped', undef, $src_color)/ge;
 
     return $string unless $ddp->print_escapes;
 
@@ -188,16 +198,14 @@ sub _print_escapes {
         "\a" => '\a',  # alert (bell)
     );
     foreach my $k ( keys %escaped ) {
-        $string =~ s/$k/$ddp->maybe_colorize($escaped{$k}, 'escaped', $src_color)/ge;
+        $string =~ s/$k/$ddp->maybe_colorize($escaped{$k}, 'escaped', undef, $src_color)/ge;
     }
     return $string;
 }
 
 sub _initialize_nsort {
-    return 'Sort::Naturally::XS' if $INC{'Sort/Naturally/XS.pm'};
     return 'Sort::Key::Natural'  if $INC{'Sort/Key/Natural.pm'};
     return 'Sort::Naturally'     if $INC{'Sort/Naturally.pm'};
-    return 'Sort::Naturally::XS' if eval { require Sort::Naturally::XS; 1; };
     return 'Sort::Key::Natural'  if eval { require Sort::Key::Natural;  1; };
     return 'Sort::Naturally'     if eval { require Sort::Naturally;     1; };
     return 'core';
@@ -219,7 +227,7 @@ sub _nsort {
     return $nsort_initialized->(@_);
 }
 
-# this is a very simple 'natural-ish' sorter, heavily inspired on
+# this is a very simple 'natural-ish' sorter, heavily inspired in
 # http://www.perlmonks.org/?node_id=657130 by thundergnat and tye
 sub _nsort_pp {
     my $i;
@@ -231,23 +239,6 @@ sub _nsort_pp {
     }
     return @_[ map { (split)[-1] } sort @unsorted ];
 }
-
-sub _linear_ISA_for {
-    my ($class, $ddp) = @_;
-    _initialize_mro() unless $mro_initialized;
-    my $isa = mro::get_linear_isa($class) if $mro_initialized > 0;
-    return [@$isa, ($ddp->class->universal ? 'UNIVERSAL' : ())];
-}
-
-sub _initialize_mro {
-    my $error= _tryme(sub {
-        if ($] < 5.009_005) { require MRO::Compat }
-        else { require mro }
-        1;
-    });
-    $mro_initialized = $error ? -1 : 1;
-}
-
 
 sub _fetch_arrayref_of_scalars {
     my ($props, $name) = @_;
@@ -288,14 +279,24 @@ sub _fetch_scalar_or_default {
 
 sub _die {
     my ($message) = @_;
-    require Carp;
-    Carp::croak('[Data::Printer] ' . $message);
+    my $frame = 2;
+    while (my @caller = caller($frame++)) {
+        if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
+            die '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
+            return;
+        }
+    }
 }
 
 sub _warn {
     my ($message) = @_;
-    require Carp;
-    Carp::carp('[Data::Printer] ' . $message);
+    my $frame = 2;
+    while (my @caller = caller($frame++)) {
+        if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
+            warn '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
+            return;
+        }
+    }
 }
 
 # simple eval++ adapted from Try::Tiny.
@@ -342,7 +343,6 @@ sub _my_home {
     elsif (exists $ENV{HOME} && defined $ENV{HOME}) {
         return $ENV{HOME};
     }
-
     elsif ($^O eq 'MSWin32') {
         return $ENV{USERPROFILE} if exists $ENV{USERPROFILE} and $ENV{USERPROFILE};
         if (exists $ENV{HOMEDRIVE} and exists $ENV{HOMEPATH} and $ENV{HOMEDRIVE} and $ENV{HOMEPATH} ) {
@@ -379,10 +379,7 @@ sub _my_home {
     }
     else { # unix/linux/bsd/...
         my $home;
-        if (exists $ENV{HOME} and defined $ENV{HOME}) {
-            $home = $ENV{HOME};
-        }
-        elsif (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
+        if (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
             $home = $ENV{LOGDIR};
         }
         else {
@@ -453,16 +450,83 @@ sub _fetch_indexes_for {
     }
 }
 
-{
-#    fieldhash my %IDs;
-    my %IDs;
+# helpers below strongly inspired by the excellent Package::Stash:
+sub _linear_ISA_for {
+    my ($class, $ddp) = @_;
+    _initialize_mro() unless $mro_initialized;
+    my $isa;
+    if ($mro_initialized > 0) {
+        $isa = mro::get_linear_isa($class);
+    }
+    else {
+        # minimal fallback in case Class::MRO isn't available
+        # (should only matter for perl < 5.009_005):
+        $isa = [ $class, _get_superclasses_for($class) ];
+    }
+    return [@$isa, ($ddp->class->universal ? 'UNIVERSAL' : ())];
+}
 
+sub _initialize_mro {
+    my $error= _tryme(sub {
+        if ($] < 5.009_005) { require MRO::Compat }
+        else { require mro }
+        1;
+    });
+    if ($error && index($error, 'in @INC') != -1 && $mro_initialized == 0) {
+        _warn(
+            ($] < 5.009_005 ? 'MRO::Compat' : 'mro') . ' not found in @INC.'
+          . ' Objects may display inaccurate/incomplete ISA and method list'
+        );
+    }
+    $mro_initialized = $error ? -1 : 1;
+}
+
+sub _get_namespace {
+    my ($class_name) = @_;
+    my $namespace;
+    {
+        no strict 'refs';
+        $namespace = \%{ $class_name . '::' }
+    }
+    # before 5.10, stashes don't ever seem to drop to a refcount of zero,
+    # so weakening them isn't helpful
+    Scalar::Util::weaken($namespace) if $] >= 5.010;
+
+    return $namespace;
+}
+
+# TODO: test on XS objects
+sub _get_superclasses_for {
+    my ($class_name) = @_;
+    my $namespace = _get_namespace($class_name);
+    my $res = _get_symbol($class_name, $namespace, 'ISA', 'ARRAY');
+    return @{ $res || [] };
+}
+
+sub _get_symbol {
+    my ($class_name, $namespace, $symbol_name, $symbol_kind) = @_;
+
+    if (exists $namespace->{$symbol_name}) {
+        my $entry_ref = \$namespace->{$symbol_name};
+        if (ref($entry_ref) eq 'GLOB') {
+            return *{$entry_ref}{$symbol_kind};
+        }
+        else {
+            if ($symbol_kind eq 'CODE') {
+                no strict 'refs';
+                return \&{ $class_name . '::' . $symbol_name };
+            }
+        }
+    }
+    return;
+}
+
+# inspired on Object::Id
+{
+    my %IDs;
     my $Last_ID = "a";
     sub _object_id {
-        my ($self) = @_;
-
-        $self = Scalar::Util::refaddr( $self ); # maybe not required - use 
-
+        my $self = Scalar::Util::refaddr( $_[0] );
         # This is 15% faster than ||=
         return $IDs{$self} if exists $IDs{$self};
         return $IDs{$self} = ++$Last_ID;

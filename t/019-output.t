@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 10;
+use Test::More;
 
 BEGIN {
     use Data::Printer::Config;
@@ -13,9 +13,12 @@ use Data::Printer colored => 0, return_value => 'void';
 use Fcntl;
 use File::Temp    qw( :seekable tempfile );
 
-eval { require Capture::Tiny; 1; }
-    or plan skip_all => 'Capture::Tiny not found';
-;
+if (!eval { require Capture::Tiny; 1; }) {
+    plan skip_all => 'Capture::Tiny not found';
+}
+else {
+    plan tests => 10;
+}
 
 #=====================
 # testing OUTPUT

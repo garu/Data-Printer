@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 17;
 use Data::Printer::Object;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );
@@ -192,6 +192,3 @@ is($ddp->parse(\%hash),
 '{
     (...skipping 26 keys...)
 }', 'hash_max reached, preserving none');
-
-
-done_testing;

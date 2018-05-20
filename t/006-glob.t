@@ -16,11 +16,16 @@ if ( open my $var, '>', $filename ) {
     my $str = $ddp->parse(\$var);
 
     my @layers = ();
-    eval { @layers = PerlIO::get_layers $var };
+    my $error = Data::Printer::Common::_tryme(sub { @layers = PerlIO::get_layers $var });
 
     close $var;
 
-    unless ($@) {
+    if ($error) {
+        plan tests => 4;
+        diag("error getting handle layers from PerlIO: $error");
+    }
+    else {
+        plan tests => @layers + 4;
         foreach my $l (@layers) {
             like $str, qr/$l/, "layer $l present in info";
         }
@@ -61,5 +66,3 @@ SKIP: {
     like $ddp->parse(\$var), qr{read-only}, 'read-only handle';
     close $var;
 };
-
-done_testing();
