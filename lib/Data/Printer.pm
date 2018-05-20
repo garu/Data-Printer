@@ -583,6 +583,32 @@ external filters easily:
 
     filters = DB, DateTime, Web
 
+=head1 BACKWARDS INCOMPATIBLE CHANGES
+
+While we make a genuine effort not to break anything on new releases,
+sometimes we do. To make things easier for people migrating their
+code, we have aggregated here a list of all incompatible changes:
+
+=over 4
+
+=item * 0.36 - C<p()>'s default return value changed from 'dump' to 'pass'.
+This was a very important change to ensure chained calls and to prevent
+weird side-effects when C<p()> is the last statement in a sub.
+L<< Read the full discussion|https://github.com/garu/Data-Printer/issues/16 >>
+
+=item * 1.00 - new C<.dataprinter> file format.
+This was required to avoid calling C<eval> on potentially tainted/unknown
+code. It also provided a much cleaner interface.
+
+=item * 1.00 - new way of creating external filters.
+Previously, the sub in you C<filters> call would get the reference to be
+parsed and a properties hash. The properties hash has been replaced with a
+Data::Printer::Object instance, providing much more power and flexibility.
+Because of that, the filter call does not export p() or np() anymore,
+replaced by methods in Data::Printer::Object.
+
+=back
+
 =head1 TIPS & TRICKS
 
 TBD.
