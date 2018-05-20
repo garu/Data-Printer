@@ -22,44 +22,10 @@ sub import {
         };
     };
 
-    my $newline = sub {
-#TODO FIXME        return $properties{_linebreak} . (' ' x $properties{_current_indent});
-    };
-
-    my $indent = sub {
-#TODO FIXME        $properties{_current_indent} += $properties{indent};
-#TODO FIXME        $properties{_depth}++;
-        return;
-    };
-
-    my $outdent = sub {
-#TODO FIXME        $properties{_current_indent} -= $properties{indent};
-#TODO FIXME        $properties{_depth}--;
-        return;
-    };
-
-    my $imported_p = sub (\[@$%&];%) {
-        my ($item, $p) = @_;
-#TODO FIXME        return Data::Printer::p( $item, %properties );
-    };
-
-    my $imported_np = sub (\[@$%&];%) {
-        my ($item, $p) = @_;
-#TODO FIXME        return Data::Printer::np( $item, %properties );
-    };
     {
         no strict 'refs';
         *{"$caller\::filter"}  = $filter;
-        *{"$caller\::indent"}  = $indent;
-        *{"$caller\::outdent"} = $outdent;
-        *{"$caller\::newline"} = $newline;
-
-        *{"$caller\::np"} = $imported_np;
-        *{"$caller\::p"} = $imported_p;
-
-        *{"$caller\::_filter_list"} = sub {
-            return \%_filters_for;
-        };
+        *{"$caller\::_filter_list"} = sub { \%_filters_for };
     }
 };
 
