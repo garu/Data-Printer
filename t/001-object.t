@@ -161,20 +161,47 @@ sub test_colorization {
     my $ddp = Data::Printer::Object->new( colorized => 1 );
     is $ddp->maybe_colorize('x'), 'x', 'no color unless tag is provided';
     is $ddp->maybe_colorize('x', 'invalid tag'), 'x', 'no color unless valid tag';
-    is(
-        $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m"),
-        "\e[0;38;2mx\e[0m",
-        'fallback to default color'
-    );
+    my $colored = $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m");
+    if ($colored eq "\e[0;38;2mx\e[0m") {
+        pass 'fallback to default color';
+    }
+    else {
+        $colored =~ s{\e}{\\e}gsm;
+        my $sgr = $ddp->theme->sgr_color_for('invalid tag');
+        my $parsed = $ddp->theme->_parse_color("\e[0;38;2m");
+        $parsed =~ s{\e}{\\e}gsm if defined $parsed;
+        fail 'fallback to default color:'
+           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
+           . ' theme name: ' . $ddp->theme->name
+           . ' color level: ' . $ddp->color_level
+           . ' sgr_color_for "invalid tag": '
+           . (defined $sgr ? $sgr : 'undef')
+           . ' parsed default: ' . (defined $parsed ? $parsed : 'undef')
+           ;
+        ;
+    }
 
     $ddp = Data::Printer::Object->new(
         colorized => 1,
         colors    => { 'invalid tag' => '' }
     );
-    is(
-        $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m"),
-        'x',
-        'color has fallback but user declined'
-    );
-
+    $colored = $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m");
+    if ($colored eq 'x') {
+        pass 'color has fallback but user declined';
+    }
+    else {
+        $colored =~ s{\e}{\\e}gsm;
+        my $sgr = $ddp->theme->sgr_color_for('invalid tag');
+        my $parsed = $ddp->theme->_parse_color("\e[0;38;2m");
+        $parsed =~ s{\e}{\\e}gsm if defined $parsed;
+        fail 'fallback to default color:'
+           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
+           . ' theme name: ' . $ddp->theme->name
+           . ' color level: ' . $ddp->color_level
+           . ' sgr_color_for "invalid tag": '
+           . (defined $sgr ? $sgr : 'undef')
+           . ' parsed default: ' . (defined $parsed ? $parsed : 'undef')
+           ;
+        ;
+    }
 }
