@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 42;
+use Test::More tests => 41;
 use Data::Printer::Object;
 use Scalar::Util;
 
