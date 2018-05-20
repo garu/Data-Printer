@@ -212,9 +212,9 @@ sub test_dualvar {
 
     # one very specific Perl dualvar
     $! = 2;
-    is(
+    like(
         Data::Printer::Object->new( colored => 0 )->parse( \$! ),
-        '"No such file or directory" (dualvar: 2)',
+        qr/".+" \(dualvar: 2\)/,
         '$! is a dualvar'
     );
 }
