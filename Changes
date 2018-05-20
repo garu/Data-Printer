@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_009 2018-05-20
+    BUG FIXES:
+        - fix dualvar test on different locales (Slaven Rezić)
+        - fix Panda::Date test when en_US locale not present (Slaven Rezić)
+
 0.99_008 2018-05-20
     NEW FEATURES:
         - show_dualvar (defaults to true) lets you know whenever both numeric
