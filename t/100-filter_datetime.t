@@ -285,14 +285,14 @@ sub test_panda_date {
             filters => ['DateTime'],
         );
 
-        is( $ddp->parse($d), '2003-02-11 00:00:00 [GMT]', 'Panda::Date' );
+        is( $ddp->parse($d), '2003-03-11 00:00:00 [GMT]', 'Panda::Date' );
 
         $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DateTime'],
             filter_datetime => { show_timezone => 0 },
         );
-        is( $ddp->parse($d), '2003-02-11 00:00:00', 'Panda::Date (no timezone)' );
+        is( $ddp->parse($d), '2003-03-11 00:00:00', 'Panda::Date (no timezone)' );
 
         $ddp = Data::Printer::Object->new(
             colored => 0,
@@ -305,7 +305,7 @@ sub test_panda_date {
         my $interval = Panda::Date::Int->new($d, $d + $delta);
         is(
             $ddp->parse($interval),
-            '2003-02-11 00:00:00 [GMT] ~ 2003-03-13 07:00:00 [GMT]',
+            '2003-03-11 00:00:00 [GMT] ~ 2003-04-13 07:00:00 [GMT]',
             'Panda::Date::Int'
         );
     };
