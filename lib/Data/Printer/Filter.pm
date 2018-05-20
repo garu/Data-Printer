@@ -38,277 +38,179 @@ Data::Printer::Filter - Create powerful stand-alone filters for Data::Printer
 
 =head1 SYNOPSIS
 
-Create your filter module:
+Every time you say in your C<.dataprinter> file:
 
-  package Data::Printer::Filter::MyFilter;
-  use strict;
-  use warnings;
+    filters = SomeFilter, OtherFilter
 
-  use Data::Printer::Filter;
+Data::Printer will look for C<Data::Printer::Filter::SomeFilter> and
+C<Data::Printer::Filter::OtherFilter> on your C<@INC> and load them.
+To load filters without a configuration file:
 
-  # type filter
-  filter 'SCALAR', sub {
-      my ($ref, $properties) = @_;
-      my $val = $$ref;
+    use DDP filters => ['SomeFilter', 'OtherFilter'];
 
-      if ($val > 100) {
-          return 'too big!!';
-      }
-      else {
-          return $val;
-      }
-  };
+Creating your own filter module is super easy:
 
-  # you can also filter objects of any class
-  filter 'Some::Class', sub {
-      my ($object, $properties) = @_;
+    package Data::Printer::Filter::MyFilter;
+    use Data::Printer::Filter;
 
-      return $ref->some_method;   # or whatever
+    # this filter will run every time DDP runs into a string/number
+    filter 'SCALAR' => sub {
+        my ($scalar_ref, $ddp) = @_;
 
-      # see 'HELPER FUNCTIONS' below for
-      # customization options, including
-      # proper indentation.
-  };
+        if ($$scalar_ref =~ /password/) {
+            return '*******';
+        }
+        return; # <-- let other SCALAR filters have a go!
+    };
 
-  1;
+    # you can also filter objects of any class!
+    filter 'Some::Class' => sub {
+        my ($object, $ddp) = @_;
 
+        if (exists $object->{some_data}) {
+            return $ddp->parse( $object->{some_data} );
+        }
+        else {
+            return $object->some_method;
+        }
+    };
 
 Later, in your main code:
 
-  use Data::Printer {
-      filters => {
-          -external => [ 'MyFilter', 'OtherFilter' ],
+    use DDP filters => ['MyFilter'];
 
-          # you can still add regular (inline) filters
-          SCALAR => sub {
-              ...
-          }
-      },
-  };
+Or, in your C<.dataprinter> file:
 
-
-
-=head1 WARNING - ALPHA CODE (VERY LOOSE API)
-
-We are still experimenting with the standalone filter syntax, so
-B<< filters written like so may break in the future without any warning! >>
-
-B<< If you care, or have any suggestions >>, please drop me a line via RT, email,
-or find me ('garu') on irc.perl.org.
-
-You have been warned.
-
+    filters = MyFilter
 
 =head1 DESCRIPTION
 
 L<Data::Printer> lets you add custom filters to display data structures and
-objects, by either specifying them during "use", in the C<.dataprinter>
-configuration file, or even in runtime customizations.
+objects as you see fit to better understand and inspect/debug its contents.
 
-But there are times when you may want to group similar filters, or make
-them standalone in order to be easily reutilized in other environments and
-applications, or even upload them to CPAN so other people can benefit from
-a cleaner - and clearer - object/structure dump.
+While you I<can> put your filters inline in either your C<use> statements
+or your inline calls to C<p()>, like so:
 
-This is where C<Data::Printer::Filter> comes in. It B<exports> into your
-package's namespace the L</filter> function, along with some helpers to
-create custom filter packages.
+    use DDP filters => [{
+        SCALAR => sub { 'OMG A SCALAR!!' }
+    }];
+    
+    p @x, filters => [{ HASH => sub { die 'oh, noes! found a hash in my array' } }];
 
-L<Data::Printer> recognizes all filters in the C<Data::Printer::Filter::*>
-namespace. You can load them by specifying them in the '-external' filter
-list (note the dash, to avoid clashing with a potential class or pragma
-labelled 'external'):
+Most of the time you probably want to create full-featured filters as a
+standalone module, to use in many different environments and maybe even
+upload and share them on CPAN.
 
-  use Data::Printer {
-      filters => {
-          -external => 'MyFilter',
-      },
-  };
+This is where C<Data::Printer::Filter> comes in. Every time you C<use> it
+in a package it will export the C<filter> keyword which you can use to
+create your own filters.
 
-This will load all filters defined by the C<Data::Printer::Filter::MyFilter>
-module.
-
-If there are more than one filter, use an array reference instead:
-
-  -external => [ 'MyFilter', 'MyOtherFilter' ]
-
-B<< IMPORTANT: THIS WAY OF LOADING EXTERNAL PLUGINS IS EXPERIMENTAL AND
-SUBJECT TO SUDDEN CHANGE! IF YOU CARE, AND/OR HAVE IDEAS ON A BETTER API,
-PLEASE LET US KNOW >>
+Note: the loading B<order of filters matter>. They will be called in order
+and the first one to return something for the data being analysed will be
+used.
 
 =head1 HELPER FUNCTIONS
 
 =head2 filter TYPE, sub { ... };
 
-The C<filter> function creates a new filter for I<TYPE>, using
-the given subref. The subref receives two arguments: the item
-itself - be it an object or a reference to a standard Perl type -
-and the properties in effect (so you can inspect for certain
-options, etc). The subroutine is expected to return a string
-containing whatever it wants C<Data::Printer> to display on screen.
+The C<filter> function creates a new filter for I<TYPE>, using the given
+subref. The subref receives two arguments: the item itself - be it an object
+or a reference to a standard Perl type - and the current
+L<Data::Printer::Object> being used to parse the data.
 
-=head2 p()
+Inside your filter you are expected to either return a string with whatever
+you want to display for that type/object, or an empty "C<return;>" statement
+meaning I<"Nothing to do, my mistake, let other filters have a go"> (which
+includes core filters from Data::Printer itself).
 
-This is the same as C<Data::Printer>'s p(), only you can't rename it.
-You can use this to throw some data structures back at C<Data::Printer>
-and use the results in your own return string - like when manipulating
-hashes or arrays.
+You may use the current L<Data::Printer::Object> to issue formatting calls
+like:
 
-=head2 np()
+=over 4
 
-This is the same as C<Data::Printer>'s np().  You can use this to throw some
-data structures back at C<Data::Printer> and use the results in your own return
-string - like when manipulating hashes or arrays.
+=item * C<< $ddp->indent >> - adds to the current indentation level.
 
-=head2 newline()
+=item * C<< $ddp->outdent >> - subtracts from the current indentation level.
 
-This helper returns a string using the linebreak as specified by the
-caller's settings. For instance, it provides the proper indentation
-level of spaces for you and considers the C<multiline> option to
-avoid line breakage.
+=item * C<< $ddp->newline >> - returns a string containing a lineabreak
+and the proper number of spaces for the right indentation. It also
+accounts for the C<multiline> option so you don't have to worry about it.
 
-In other words, if you do this:
+=item * C<< $ddp->maybe_colorize( $string, 'label', 'default_color' ) >> -
+returns the given string either unmodified (if the output is not colored) or
+with the color set for I<'label'> (e.g. "class", "array", "brackets"). You are
+encouraged to provide your own custom colors by labelling them C<filter_*>,
+which is guaranteed to never collide with a core color label.
 
-   filter ARRAY => {
-       my ($ref, $p) = @_;
-       my $string = "Hey!! I got this array:";
+=item * C<< $ddp->extra_config >> - all options set by the user either in
+calls to DDP or in the C<.dataprinter> file that are not used by
+Data::Printer itself will be put here. You are encouraged to provide your
+own customization options by labelling them C<filter_*>, which is guaranteed
+to never collide with a local setting.
 
-       foreach my $val (@$ref) {
-           $string .= newline . p($val);
-       }
+=item * C<< $ddp->parse( $date ) >> - parses and returns the string output of
+the given data structure.
 
-       return $string;
-   };
+=back
 
-... your C<p($val)> returns will be properly indented, vertically aligned
-to your level of the data structure, while simply using "\n" would just
-make things messy if your structure has more than one level of depth.
+=head1 COMPLETE ANNOTATED EXAMPLE
 
-=head2 indent()
+As an example, let's create a custom filter for arrays using
+all the options above:
 
-=head2 outdent()
+    filter ARRAY => sub {
+        my ($array_ref, $ddp) = @_;
+        my $output;
 
-These two helpers let you increase/decrease the indentation level of
-your data display, for C<newline()> and nested C<p()> calls inside your filters.
+        if ($ddp->extra_config->{filter_array}{header}) {
+            $output = $ddp->maybe_colorize(
+                'got this array:',
+                'filter_array_header',
+                '#cc7fa2'
+            );
+        }
 
-For example, the filter defined in the C<newline> explanation above would
-show the values on the same (vertically aligned) level as the "I got this array"
-message. If you wanted your array to be one level further deep, you could use
-this instead:
+        $ddp->indent;
+        foreach my $element (@$ref) {
+            $output .= $ddp->newline . $ddp->parse($element);
+        }
+        $ddp->outdent;
 
-  filter ARRAY => {
-      my ($ref, $p) = @_;
-      my $string = "Hey!! I got this array:";
+        return $output;
+    };
 
-      indent;
-      foreach my $val (@$ref) {
-          $string .= newline . p($val);
-      }
-      outdent;
+Then whenever you pass an array to Data::Printer, it will call this code.
+First it checks if the user has our made up custom option
+I<'filter_array.header'>. It can be set either with:
 
-      return $string;
-  };
+    use DDP filter_array => { header => 1 };
 
+Or on C<.dataprinter> as:
 
-=head1 COLORIZATION
+    filter_array.header = 1
 
-You can use L<Term::ANSIColor>'s C<colored()>' for string
-colorization. Data::Printer will automatically enable/disable
-colors for you.
+If it is set, we'll start the output string with I<"got this array">, colored
+in whatever color was set by the user under the C<filter_array_header>
+color tag - and defaulting to '#cc7fa2' in this case.
 
-=head1 EXISTING FILTERS
+Then it updates the indentation, so any call to C<< $ddp->newline >> will add
+an extra level of indentation to our output.
 
-This is meant to provide a complete list of standalone filters for
-Data::Printer available on CPAN. If you write one, please put it under
-the C<Data::Printer::Filter::*> namespace, and drop me a line so I can
-add it to this list!
+After that we walk through the array using C<foreach> and append each element
+to our output string as I<newline + content>, where the content is whatever
+string was returned from C<< $ddp->parse >>. Note that, if the element or any
+of its subelements is an array, our filter will be called again, this time
+for the new content.
 
-=head2 Databases
+Check L<Data::Printer::Object> for extra documentation on the methods used
+above and many others!
 
-L<Data::Printer::Filter::DB> provides filters for Database objects. So
-far only DBI is covered, but more to come!
+=head1 AVAILABLE FILTERS
 
-=head2 Dates & Times
-
-L<Data::Printer::Filter::DateTime> pretty-prints several date
-and time objects (not just DateTime) for you on the fly, including
-duration/delta objects!
-
-=head2 Digest
-
-L<Data::Printer::Filter::Digest> displays a string containing the
-hash of the actual message digest instead of the object. Works on
-C<Digest::MD5>, C<Digest::SHA>, any digest class that inherits from
-C<Digest::base> and some others that implement their own thing!
-
-=head2 ClassicRegex
-
-L<Data::Printer::Filter::ClassicRegex> changes the way Data::Printer
-dumps regular expressions, doing it the classic C<qr//> way that got
-popular in C<Data::Dumper>.
-
-=head2 JSON
-
-L<Data::Printer::Filter::JSON>, by Nuba Princigalli, lets you see
-your JSON structures replacing boolean objects with simple C<true/false>
-strings!
-
-=head2 URIs
-
-L<Data::Printer::Filter::URI> filters through several L<URI> manipulation
-classes and displays the URI as a colored string. A very nice addition
-by Stanislaw Pusep (SYP).
-
-=head2 Perl Data Language (PDL)
-
-L<Data::Printer::Filter::PDL>, by Zakariyya Mughal, lets you quickly see
-the relevant contents of a PDL variable.
-
-=head1 USING MORE THAN ONE FILTER FOR THE SAME TYPE/CLASS
-
-As of version 0.13, standalone filters let you stack together
-filters for the same type or class. Filters of the same type are
-called in order, until one of them returns a string. This lets
-you have several filters inspecting the same given value until
-one of them decides to actually treat it somehow.
-
-If your filter caught a value and you don't want to treat it,
-simply return and the next filter will be called. If there are no
-other filters for that particular class or type available, the
-standard Data::Printer calls will be used.
-
-For example:
-
-  filter SCALAR => sub {
-      my ($ref, $properties) = @_;
-      if ( Scalar::Util::looks_like_number $$ref ) {
-          return sprintf "%.8d", $$ref;
-      }
-      return; # lets the other SCALAR filter have a go
-  };
-
-  filter SCALAR => sub {
-      my ($ref, $properties) = @_;
-      return qq["$$ref"];
-  };
-
-Note that this "filter stack" is not possible on inline filters, since
-it's a hash and keys with the same name are overwritten. Instead, you
-can pass them as an array reference:
-
-  use Data::Printer filters => {
-      SCALAR => [ sub { ... }, sub { ... } ],
-  };
-
+Data::Printer comes with filters for all Perl data types and several filters
+for popular Perl modules available on CPAN. Take a look at
+L<< the Data::Printer::Filter namespace|https://metacpan.org/search?q=Data%3A%3APrinter%3A%3AFilter >> for a complete list!
 
 =head1 SEE ALSO
 
 L<Data::Printer>
-
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011 Breno G. de Oliveira C<< <garu at cpan.org> >>. All rights reserved.
-
-This module is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself. See L<perlartistic>.
