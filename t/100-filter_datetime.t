@@ -277,7 +277,7 @@ sub test_panda_date {
         skip 'Panda::Date not found', 4, unless eval 'use Panda::Date; 1';
         my $d = Panda::Date->new(
             { year => 2003, month => 3, day => 11 },
-            'America/New_York'
+            'GMT'
         );
 
         my $ddp = Data::Printer::Object->new(
@@ -285,7 +285,7 @@ sub test_panda_date {
             filters => ['DateTime'],
         );
 
-        is( $ddp->parse($d), '2003-02-11 00:00:00 [EST]', 'Panda::Date' );
+        is( $ddp->parse($d), '2003-02-11 00:00:00 [GMT]', 'Panda::Date' );
 
         $ddp = Data::Printer::Object->new(
             colored => 0,
@@ -305,7 +305,7 @@ sub test_panda_date {
         my $interval = Panda::Date::Int->new($d, $d + $delta);
         is(
             $ddp->parse($interval),
-            '2003-02-11 00:00:00 [EST] ~ 2003-03-13 07:00:00 [EST]',
+            '2003-02-11 00:00:00 [GMT] ~ 2003-03-13 07:00:00 [GMT]',
             'Panda::Date::Int'
         );
     };
