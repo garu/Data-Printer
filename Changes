@@ -1,5 +1,22 @@
 Revision history for Data-Printer
 
+0.99_008 2018-05-20
+    NEW FEATURES:
+        - show_dualvar (defaults to true) lets you know whenever both numeric
+          and string values of a variable are set to a different thing
+          (Philippe "BooK" Bruhat)
+        - maybe_colorize() accepts a 'default color' so filters can use it.
+        - extra_config() provies all non-core settings passed
+          to Data::Printer, so filters can use them.
+        - DateTime filter for Panda::Date (Sergey Aleynikov)
+    BUG FIXES:
+        - fixed DateTime external filters
+        - fix issue with dereferencing code refs (Håkon Hægland)
+        - fix 'pass' on globs, regexes and code references
+          (Håkon Hægland, Sergey Aleynikov)
+    OTHER:
+        - documentation improvements
+
 0.99_007 2018-05-17
     BUG FIXES:
         - fix regex parsing in 5.10.1
