@@ -127,7 +127,9 @@ sub _handle_output {
     if ($printer->return_value eq 'pass') {
         print { $printer->output_handle } $output . "\n";
         require Scalar::Util;
-        my $ref = Scalar::Util::reftype($data);
+        my $ref = Scalar::Util::blessed($data);
+        return $data if defined $ref;
+        $ref = Scalar::Util::reftype($data);
         if (!$ref) {
             return $data;
         }
