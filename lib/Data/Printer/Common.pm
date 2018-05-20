@@ -82,17 +82,22 @@ sub _reduce_string {
     if ($max && $str_len && $str_len > $max) {
         my $preserve = $ddp->string_preserve;
         my $skipped_chars = $str_len - ($preserve eq 'none' ? 0 : $max);
-        my $skip_message = $ddp->maybe_colorize($ddp->string_overflow, 'caller_info', $src_color);
+        my $skip_message = $ddp->maybe_colorize(
+            $ddp->string_overflow,
+            'caller_info',
+            undef,
+            $src_color
+        );
         $skip_message =~ s/__SKIPPED__/$skipped_chars/g;
         if ($preserve eq 'end') {
             substr $string, 0, $skipped_chars, '';
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
             $string = $skip_message . $string;
         }
         elsif ($preserve eq 'begin') {
             $string = substr($string, 0, $max);
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
             $string = $string . $skip_message;
         }
@@ -102,8 +107,8 @@ sub _reduce_string {
             my $leftside = substr($string, 0, $leftside_chars);
             my $rightside = substr($string, -$rightside_chars);
             if ($ddp->print_escapes) {
-                $leftside  =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge;
-                $rightside =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge;
+                $leftside  =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge;
+                $rightside =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge;
             }
             $string = $leftside . $skip_message . $rightside;
         }
@@ -117,11 +122,11 @@ sub _reduce_string {
             my $message_end = $ddp->string_overflow;
             $message_end =~ s/__SKIPPED__/$chars_left/gs;
             $string = substr($string, $substr_begin, $max);
-            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+            $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
                 if $ddp->print_escapes;
-            $string = $ddp->maybe_colorize($message_begin, 'caller_info', $src_color)
+            $string = $ddp->maybe_colorize($message_begin, 'caller_info', undef, $src_color)
                     . $string
-                    . $ddp->maybe_colorize($message_end, 'caller_info', $src_color)
+                    . $ddp->maybe_colorize($message_end, 'caller_info', undef, $src_color)
                     ;
         }
         else {
@@ -131,7 +136,7 @@ sub _reduce_string {
     }
     else {
         # nothing to do? ok, then escape any colors already present:
-        $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', $src_color)}ge
+        $string =~ s{\e}{$ddp->maybe_colorize('\\e', 'escaped', undef, $src_color)}ge
             if $ddp->print_escapes;
     }
     return $string;
@@ -157,7 +162,7 @@ sub _escape_chars {
             $scalar = $ddp->maybe_colorize($scalar, 'escaped');
         }
         else {
-            $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize( (join '', map { sprintf '\N{%s}', charnames::viacode(ord $_) } split //, $1), 'escaped', $src_color)}ge if exists $target_for{$escape_kind};
+            $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize( (join '', map { sprintf '\N{%s}', charnames::viacode(ord $_) } split //, $1), 'escaped', undef, $src_color)}ge if exists $target_for{$escape_kind};
         }
     }
     elsif ($escape_kind eq 'all') {
@@ -165,7 +170,7 @@ sub _escape_chars {
         $scalar = $ddp->maybe_colorize($scalar, 'escaped');
     }
     else {
-        $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize((join '', map { sprintf '\x{%02x}', ord $_ } split //, $1), 'escaped', $src_color)}ge if exists $target_for{$escape_kind};
+        $scalar =~ s{($target_for{$escape_kind})}{$ddp->maybe_colorize((join '', map { sprintf '\x{%02x}', ord $_ } split //, $1), 'escaped', undef, $src_color)}ge if exists $target_for{$escape_kind};
     }
     return $scalar;
 }
@@ -180,7 +185,7 @@ sub _print_escapes {
     my ($ddp, $string, $src_color) = @_;
 
     # always escape the null character
-    $string =~ s/\0/$ddp->maybe_colorize('\\0', 'escaped', $src_color)/ge;
+    $string =~ s/\0/$ddp->maybe_colorize('\\0', 'escaped', undef, $src_color)/ge;
 
     return $string unless $ddp->print_escapes;
 
@@ -193,7 +198,7 @@ sub _print_escapes {
         "\a" => '\a',  # alert (bell)
     );
     foreach my $k ( keys %escaped ) {
-        $string =~ s/$k/$ddp->maybe_colorize($escaped{$k}, 'escaped', $src_color)/ge;
+        $string =~ s/$k/$ddp->maybe_colorize($escaped{$k}, 'escaped', undef, $src_color)/ge;
     }
     return $string;
 }

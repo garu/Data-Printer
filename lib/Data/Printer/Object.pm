@@ -661,15 +661,21 @@ sub write_label {
 }
 
 sub maybe_colorize {
-    my ($self, $output, $color_type, $end_color) = @_;
+    my ($self, $output, $color_type, $default_color, $end_color) = @_;
 
     if ($self->color_level) {
-        $output = $self->theme->sgr_color_for($color_type)
-             . $output
-             . (defined $end_color
-                 ? $self->theme->sgr_color_for($end_color)
-                 : $self->theme->color_reset
-             );
+        my $sgr_color = $self->theme->sgr_color_for($color_type);
+        if (!defined $sgr_color && defined $default_color) {
+            $sgr_color = $self->theme->_parse_color($default_color);
+        }
+        if (defined $sgr_color) {
+            $output = $sgr_color
+                . $output
+                . (defined $end_color
+                    ? $self->theme->sgr_color_for($end_color)
+                    : $self->theme->color_reset
+                );
+        }
     }
     return $output;
 }
