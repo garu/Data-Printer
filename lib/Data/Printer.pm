@@ -575,6 +575,11 @@ you're encouraged to upload them to CPAN. There are many options available
 under the C<< Data::Printer::Filter::* >> namespace. Check
 L<Data::Printer::Filter> for extra information!
 
+While you may not put subrefs on your C<.dataprinter> file, you can load any
+external filters easily:
+
+    filters = DB, DateTime, Web
+
 =head1 TIPS & TRICKS
 
 TBD.

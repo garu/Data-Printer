@@ -127,6 +127,14 @@ sub _convert {
 1;
 __END__
 
+=head1 NAME
+
+Data::Printer::Config - Load run-control (.dataprinter) files for Data::Printer
+
+=head1 DESCRIPTION
+
+This module is used internally to load C<.dataprinter> files.
+
 =head1 THE RC FILE
 
     # line comments are ok, DO NOT USE inline comments at the end of a line!
@@ -137,6 +145,7 @@ __END__
     string_max = 50
     class.show_methods = none
     class.internals    = 0
+    filters = DB, Web
 
     # if you tag a class, those settings will override your basic ones
     # whenever you call p() inside that class.
@@ -144,6 +153,11 @@ __END__
     multiline = 1
     show_tainted: 1
     class.format_inheritance = lines
+    filters = MyAwesomeDebugFilter
 
     [Other::Class]
     theme = Monokai
+
+=head1 SEE ALSO
+
+L<Data::Printer>
