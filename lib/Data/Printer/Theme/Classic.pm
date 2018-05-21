@@ -16,17 +16,18 @@ sub colors {
         code        => 'green',         # code references
         glob        => 'bright_cyan',   # globs (usually file handles)
         vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
+        lvalue      => '',              # lvalue label
+        format      => '',              # format type
         repeated    => 'white on_red',  # references to seen values
         caller_info => 'bright_cyan',   # details on what's being printed
         weak        => 'cyan',          # weak references
         tainted     => 'red',           # tainted content
+        unicode     => '',              # utf8 flag
         escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
-        brackets    => undef,           # (), {}, []
-        hash_arrow  => undef,           # =>
-        punctuation => undef,           # everything else: , ; \
-
-        # potential new Perl datatypes, unknown to Data::Printer
-        unknown     => 'bright_yellow on_blue',
+        brackets    => '',           # (), {}, []
+        separator   => '',           # the "," between hash pairs, array elements, etc
+        quotes      => '',
+        unknown     => 'bright_yellow on_blue', # any (potential) data type unknown to Data::Printer
     };
 }
 
