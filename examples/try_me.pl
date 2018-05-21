@@ -46,4 +46,5 @@ use DDP show_memsize  => 1,
             inherited  => 'public',
             linear_isa => 1
         };
-p $sample;
+p $sample, theme => 'Material' , as => 'Material theme:';
+p $sample, theme => 'Solarized', as => 'Solarized theme:';
