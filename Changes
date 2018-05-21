@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_010 2018-05-21
+    BUG FIXES:
+        - extra debug info for failed colorization tests
+        - another fix for Panda::Date (Slaven Rezić)
+
 0.99_009 2018-05-20
     BUG FIXES:
         - fix dualvar test on different locales (Slaven Rezić)
