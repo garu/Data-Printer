@@ -158,7 +158,7 @@ sub test_aliases {
 }
 
 sub test_colorization {
-    my $ddp = Data::Printer::Object->new( colorized => 1 );
+    my $ddp = Data::Printer::Object->new( colored => 1 );
     is $ddp->maybe_colorize('x'), 'x', 'no color unless tag is provided';
     is $ddp->maybe_colorize('x', 'invalid tag'), 'x', 'no color unless valid tag';
     my $colored = $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m");
@@ -182,7 +182,7 @@ sub test_colorization {
     }
 
     $ddp = Data::Printer::Object->new(
-        colorized => 1,
+        colored => 1,
         colors    => { 'invalid tag' => '' }
     );
     $colored = $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m");
