@@ -39,6 +39,8 @@ my $sample = {
 $sample->{weakref} = $sample;
 weaken $sample->{weakref};
 
+BEGIN { $ENV{DATAPRINTERRC} = '' };  # <-- skip user's .dataprinter
+
 use DDP show_memsize  => 1,
         show_refcount => 1,
         class => {
@@ -46,5 +48,7 @@ use DDP show_memsize  => 1,
             inherited  => 'public',
             linear_isa => 1
         };
+
 p $sample, theme => 'Material' , as => 'Material theme:';
 p $sample, theme => 'Solarized', as => 'Solarized theme:';
+p $sample, theme => 'Monokai', as => 'Monokai theme:';

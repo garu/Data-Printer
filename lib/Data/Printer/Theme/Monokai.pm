@@ -4,7 +4,41 @@ use strict;
 use warnings;
 
 sub colors {
-    {};
+    my %code_for = (
+        grey   => '#75715E',
+        yellow => '#E6DB74',
+        violet => '#AE81FF',
+        pink   => '#F92672',
+        cyan   => '#66D9EF',
+        green  => '#A6E22E',
+        orange => '#FD971F',
+        empty  => '',
+    );
+    return {
+        array       => $code_for{orange},  # array index numbers
+        number      => $code_for{violet}, # numbers
+        string      => $code_for{yellow}, # (or 'very_light_gray'?) # strings
+        class       => $code_for{green},  # class names
+        method      => $code_for{green},  # method names
+        undef       => $code_for{pink},  # the 'undef' value
+        hash        => $code_for{cyan},  # hash keys
+        regex       => $code_for{green},  # regular expressions
+        code        => $code_for{orange},  # code references
+        glob        => $code_for{violet},  # globs (usually file handles)
+        vstring     => $code_for{cyan},  # version strings (v5.16.0, etc)
+        lvalue      => $code_for{green},  # lvalue label
+        format      => $code_for{violet},  # format type
+        repeated    => $code_for{pink},  # references to seen values
+        caller_info => $code_for{grey},  # details on what's being printed
+        weak        => $code_for{green},  # weak references flag
+        tainted     => $code_for{green},  # tainted flag
+        unicode     => $code_for{green},  # utf8 flag
+        escaped     => $code_for{pink},  # escaped characters (\t, \n, etc)
+        brackets    => $code_for{empty},  # (), {}, []
+        separator   => $code_for{empty},  # the "," between hash pairs, array elements, etc
+        quotes      => $code_for{yellow},
+        unknown     => $code_for{pink},  # any (potential) data type unknown to Data::Printer
+    };
 }
 
 1;
