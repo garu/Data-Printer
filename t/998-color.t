@@ -20,12 +20,11 @@ my $ddp = Data::Printer::Object->new(
     show_refcount => 1,
 );
 
-if ($ddp->color_level) {
+if ($ddp->color_level == 3) {
     plan tests => 1;
-    diag("testing color level: " . $ddp->color_level);
 }
 else {
-    plan skip_all => 'console does not have enough colors to test';
+    plan skip_all => 'color level ' . $ddp->color_level . ' < 3';
 }
 
 sub testsub {}
