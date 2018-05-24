@@ -1,5 +1,11 @@
 Revision history for Data-Printer
 
+0.99_011 2018-05-24
+    BUG FIXES:
+        - proper color downgrade on terminals who only support 256 colors.
+        - fixed colorization tests
+        - fixed DB external filters
+
 0.99_010 2018-05-21
     BUG FIXES:
         - extra debug info for failed colorization tests
