@@ -1,12 +1,13 @@
 use strict;
 use warnings;
-use Test::More tests => 37;
+use Test::More tests => 38;
 use Data::Printer::Theme;
 
 test_basic_load();
 test_invalid_load();
 test_color_override();
 test_invalid_colors();
+test_color_level_downgrade();
 exit;
 
 sub test_invalid_colors {
@@ -139,4 +140,13 @@ sub test_invalid_load {
         sgr_colors  => {}
     }, 'invalid theme loads no colors';
     like($warning, qr/error loading theme 'InvalidTheme'/, 'got right warning message (2)');
+}
+
+sub test_color_level_downgrade {
+    my $theme = Data::Printer::Theme->new(
+        name        => 'Material',
+        color_level => 2,
+    );
+    my $reduced = Data::Printer::Theme::_rgb2short(0x79,0x86,0xcb);
+    is $reduced, 104, '(r,g,b) downgrade to 256 colors';
 }

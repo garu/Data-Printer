@@ -120,7 +120,13 @@ sub _parse_color {
     if ($color_label =~ /\Argb\((\d+),(\d+),(\d+)\)\z/) {
         my ($r, $g, $b) = ($1, $2, $3);
         if ($r < 256 && $g < 256 && $b < 256) {
-            $color_code = "\e[0;38;2;$r;$g;${b}m";
+            if ($self->{color_level} == 3) {
+                $color_code = "\e[0;38;2;$r;$g;${b}m";
+            }
+            else {
+                my $reduced = _rgb2short($r,$g,$b);
+                $color_code = "\e[0;38;5;${reduced}m";
+            }
         }
         else {
             Data::Printer::Common::_warn("invalid color '$color_label': all colors must be between 0 and 255");
@@ -128,7 +134,13 @@ sub _parse_color {
     }
     elsif ($color_label =~ /\A#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\z/i) {
         my ($r, $g, $b) = map hex($_), ($1, $2, $3);
-        $color_code = "\e[0;38;2;$r;$g;${b}m";
+        if ($self->{color_level} == 3) {
+            $color_code = "\e[0;38;2;$r;$g;${b}m";
+        }
+        else {
+            my $reduced = _rgb2short($r,$g,$b);
+            $color_code = "\e[0;38;5;${reduced}m";
+        }
     }
     elsif ($color_label =~ /\A\e\[\d+(:?;\d+)*m\z/) {
         $color_code = $color_label;
@@ -169,6 +181,20 @@ sub _parse_color {
         Data::Printer::Common::_warn("invalid color '$color_label'");
     }
     return $color_code;
+}
+
+sub _rgb2short {
+    my ($r,$g,$b) = @_;
+    my @snaps = (47, 115, 155, 195, 235);
+    my @new;
+    foreach my $color ($r,$g,$b) {
+        my $big = 0;
+        foreach my $s (@snaps) {
+            $big++ if $s < $color;
+        }
+        push @new, $big
+    }
+    return $new[0]*36 + $new[1]*6 + $new[2] + 16
 }
 
 1;
