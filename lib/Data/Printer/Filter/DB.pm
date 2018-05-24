@@ -2,95 +2,96 @@ package Data::Printer::Filter::DB;
 use strict;
 use warnings;
 use Data::Printer::Filter;
-use Term::ANSIColor;
 
 filter 'DBI::db', sub {
-    my ($dbh, $p) = @_;
+    my ($dbh, $ddp) = @_;
     my $name = $dbh->{Driver}{Name};
 
     my $string = "$name Database Handle ("
                . ($dbh->{Active}
-                  ? colored('connected', 'bright_green')
-                  : colored('disconnected', 'bright_red'))
+                  ? $ddp->maybe_colorize('connected', 'filter_db_connected', '#a0d332')
+                  : $ddp->maybe_colorize('disconnected', 'filter_db_disconnected', '#b3422d'))
                . ') {'
                ;
-    indent;
+    $ddp->indent;
     my %dsn = split( /[;=]/, $dbh->{Name} );
     foreach my $k (keys %dsn) {
-        $string .= newline . "$k: " . $dsn{$k};
+        $string .= $ddp->newline . "$k: " . $dsn{$k};
     }
-    $string .= newline . 'Auto Commit: ' . $dbh->{AutoCommit};
+    $string .= $ddp->newline . 'Auto Commit: ' . $dbh->{AutoCommit};
 
     my $kids = $dbh->{Kids};
-    $string .= newline . 'Statement Handles: ' . $kids;
+    $string .= $ddp->newline . 'Statement Handles: ' . $kids;
     if ($kids > 0) {
         $string .= ' (' . $dbh->{ActiveKids} . ' active)';
     }
 
     if ( defined $dbh->err ) {
-        $string .= newline . 'Error: ' . $dbh->errstr;
+        $string .= $ddp->newline . 'Error: ' . $dbh->errstr;
     }
-    $string .= newline . 'Last Statement: '
-            . colored( ($dbh->{Statement} || '-'), 'bright_yellow');
+    $string .= $ddp->newline . 'Last Statement: '
+            . $ddp->maybe_colorize(($dbh->{Statement} || '-'), 'string');
 
-    outdent;
-    $string .= newline . '}';
+    $ddp->outdent;
+    $string .= $ddp->newline . '}';
     return $string;
 };
 
 filter 'DBI::st', sub {
-    my ($sth, $properties) = @_;
-    my $str = colored( ($sth->{Statement} || '-'), 'bright_yellow');
+    my ($sth, $ddp) = @_;
+    my $str = $ddp->maybe_colorize(($sth->{Statement} || '-'), 'string');
 
     if ($sth->{NUM_OF_PARAMS} > 0) {
         my $values = $sth->{ParamValues};
         if ($values) {
-            $str .= '  ('
-                 . join(', ',
+            $str .= '  ' . $ddp->maybe_colorize('(', 'brackets')
+                 . join($ddp->maybe_colorize(',', 'separator') . ' ',
                       map {
                          my $v = $values->{$_};
-                         $v || 'undef';
+                         $ddp->parse($v);
                       } 1 .. $sth->{NUM_OF_PARAMS}
                    )
-                 . ')';
+                 . $ddp->maybe_colorize(')', 'brackets');
         }
         else {
-            $str .= colored('  (bindings unavailable)', 'yellow');
+            $str .= '  ' . $ddp->maybe_colorize('(bindings unavailable)', 'undef');
         }
     }
     return $str;
 };
 
 # DBIx::Class filters
+filter 'DBIx::Class::Schema' => sub {
+    my ($schema, $ddp) = @_;
+    return ref($schema) . ' DBIC Schema with ' . $ddp->parse( $schema->storage->dbh );
+    # TODO: show a list of all class_mappings available for the schema
+    #       (a.k.a. tables)
+};
+
 filter '-class' => sub {
-    my ($obj, $properties) = @_;
+    my ($obj, $ddp) = @_;
 
     # TODO: if it's a Result, show columns and relationships (anything that
     #       doesn't involve touching the database
-    if ( $obj->isa('DBIx::Class::Schema') ) {
-        return ref($obj) . ' DBIC Schema with ' . p( $obj->storage->dbh );
-        # TODO: show a list of all class_mappings available for the schema
-        #       (a.k.a. tables)
-    }
-    elsif ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
+    if ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
 
-        my $str = colored( ref($obj), $properties->{color}{class} );
+        my $str = $ddp->maybe_colorize( ref($obj), 'class' );
         $str .= ' (' . $obj->result_class . ')'
           if $obj->can( 'result_class' );
 
         if (my $query_data = $obj->as_query) {
           my @query_data = @$$query_data;
-          indent;
+          $ddp->indent;
           my $sql = shift @query_data;
           $str .= ' {'
-               . newline . colored($sql, 'bright_yellow')
-               . newline . join ( newline, map {
+               . $ddp->newline . $ddp->maybe_colorize($sql, 'string')
+               . $ddp->newline . join ( $ddp->newline, map {
                       $_->[1] . ' (' . $_->[0]{sqlt_datatype} . ')'
                     } @query_data
                )
                ;
-          outdent;
-          $str .= newline . '}';
+          $ddp->outdent;
+          $str .= $ddp->newline . '}';
         }
 
         return $str;
@@ -100,92 +101,66 @@ filter '-class' => sub {
     }
 };
 
-
 1;
 __END__
 
 =head1 NAME
 
-Data::Printer::Filter::DB - pretty printing database objects
-
+Data::Printer::Filter::DB - pretty-printing database objects (DBI, DBIx::Class, etc)
 
 =head1 SYNOPSIS
 
-In your program:
+In your C<.dataprinter> file:
 
-  use Data::Printer filters => {
-      -external => [ 'DB' ],
-  };
+    filters = DB
 
-or, in your C<.dataprinter> file:
+You may also customize the look and feel with the following options:
 
-  {
-    filters => {
-      -external => [ 'DB' ],
-    },
-  };
+    filter_db.expand_dbh = 1
 
+    # you can even customize your themes:
+    colors.filter_db_connected    = #00cc00
+    colors.filter_db_disconnected = #cc0000
 
+That's it!
 
 =head1 DESCRIPTION
 
-This is a filter plugin for L<Data::Printer>. It filters through L<DBI>'s
-handlers (dbh) and statement (sth) objects displaying relevant information for
-the user.  It also filters any object which inherits from
-L<DBIx::Class::Schema>, L<DBIx::Class::ResultSet> or
-L<DBIx::Class::ResultSetColumn>.
+This is a filter plugin for L<Data::Printer> that displays (hopefully)
+more relevant information on database objects than a regular dump.
 
-=head2 DBI Sample Output
 
-L<DBI> is an extremely powerful and complete database interface. But
-it does a lot of magic under the hood, making their objects somewhat harder
-to debug. This filter aims to fix that :)
+=head2 Parsed Modules
 
-For instance, say you want to debug something like this:
+=head3 L<DBI>
 
-  use DBI;
-  my $dbh = DBI->connect('dbi:DBM(RaiseError=1):', undef, undef );
-
-A regular Data::Dumper output gives you absolutely nothing:
-
-$VAR1 = bless( {}, 'DBI::db' );
-
-L<Data::Printer> makes it better, but only to debug the class itself,
-not helpful at all to see its contents and debug your own code:
-
-    DBI::db  {
-        Parents       DBI::common
-        Linear @ISA   DBI::db, DBI::common
-        public methods (48) : begin_work, clone, column_info, commit, connected, data_sources, disconnect, do, foreign_key_info, get_info, last_insert_id, ping, prepare, prepare_cached, preparse, primary_key, primary_key_info, quote, quote_identifier, rollback, rows, selectall_arrayref, selectall_hashref, selectcol_arrayref, selectrow_array, selectrow_arrayref, selectrow_hashref, sqlite_backup_from_file, sqlite_backup_to_file, sqlite_busy_timeout, sqlite_collation_needed, sqlite_commit_hook, sqlite_create_aggregate, sqlite_create_collation, sqlite_create_function, sqlite_enable_load_extension, sqlite_last_insert_rowid, sqlite_progress_handler, sqlite_register_fts3_perl_tokenizer, sqlite_rollback_hook, sqlite_set_authorizer, sqlite_update_hook, statistics_info, table_info, tables, take_imp_data, type_info, type_info_all
-        private methods (0)
-        internals: {
-        }
-    }
-
-Fear no more! If you use this filter, here's what you'll see:
+If it's a database handle, for example, this filter may show you something
+like this:
 
     SQLite Database Handle (connected) {
         dbname: file.db
         Auto Commit: 1
-        Statement Handles: 0
-        Last Statement: -
+        Statement Handles: 2 (1 active)
+        Last Statement: SELECT * FROM some_table
     }
 
-Much better, huh? :)
+And if you have a statement handler like this (for example):
 
-Statement handlers are even better. Imagine you continued your code with something like:
+    my $sth = $dbh->prepare('SELECT * FROM foo WHERE bar = ?');
+    $sth->execute(42);
 
-  my $sth = $dbh->prepare('SELECT * FROM foo WHERE bar = ?');
-  $sth->execute(42);
+    use DDP; p $sth;
 
-With this filter, instead of an empty dump or full method information, you'll get
-exactly what you came for:
+This is what you'll get:
 
- SELECT * FROM foo WHERE bar = ?  (42)
+    SELECT * FROM foo WHERE bar = ?  (42)
 
 Note that if your driver does not support holding of parameter values, you'll get a
 C<bindings unavailable> message instead of the bound values.
 
+=head3 L<DBIx::Class>
+
+
 =head1 SEE ALSO
 
-L<Data::Printer>, L<Data::Printer::Filter>
+L<Data::Printer>
