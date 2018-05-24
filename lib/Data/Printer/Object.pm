@@ -427,10 +427,18 @@ sub _load_colors {
     my $theme_object;
     my $default_theme = 'Material';
     my $theme_name    = Data::Printer::Common::_fetch_scalar_or_default($props, 'theme', $default_theme);
-    $theme_object     = Data::Printer::Theme->new($theme_name, $props->{colors});
+    $theme_object = Data::Printer::Theme->new(
+        name            => $theme_name,
+        color_overrides => $props->{colors},
+        color_level     => $self->color_level,
+    );
     if (!$theme_object) {
         if ($theme_name ne $default_theme) {
-            $theme_object = Data::Printer::Theme->new($default_theme, $props->{colors});
+            $theme_object = Data::Printer::Theme->new(
+                name            => $default_theme,
+                color_overrides => $props->{colors},
+                color_level     => $self->color_level,
+            );
         }
         Data::Printer::Common::_die("Unable to load default theme. This should never happen - please contact the author") unless $theme_object;
     }

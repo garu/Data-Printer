@@ -27,15 +27,29 @@ sub sgr_color_for {
 sub color_reset { return "\e[0m" }
 
 sub new {
-    my ($class, $theme_name, $colors_to_override) = @_;
+    my ($class, %params) = @_;
 
-    my $theme = _load_theme($theme_name) or return;
-    _maybe_override_theme_colors($theme, $colors_to_override);
-    return bless $theme, $class;
+    my $color_level        = $params{color_level};
+    my $colors_to_override = $params{color_overrides};
+    my $theme_name         = $params{name};
+
+    # before we put user info on string eval, make sure
+    # it's just a module name:
+    $theme_name =~ s/[^a-zA-Z0-9:]+//gsm;
+
+    my $theme = bless {
+        name        => $theme_name,
+        color_level => $color_level,
+        colors      => {},
+        sgr_colors  => {},
+    }, $class;
+    $theme->_load_theme or delete $theme->{name};
+    $theme->_maybe_override_theme_colors($colors_to_override);
+    return $theme;
 }
 
 sub _maybe_override_theme_colors {
-    my ($theme, $colors_to_override) = @_;
+    my ($self, $colors_to_override) = @_;
 
     return unless $colors_to_override
                && ref $colors_to_override eq 'HASH'
@@ -45,11 +59,11 @@ sub _maybe_override_theme_colors {
         foreach my $kind (keys %$colors_to_override ) {
             my $override = $colors_to_override->{$kind};
             die "invalid color for '$kind': must be scalar not ref" if ref $override;
-            my $parsed = Data::Printer::Theme->_parse_color($override);
+            my $parsed = $self->_parse_color($override);
             if (defined $parsed) {
-                $theme->{colors}{$kind}     = $override;
-                $theme->{sgr_colors}{$kind} = $parsed;
-                $theme->{is_custom}{$kind}  = 1;
+                $self->{colors}{$kind}     = $override;
+                $self->{sgr_colors}{$kind} = $parsed;
+                $self->{is_custom}{$kind}  = 1;
             }
         }
     });
@@ -60,13 +74,14 @@ sub _maybe_override_theme_colors {
 }
 
 sub _load_theme {
-    my ($theme_name) = @_;
+    my ($self) = @_;
+    my $theme_name = $self->{name};
 
     my $class = 'Data::Printer::Theme::' . $theme_name;
     my $error = Data::Printer::Common::_tryme("use $class; 1;");
     if ($error) {
         Data::Printer::Common::_warn("error loading theme '$theme_name': $error.");
-        return { colors => {}, sgr_colors => {} };
+        return;
     }
     my $loaded_colors     = {};
     my $loaded_colors_sgr = {};
@@ -80,7 +95,7 @@ sub _load_theme {
             my $loaded_color = $class_colors->{$kind};
             die "color for '$kind' must be a scalar in theme '$theme_name'"
                 if ref $loaded_color;
-            my $parsed_color = Data::Printer::Theme->_parse_color($loaded_color);
+            my $parsed_color = $self->_parse_color($loaded_color);
             if (defined $parsed_color) {
                 $loaded_colors->{$kind}     = $loaded_color;
                 $loaded_colors_sgr->{$kind} = $parsed_color;
@@ -89,17 +104,15 @@ sub _load_theme {
     });
     if ($error) {
         Data::Printer::Common::_warn("error loading theme '$theme_name': $error. Output will have no colors");
-        return { colors => {}, sgr_colors => {} };
+        return;
     }
-    return {
-        name       => $theme_name,
-        colors     => $loaded_colors,
-        sgr_colors => $loaded_colors_sgr,
-    };
+    $self->{colors}     = $loaded_colors;
+    $self->{sgr_colors} = $loaded_colors_sgr;
+    return 1;
 }
 
 sub _parse_color {
-    my ($theme, $color_label) = @_;
+    my ($self, $color_label) = @_;
     return unless defined $color_label;
     return '' unless $color_label;
 

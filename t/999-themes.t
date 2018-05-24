@@ -32,19 +32,27 @@ sub test_invalid_colors {
     };
 
     while ($i < @invalids) {
-        my $theme = Data::Printer::Theme->new('Material', { string => $invalids[$i] });
+        my $theme = Data::Printer::Theme->new(
+            name            => 'Material',
+            color_overrides => { string => $invalids[$i] },
+            color_level     => 3,
+        );
         $i++;
     }
 }
 
 sub test_color_override {
-    ok my $theme = Data::Printer::Theme->new('Material', {
-        array  => 'rgb(55,100,80)',
-        hash   => '#B2CCD6',
-        string => "\e[0;38;2m",
-        number => 'bright_green on_yellow',
-        empty  => '',
-    }), 'able to load theme with customization';
+    ok my $theme = Data::Printer::Theme->new(
+        name => 'Material',
+        color_level => 3,
+        color_overrides => {
+            array  => 'rgb(55,100,80)',
+            hash   => '#B2CCD6',
+            string => "\e[0;38;2m",
+            number => 'bright_green on_yellow',
+            empty  => '',
+        }
+    ), 'able to load theme with customization';
     is $theme->name, 'Material', 'customized theme keeps its name';
     is $theme->customized, 1, 'customized flag is set';
     is $theme->color_for('array'), 'rgb(55,100,80)', 'custom color for array';
@@ -77,7 +85,10 @@ sub test_color_override {
 }
 
 sub test_basic_load {
-    ok my $theme = Data::Printer::Theme->new('Material'), 'able to load default theme';
+    ok my $theme = Data::Printer::Theme->new(
+        name        => 'Material',
+        color_level => 3,
+    ), 'able to load default theme';
     isa_ok $theme, 'Data::Printer::Theme';
     can_ok $theme, qw(new name customized color_reset color_for sgr_color_for);
     is $theme->name, 'Material', 'got the right theme';
@@ -104,14 +115,28 @@ sub test_invalid_load {
     *Data::Printer::Common::_warn = sub {
         $warning = shift;
     };
-    my $theme = Data::Printer::Theme->new('InvalidTheme');
-    is_deeply $theme, { colors => {}, sgr_colors => {} }, 'unknown theme loads no colors';
+    my $theme = Data::Printer::Theme->new(
+        name        => 'InvalidTheme',
+        color_level => 3,
+    );
+    is_deeply(
+        $theme,
+        { colors => {}, sgr_colors => {}, color_level => 3 },
+        'unknown theme loads no colors'
+    );
     like($warning, qr/error loading theme 'InvalidTheme'/, 'got right warning message (1)');
 
     undef $warning;
     undef $theme;
     $INC{'Data/Printer/Theme/InvalidTheme.pm'} = 'mock loaded, make use/require pass';
-    $theme = Data::Printer::Theme->new('InvalidTheme');
-    is_deeply $theme, { colors => {}, sgr_colors => {} }, 'invalid theme loads no colors';
+    $theme = Data::Printer::Theme->new(
+        name        => 'InvalidTheme',
+        color_level => 3,
+    );
+    is_deeply $theme, {
+        color_level => 3,
+        colors      => {},
+        sgr_colors  => {}
+    }, 'invalid theme loads no colors';
     like($warning, qr/error loading theme 'InvalidTheme'/, 'got right warning message (2)');
 }
