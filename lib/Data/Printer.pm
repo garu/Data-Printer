@@ -467,7 +467,7 @@ For a quick reference, below are all available properties and their
     show_weak      => 1,
     show_refcount  => 0,
     show_memsize   => 0,
-    memsize_unit   => 'auto' ('b', 'k', m)
+    memsize_unit   => 'auto' # ('b', 'k', m)
     separator      => ',',
     end_separator  => 0,
     caller_info    => 0,
