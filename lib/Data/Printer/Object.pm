@@ -287,12 +287,16 @@ sub multiline {
             $self->{_current_indent} = $self->{indent};
             $self->index( $self->{_original_index} )
                 if exists $self->{_original_index};
+            $self->hash_separator( $self->{_original_separator} )
+                if exists $self->{_original_separator};
         }
         else {
             $self->{_original_index} = $self->index;
+            $self->index(0);
+            $self->{_original_separator} = $self->hash_separator;
+            $self->hash_separator(':');
             $self->{_linebreak} = ' ';
             $self->{_current_indent} = 0;
-            $self->index(0);
         }
     }
     return $self->{multiline};
