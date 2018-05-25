@@ -78,7 +78,7 @@ sub stringify { 'second!' };
 
 
 package main;
-use Test::More tests => 37;
+use Test::More tests => 38;
 use Data::Printer::Object;
 use Data::Printer::Common;
 
@@ -501,3 +501,51 @@ is( $ddp->parse( ICanHazStringMethodTwo->new ),
 }',
 'object with stringify => 0 expands normally'
 );
+
+my $xs_code = <<'EOXS';
+package MyDDPXSClass;
+use Class::XSAccessor
+  constructor => 'new',
+  accessors => {
+    foo => 'foo',
+    bar => 'bar',
+    _private_from_parent => '_private_from_parent',
+  };
+
+sub meep { 42 }
+sub muup { 33 }
+
+1;
+
+package MyDDPXSChild;
+use base 'MyDDPXSClass';
+use Class::XSAccessor
+  accessors => { meep => 'meep', moop => 'moop', _priv => '_priv' };
+
+1;
+
+1;
+EOXS
+
+SKIP: {
+    skip 'Class::XSAccessor not available to test XS inheritance', 1
+        unless eval "$xs_code";
+    package main;
+    my $obj = MyDDPXSChild->new( meep => 12, bar => 'test' );
+    my $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all' } );
+    is( $ddp->parse($obj), 'MyDDPXSChild  {
+    Parents       MyDDPXSClass
+    public methods (6):
+        meep, moop
+        MyDDPXSClass:
+            bar, foo, muup, new
+    private methods (2):
+        _priv
+        MyDDPXSClass:
+            _private_from_parent
+    internals: {
+        bar    "test",
+        meep   12
+    }
+}', 'proper introspection of XS object');
+};
