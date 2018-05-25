@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+0.99_012 2018-05-25
+    NEW FEATURES:
+        - show_dualvar now accepts 'strict', 'lax' and 'off'. Default is
+          'lax', ignoring decimal zeroes to the right (e.g. 1.00 and '1',
+          '1.10' and 1.1)
+        - multiline => 0 now also shortens the hash separator
+    OTHER:
+        - test improvements
+        - improved documentation
+
 0.99_011 2018-05-24
     BUG FIXES:
         - proper color downgrade on terminals who only support 256 colors.
