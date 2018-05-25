@@ -199,8 +199,12 @@ sub _init {
                              'pass',
                              [qw(pass dump void)]
                        );
-    $self->{'show_dualvar'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_dualvar', 1);
-
+    $self->{'show_dualvar'} = Data::Printer::Common::_fetch_anyof(
+        $props,
+        'show_dualvar',
+        'lax',
+        [qw(lax strict off)]
+    );
 
     if (exists $props->{as}) {
         my $msg = Data::Printer::Common::_fetch_scalar_or_default($props, 'as', '');

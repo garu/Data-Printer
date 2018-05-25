@@ -1,7 +1,7 @@
 #### this script tests basic object instantiation (arguments validation)
 use strict;
 use warnings;
-use Test::More tests => 124;
+use Test::More tests => 127;
 
 use Data::Printer::Object;
 pass 'Data::Printer::Object loaded successfully';
@@ -58,6 +58,7 @@ sub test_defaults {
     is $ddp->sort_keys, 1, 'sort_keys default ON';
     is $ddp->quote_keys, 'auto', 'quote_keys defaults to "auto"';
     is $ddp->deparse, 0, 'deparse default OFF';
+    is $ddp->show_dualvar, 'lax', 'dualvar default LAX';
 }
 
 sub test_customization {
@@ -68,6 +69,7 @@ sub test_customization {
         show_readonly => 0,
         show_lvalue   => 0,
         show_refcount => 1,
+        show_dualvar => 'strict',
         show_memsize => 1,
         memsize_unit => 'k',
         print_escapes => 1,
@@ -115,6 +117,7 @@ sub run_customization_tests {
     is $ddp->show_readonly, 0, "custom show_readonly (pass: $pass)";
     is $ddp->show_lvalue,   0, "custom show_lvalue (pass: $pass)";
     is $ddp->show_refcount, 1, "custom show_refcount (pass: $pass)";
+    is $ddp->show_dualvar, 'strict', "custom show_dualvar (pass: $pass)";
     is $ddp->show_memsize, 1, "custom show_memsize (pass: $pass)";
     is $ddp->memsize_unit, 'k', "custom memsize_unit (pass: $pass)";
     is $ddp->print_escapes, 1, "custom print_escapes (pass: $pass)";

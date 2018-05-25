@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 41;
+use Test::More tests => 59;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -14,7 +14,9 @@ test_print_escapes();
 test_max_string();
 test_weak_ref();
 test_readonly();
-test_dualvar();
+test_dualvar_lax();
+test_dualvar_strict();
+test_dualvar_off();
 
 sub test_weak_ref {
     my $num = 3.14;
@@ -185,12 +187,17 @@ sub test_readonly {
     is $ddp->parse(\$foo), '42 (read-only)', 'readonly variables';
 }
 
-sub test_dualvar {
+sub test_dualvar_lax {
+    # if you are adding tests here, please repeat them in test_dualvar_strict
     for my $t (
         [ 0,     'number' ],
         [ 0.0,   'number' ],
         [ '0.0', 'number' ],
         [ '3',   'number' ],
+        [ '1.0', 'number'],
+        [ '1.10', 'number'],
+        [ 1.100, 'number'],
+        [ 1.000, 'number'],
         [
             Scalar::Util::dualvar( 42, "The Answer" ),
             'dualvar',
@@ -216,5 +223,57 @@ sub test_dualvar {
         Data::Printer::Object->new( colored => 0 )->parse( \$! ),
         qr/".+" \(dualvar: 2\)/,
         '$! is a dualvar'
+    );
+}
+
+sub test_dualvar_strict {
+    # if you are adding tests here, please repeat them in test_dualvar_lax
+    for my $t (
+        [ 0,     'number' ],
+        [ 0.0,   'number' ],
+        [ '0.0', 'number' ],
+        [ '3',   'number' ],
+        [ '1.0', 'dualvar', '"1.0" (dualvar: 1)'],
+        [ '1.10', 'dualvar', '"1.10" (dualvar: 1.1)'],
+        [ 1.10, 'number'],
+        [ 1.000, 'number'],
+        [
+            Scalar::Util::dualvar( 42, "The Answer" ),
+            'dualvar',
+            '"The Answer" (dualvar: 42)'
+        ],
+        [ "Nil",  'string',  '"Nil"' ],
+        [ 0123,   'number' ],
+        [ "0123", 'dualvar', '"0123" (dualvar: 123)' ],
+      )
+    {
+        my ( $var, $type, $expected ) = @$t;
+        my $ddp = Data::Printer::Object->new( colored => 0, show_dualvar => 'strict' );
+        is(
+            $ddp->parse( \$var ),
+            defined $expected ? $expected : "$var",
+            "$var is a $type"
+        );
+    }
+
+    # one very specific Perl dualvar
+    $! = 2;
+    like(
+        Data::Printer::Object->new( colored => 0, show_dualvar => 'strict' )->parse( \$! ),
+        qr/".+" \(dualvar: 2\)/,
+        '$! is a dualvar'
+    );
+}
+
+sub test_dualvar_off {
+    # one very specific Perl dualvar
+    $! = 2;
+    is(
+        index(
+            Data::Printer::Object->new( colored => 0, show_dualvar => 'off' )->parse( \$! ),
+            'dualvar'
+        ),
+        -1,
+        'dualvar $! shown only as string when show_dualvar is off'
     );
 }

@@ -463,7 +463,7 @@ For a quick reference, below are all available properties and their
     indent         => 4,
     show_readonly  => 1,
     show_tied      => ???
-    show_dualvar   => ???
+    show_dualvar   => 'lax', # strict, off
     show_weak      => 1,
     show_refcount  => 0,
     show_memsize   => 0,
