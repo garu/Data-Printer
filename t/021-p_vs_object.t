@@ -76,27 +76,27 @@ sub test_refcount {
     my %hash = ( foo => 42 );
     $hash{self} = \%hash;
     $pretty = p %hash;
-    is $pretty, '{ foo   42, self   var } (refcount: 2)', 'circular (simple) hash';
+    is $pretty, '{ foo:42, self:var } (refcount: 2)', 'circular (simple) hash';
     $pretty_np = np %hash;
     is $pretty_np, $pretty, 'circular (simple) hash (np)';
 
     my $hash = { foo => 42 };
     $hash->{self} = $hash;
     $pretty = p $hash;
-    is $pretty, '{ foo   42, self   var } (refcount: 2)', 'circular hash';
+    is $pretty, '{ foo:42, self:var } (refcount: 2)', 'circular hash';
     $pretty_np = np $hash;
     is $pretty_np, $pretty, 'circular hash (np)';
 
     my $other_hash = $hash;
     $pretty = p $other_hash;
-    is $pretty, '{ foo   42, self   var } (refcount: 3)', 'circular hash with extra ref';
+    is $pretty, '{ foo:42, self:var } (refcount: 3)', 'circular hash with extra ref';
     $pretty_np = np $other_hash;
     is $pretty_np, $pretty, 'circular hash with extra ref (np)';
 
     Scalar::Util::weaken($hash->{self});
     undef $other_hash;
     $pretty = p $hash;
-    is $pretty, '{ foo   42, self   var (weak) }', 'circular (weak) hash';
+    is $pretty, '{ foo:42, self:var (weak) }', 'circular (weak) hash';
     $pretty_np = np $hash;
     is $pretty_np, $pretty, 'circular (weak) hash (np)';
 
