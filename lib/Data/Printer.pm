@@ -591,23 +591,42 @@ code, we have aggregated here a list of all incompatible changes:
 
 =over 4
 
-=item * 0.36 - C<p()>'s default return value changed from 'dump' to 'pass'.
-This was a very important change to ensure chained calls and to prevent
-weird side-effects when C<p()> is the last statement in a sub.
-L<< Read the full discussion|https://github.com/garu/Data-Printer/issues/16 >>
+=item * 1.00 - some defaults changed!
+Because we added a bunch of new features (including color themes), you may
+notice some difference on the default output of Data::Printer. Hopefully it's
+for the best.
 
 =item * 1.00 - new C<.dataprinter> file format.
-This was required to avoid calling C<eval> on potentially tainted/unknown
+I<< This should only affect you if you have a C<.dataprinter> file. >>
+The change was required to avoid calling C<eval> on potentially tainted/unknown
 code. It also provided a much cleaner interface.
 
 =item * 1.00 - new way of creating external filters.
-Previously, the sub in you C<filters> call would get the reference to be
+I<< This only affects you if you write or use external filters. >>
+Previously, the sub in your C<filters> call would get the reference to be
 parsed and a properties hash. The properties hash has been replaced with a
-Data::Printer::Object instance, providing much more power and flexibility.
-Because of that, the filter call does not export p() or np() anymore,
+L<Data::Printer::Object> instance, providing much more power and flexibility.
+Because of that, the filter call does not export C<p()>/C<np()> anymore,
 replaced by methods in Data::Printer::Object.
 
+=item * 1.00 - new way to call filters.
+I<< This affects you if you load your own inline filters >>.
+The fix is quick and Data::Printer will generate a warning explaining how
+to do it. Basically, C<< filters => { ... } >> became
+C<< filters => [{ ... }] >> and you must replace C<< -external => [1,2] >>
+with C<< filters => [1, 2] >>, or C<< filters => [1, 2, {...}] >> if you
+also have inline filters. This allowed us much more power and flexibility
+with filters, and hopefully also makes things cleaner.
+
+=item * 0.36 - C<p()>'s default return value changed from 'dump' to 'pass'.
+This was a very important change to ensure chained calls and to prevent
+weird side-effects when C<p()> is the last statement in a sub.
+L<< Read the full discussion|https://github.com/garu/Data-Printer/issues/16 >>.
+
 =back
+
+Any undocumented change was probably unintended. If you bump into anything,
+please file an issue on Github!
 
 =head1 TIPS & TRICKS
 
