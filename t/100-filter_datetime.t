@@ -228,8 +228,9 @@ sub test_date_simple {
 
 sub test_mojo_date {
     SKIP: {
-        skip 'Mojo::Date not found', 1, unless eval 'use Mojo::Date; 1';
+        skip 'Mojo::Date not found', 1 unless eval 'use Mojo::Date; 1';
         my $d = Mojo::Date->new('Sun, 06 Nov 1994 08:49:37 GMT');
+        skip 'Mojo::Date is too old', 1 unless $d->can('to_datetime');
 
         my $ddp = Data::Printer::Object->new(
             colored => 0,

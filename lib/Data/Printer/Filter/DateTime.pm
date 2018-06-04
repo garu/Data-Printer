@@ -14,7 +14,6 @@ filter 'Date::Pcalc::Object'  => sub { _format($_[0]->string(2)   , @_) };
 filter 'Date::Handler'        => sub { _format("$_[0]"            , @_) };
 filter 'Date::Handler::Delta' => sub { _format($_[0]->AsScalar    , @_) };
 filter 'Date::Simple'         => sub { _format("$_[0]"            , @_) };
-filter 'Mojo::Date'           => sub { _format($_[0]->to_datetime , @_) };
 filter 'Date::Manip::Obj'     => sub { _format(scalar $_[0]->value, @_) };
 
 filter 'Panda::Date'      => sub { _format(_filter_Panda_Date(@_), @_) };
@@ -39,6 +38,14 @@ sub _filter_Panda_Date {
     }
     return $string;
 }
+
+filter 'Mojo::Date' => sub {
+    my $date = $_[0]->can('to_datetime')
+      ? $_[0]->to_datetime
+      : $_[0]->to_string
+      ;
+    return _format($date , @_);
+};
 
 filter 'Class::Date::Rel' => sub {
     my ($obj, $ddp) = @_;
