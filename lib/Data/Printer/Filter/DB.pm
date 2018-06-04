@@ -246,9 +246,22 @@ filter 'DBIx::Class::ResultSource' => sub {
                 $output .= join(', ' => @sorted_cols);
             }
         }
-        # TODO: unique constraints as (unique)
-        # TODO: on create on update
-        # TODO: relationships
+        my %uniques = $source->unique_constraints;
+        delete $uniques{primary};
+        if (keys %uniques) {
+            $output .= $ddp->newline . 'non-primary uniques:';
+            $ddp->indent;
+            foreach my $key (Data::Printer::Common::_nsort(keys %uniques)) {
+                $output .= $ddp->newline
+                        . '(' . join(',', @{$uniques{$key}})
+                        . ") as '$key'"
+                        ;
+            }
+            $ddp->outdent;
+        }
+
+        # TODO: use $source->relationships and $source->relationship_info
+        # to list relationships between sources.
         # TODO: public methods implemented by the user
     }
     $ddp->outdent;
