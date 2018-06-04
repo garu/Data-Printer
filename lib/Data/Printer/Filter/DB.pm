@@ -2,17 +2,21 @@ package Data::Printer::Filter::DB;
 use strict;
 use warnings;
 use Data::Printer::Filter;
+use Data::Printer::Common;
 
 filter 'DBI::db', sub {
     my ($dbh, $ddp) = @_;
     my $name = $dbh->{Driver}{Name};
 
     my $string = "$name Database Handle ("
-               . ($dbh->{Active}
-                  ? $ddp->maybe_colorize('connected', 'filter_db_connected', '#a0d332')
-                  : $ddp->maybe_colorize('disconnected', 'filter_db_disconnected', '#b3422d'))
-               . ') {'
+               . _get_db_status($dbh->{Active}, $ddp)
+               . ')'
                ;
+    return $string
+        if exists $ddp->extra_config->{filter_db}{connection_details}
+           && !$ddp->extra_config->{filter_db}{connection_details};
+
+    $string .= ' {';
     $ddp->indent;
     my %dsn = split( /[;=]/, $dbh->{Name} );
     foreach my $k (keys %dsn) {
@@ -63,10 +67,201 @@ filter 'DBI::st', sub {
 # DBIx::Class filters
 filter 'DBIx::Class::Schema' => sub {
     my ($schema, $ddp) = @_;
-    return ref($schema) . ' DBIC Schema with ' . $ddp->parse( $schema->storage->dbh );
-    # TODO: show a list of all class_mappings available for the schema
-    #       (a.k.a. tables)
+
+    my $name = $ddp->maybe_colorize(ref($schema), 'class');
+    my $storage = $schema->storage;
+    my $config = {};
+    $config = $ddp->extra_config->{filter_db}{schema}
+        if exists $ddp->extra_config->{filter_db}
+           && exists $ddp->extra_config->{filter_db}{schema};
+
+    my $expand = exists $config->{expand}
+        ? $config->{expand}
+        : $ddp->class->expand
+        ;
+    my $connected = _get_db_status($storage->connected, $ddp);
+    return "$name (" . $storage->sqlt_type . " - $connected)"
+        unless $expand;
+
+    $ddp->indent;
+    my $output = $name . ' {' . $ddp->newline
+        . 'connection: ' . ($config->{show_handle}
+            ? $ddp->parse($storage->dbh)
+            : $storage->sqlt_type . " Database Handle ($connected)"
+        );
+    if ($storage->is_replicating) {
+         $output .= $ddp->newline . 'replication lag: ' . $storage->lag_behind_master;
+    }
+    my $load_sources = 'names';
+    if (exists $config->{loaded_sources}) {
+        my $type = $config->{loaded_sources};
+        if ($type && ($type eq 'names' || $type eq 'expand' || $type eq 'none')) {
+            $load_sources = $type;
+        }
+        else {
+            Data::Printer::Common::_warn(
+                "filter_db.schema.loaded_sources must be names,expand or none"
+            );
+        }
+    }
+    if ($load_sources ne 'none') {
+        my @sources = $schema->sources;
+        @sources = Data::Printer::Common::_nsort(@sources)
+            if $ddp->class->sort_methods && @sources;
+
+        $output .= $ddp->newline . 'loaded sources:';
+        if ($load_sources eq 'names') {
+            $output .= ' ' . (@sources
+                ? join(', ', map($ddp->maybe_colorize($_, 'method'), @sources))
+                : '-'
+            );
+        }
+        else {
+            $ddp->indent;
+            foreach my $i (0 .. $#sources) {
+                my $source = $schema->source($sources[$i]);
+                $output .= $ddp->newline . $ddp->parse($source);
+                $output .= ',' if $i < $#sources;
+            }
+            $ddp->outdent;
+        }
+    }
+    $ddp->outdent;
+    $output .= $ddp->newline . '}';
+    return $output;
 };
+
+filter 'DBIx::Class::ResultSource' => sub {
+    my ($source, $ddp) = @_;
+    my $cols = $source->columns_info;
+
+    my $output = $source->source_name . ' ResultSource';
+    if ($source->isa('DBIx::Class::ResultSource::View')) {
+        $output .= ' ('
+            . ($source->is_virtual ? 'Virtual ' : '')
+            . 'View)'
+            ;
+    }
+    $ddp->indent;
+    $output .= ' {' . $ddp->newline
+            . 'table: ' . $ddp->parse(\$source->name)
+            ;
+
+    my $columns = $source->columns_info;
+    my %parsed_columns;
+    my $has_meta;
+    foreach my $colname (keys %$columns) {
+        my $meta = $columns->{$colname};
+        next unless keys %$meta;
+        $has_meta = 1;
+        my $parsed = ' ';
+        if (exists $meta->{data_type} && defined $meta->{data_type}) {
+            $parsed .= $meta->{data_type};
+            if (exists $meta->{size}) {
+                my @size = ref $meta->{size} eq 'ARRAY'
+                    ? @{$meta->{size}} : ($meta->{size})
+                ;
+                if ($meta->{data_type} =~ /\((.+?)\)/) {
+                    my @other_size = split ',' => $1;
+                    my $different_sizes = @size != @other_size;
+                    if (!$different_sizes) {
+                        foreach my $i (0 .. $#size) {
+                            if ($size[$i] != $other_size[$i]) {
+                                $different_sizes = 1;
+                                last;
+                            }
+                        }
+                    }
+                    if ($different_sizes) {
+                        $parsed .= ' (meta size as ' . join(',' => @size) . ')';
+                    }
+                }
+                else {
+                    $parsed .= '(' . join(',' => @size) . ')';
+                }
+            }
+        }
+        else {
+            $parsed .= '(unknown data type)';
+        }
+        if (exists $meta->{is_nullable}) {
+            $parsed .= ((' not')x !$meta->{is_nullable}) . ' null';
+        }
+        if (exists $meta->{default_value} && defined $meta->{default_value}) {
+            my $default = $meta->{default_value};
+            if (ref $default) {
+                $default = $$default;
+            }
+            elsif (defined $meta->{is_numeric}) { # <-- not undef!
+                $default = $meta->{is_numeric} ? 0+$default : qq("$default");
+            }
+            elsif ($source->storage->is_datatype_numeric($meta->{data_type})) {
+                $default = 0+$default;
+            }
+            else {
+                $default = qq("$default");
+            }
+            $parsed .= " default $default";
+        }
+        if (exists $meta->{is_auto_increment} && $meta->{is_auto_increment}) {
+            $parsed .= ' auto_increment';
+        }
+        $parsed_columns{$colname} = $parsed;
+    }
+
+    my @primary_keys = $source->primary_columns;
+    if (keys %parsed_columns || @primary_keys) {
+        $output .= $ddp->newline . 'columns:';
+        if ($has_meta) {
+            $ddp->indent;
+            foreach my $colname (@primary_keys) {
+                my $value = exists $parsed_columns{$colname}
+                    ? delete $parsed_columns{$colname} : '';
+                $output .= $ddp->newline . $colname
+                        . (defined $value ? $value : '')
+                        . ' (primary)'
+                        . (keys %parsed_columns ? ',' : '')
+                        ;
+            }
+            if (keys %parsed_columns) {
+                my @sorted_columns = Data::Printer::Common::_nsort(keys %parsed_columns);
+                foreach my $i (0 .. $#sorted_columns) {
+                    my $colname = $sorted_columns[$i];
+                    $output .= $ddp->newline . $colname
+                    . $parsed_columns{$colname}
+                    . ($i == $#sorted_columns ? '' : ',')
+                    ;
+                }
+            }
+            $ddp->outdent;
+        }
+        else {
+            foreach my $colname (@primary_keys) {
+                $output .= $colname . ' (primary)';
+                delete $parsed_columns{$colname};
+                $output .= ', 'if keys %parsed_columns;
+            }
+            if (keys %parsed_columns) {
+                my @sorted_cols = Data::Printer::Common::_nsort(keys %parsed_columns);
+                $output .= join(', ' => @sorted_cols);
+            }
+        }
+        # TODO: unique constraints as (unique)
+        # TODO: on create on update
+        # TODO: relationships
+        # TODO: public methods implemented by the user
+    }
+    $ddp->outdent;
+    return $output . $ddp->newline . '}';
+};
+
+sub _get_db_status {
+    my ($status, $ddp) = @_;
+    return $status
+        ? $ddp->maybe_colorize('connected', 'filter_db_connected', '#a0d332')
+        : $ddp->maybe_colorize('disconnected', 'filter_db_disconnected', '#b3422d')
+        ;
+}
 
 filter '-class' => sub {
     my ($obj, $ddp) = @_;
@@ -144,7 +339,11 @@ like this:
         Last Statement: SELECT * FROM some_table
     }
 
-And if you have a statement handler like this (for example):
+You can show less information by setting this option on your C<.dataprinter>:
+
+    filter_db.connection_details = 0
+
+If you have a statement handler like this (for example):
 
     my $sth = $dbh->prepare('SELECT * FROM foo WHERE bar = ?');
     $sth->execute(42);
@@ -160,6 +359,49 @@ C<bindings unavailable> message instead of the bound values.
 
 =head3 L<DBIx::Class>
 
+This filter is able to pretty-print many common DBIx::Class objects for
+inspection. Unless otherwrise noted, none of those calls will touch the
+database.
+
+B<DBIx::Class::Schema> objects are dumped by default like this:
+
+    MyApp::Schema {
+        connection: MySQL Database Handle (connected)
+        replication lag: 4
+        loaded sources: ResultName1, ResultName2, ResultName3
+    }
+
+If your C<.dataprinter> settings have C<class.expand> set to C<0>, it will
+only show this:
+
+    MyApp::Schema (MySQL - connected)
+
+You may override this with C<filter_db.schema.expand = 1> (or 0).
+Other available options for the schema are (default values shown):
+
+    # if set to 1, expands 'connection' into a complete DBH dump
+    # NOTE: this may touch the database as it could try to reconnect
+    # to fetch a healthy DBH:
+    filter_db.schema.show_handle = 0
+
+    # set to 'expand' to view source details, or 'none' to skip it:
+    filter_db.schema.loaded_sources = names
+
+B<DBIx::Class::ResultSource> objects will be expanded to show details
+of what that source represents on the database, including column information
+and whether the table is virtual or not. For example:
+
+    User ResultSource (Virtual View) {
+        table: "user"
+        columns:
+            name varchar(100) null
+        belongs to: 
+    }
+
+=head4 Ever got bit by DBIx::Class?
+
+Let us know if we can help by creating an issue on Data::Printer's Github.
+Patches are welcome!
 
 =head1 SEE ALSO
 
