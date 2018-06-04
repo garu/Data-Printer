@@ -227,6 +227,7 @@ filter 'DBIx::Class::ResultSource' => sub {
                 my @sorted_columns = Data::Printer::Common::_nsort(keys %parsed_columns);
                 foreach my $i (0 .. $#sorted_columns) {
                     my $colname = $sorted_columns[$i];
+                    # TODO: v-align column names (like hash keys)
                     $output .= $ddp->newline . $colname
                     . $parsed_columns{$colname}
                     . ($i == $#sorted_columns ? '' : ',')
@@ -401,14 +402,17 @@ Other available options for the schema are (default values shown):
     filter_db.schema.loaded_sources = names
 
 B<DBIx::Class::ResultSource> objects will be expanded to show details
-of what that source represents on the database, including column information
-and whether the table is virtual or not. For example:
+of what that source represents on the database (as perceived by DBIx::Class),
+including column information and whether the table is virtual or not.
 
-    User ResultSource (Virtual View) {
+    User ResultSource {
         table: "user"
         columns:
-            name varchar(100) null
-        belongs to: 
+            user_id integer not null auto_increment (primary),
+            email varchar(100),
+            bio text
+        non-primary uniques:
+            (email) as 'user_email'
     }
 
 =head4 Ever got bit by DBIx::Class?
