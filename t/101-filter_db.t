@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 22;
 use Data::Printer::Object;
 
 test_dbi();
@@ -106,11 +106,11 @@ __PACKAGE__->add_columns(
       is_auto_increment => 1,
     },
     identity => { data_type => 'integer' },
-    email    => { data_type => 'varchar(50)', size => 50, default_value => 'a@b.com' },
+    email    => { data_type => 'varchar', size => 50, default_value => 'a@b.com' },
     city     => { data_type => 'varchar', size => 10 },
-    state    => { data_type => 'varchar(2)', size => 3 },
-    code1    => { data_type => 'decimal(8,2)', size => [8,2] },
-    created  => { data_type => 'datetime', default_value => \'now()' },
+    state    => { data_type => 'varchar', size => 3 },
+    code1    => { data_type => 'decimal', size => [8,2] },
+    created  => { data_type => 'datetime' },
 );
 
 __PACKAGE__->set_primary_key('user_id');
@@ -121,6 +121,15 @@ __PACKAGE__->has_many(
 
 sub do_something {}
 
+1;
+
+package MyDDPTest::Schema::Result::BadSize;
+use strict; use warnings;
+use base 'DBIx::Class::Core';
+__PACKAGE__->table('bad_size');
+__PACKAGE__->add_columns(
+    foo => { data_type => 'varchar(2)', size => 3 },
+);
 1;
 
 package MyDDPTest::Schema::Result::Pet;
@@ -177,6 +186,8 @@ EOPACKAGES
             $schema = MyDDPTest::Schema->connect(
                 'dbi:SQLite(RaiseError=1):dbname=:memory:'
             );
+            $schema->deploy({ add_drop_table => 1 });
+            $schema->load_classes({ 'MyDDPTest::Schema::Result' => ['BadSize'] });
             1;
         };
         my $ddp = Data::Printer::Object->new(
@@ -188,7 +199,7 @@ EOPACKAGES
             $ddp->parse($schema),
 'MyDDPTest::Schema {
     connection: SQLite Database Handle (connected)
-    loaded sources: BigPet, Pet, User
+    loaded sources: BadSize, BigPet, Pet, User
 }',
             'basic schema dump'
         );
@@ -208,7 +219,7 @@ EOPACKAGES
         Statement Handles: 0
         Last Statement: -
     }
-    loaded sources: BigPet, Pet, User
+    loaded sources: BadSize, BigPet, Pet, User
 }',
             'schema dump with show_handle'
         );
@@ -250,6 +261,11 @@ EOPACKAGES
 q|MyDDPTest::Schema {
     connection: SQLite Database Handle (connected)
     loaded sources:
+        BadSize ResultSource {
+            table: "bad_size"
+            columns:
+                foo varchar(2) (meta size as 3)
+        },
         BigPet ResultSource (Virtual View) {
             table: "bigpet"
         },
@@ -266,10 +282,10 @@ q|MyDDPTest::Schema {
                 user_id integer not null auto_increment (primary),
                 city varchar(10),
                 code1 decimal(8,2),
-                created datetime default now(),
+                created datetime,
                 email varchar(50) default "a@b.com",
                 identity integer,
-                state varchar(2) (meta size as 3)
+                state varchar(3)
             non-primary uniques:
                 (email) as 'user_email'
         }
@@ -289,76 +305,154 @@ q|User ResultSource {
         user_id integer not null auto_increment (primary),
         city varchar(10),
         code1 decimal(8,2),
-        created datetime default now(),
+        created datetime,
         email varchar(50) default "a@b.com",
         identity integer,
-        state varchar(2) (meta size as 3)
+        state varchar(3)
     non-primary uniques:
         (email) as 'user_email'
 }|, 'single ResultSource dump'
         );
-
-    TODO: {
-        local $TODO = 'not implemented yet!';
 
         my $rs = $schema->resultset('User');
         $ddp =  Data::Printer::Object->new(
             colored => 0,
             filters => ['DB'],
         );
-        is ($ddp->parse($rs), '', 'empty resultset');
-        $rs = $rs->search(
-            {
-                email      => { like => 'foo%' },
-                state      => 'CA',
-                'pet.name' => { -in => [qw(Rex Mewmew)] },
-            },
-            {
-                join => ['pets'],
-                order_by => { -desc => ['created'] }
-            }
-        );
-        $ddp =  Data::Printer::Object->new(
+        is ($ddp->parse($rs), 'User ResultSet {
+    current search parameters: -
+    as query:
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created FROM user me)
+}', 'empty resultset');
+
+         my $db_user = $rs->new({
+            identity => 123,
+            email    => 'test@example.com',
+            city     => 'berlin',
+            state    => 'xx',
+            code1    => 12.3,
+            created  => '2018-06-09 10:03:29'
+        });
+        $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DB'],
         );
-        is ($ddp->parse($rs), '', 'resultset with search');
-    };
+        is ($ddp->parse($rs), 'User ResultSet {
+    current search parameters: -
+    as query:
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created FROM user me)
+}', 'still empty after creation');
 
-=pod
+        is($ddp->parse($db_user), 'User Row (NOT in storage) {
+    city:     berlin
+    code1:    12.3
+    created:  2018-06-09 10:03:29
+    email:    test@example.com
+    identity: 123
+    state:    xx
+}', 'db user after new() NOT in storage and  no user_id ');
+        $db_user->insert;
+        is ($ddp->parse($db_user), 'User Row (in storage) {
+    city:     berlin
+    code1:    12.3
+    created:  2018-06-09 10:03:29
+    email:    test@example.com
+    identity: 123
+    state:    xx
+    user_id:  1
+}', 'db user after insert');
 
-'Pet Row (DBIx::Class::Row) {
-    name: "rex"
-    size: 10 (updated) <-- show_updated_label, colorize_updated
-    foo: 321 (extra)   <-- show_extra_label, colorize_extra
-    user -> User Row (DBIx::Class::Row) { <-- or "not fetched" only expands if fetched
-        user_id: 123
-        identity: 321
-        email: "user@example.com"
+    $ddp = Data::Printer::Object->new(
+        colored => 0,
+        filters => ['DB'],
+    );
+
+    $db_user->city('rio');
+    is ($ddp->parse($db_user), 'User Row (in storage) {
+    city:     rio (updated)
+    code1:    12.3
+    created:  2018-06-09 10:03:29
+    email:    test@example.com
+    identity: 123
+    state:    xx
+    user_id:  1
+}', 'dirty db user');
+
+    $db_user->update;
+    is ($ddp->parse($db_user), 'User Row (in storage) {
+    city:     rio
+    code1:    12.3
+    created:  2018-06-09 10:03:29
+    email:    test@example.com
+    identity: 123
+    state:    xx
+    user_id:  1
+}', 'updated db user');
+
+    $rs = $rs->search(
+        {
+            'email'     => { like => 'foo%' },
+            'state'     => ['CA','NY'],
+            'pets.name' => { -in => [qw(Rex Mewmew)] },
+        },
+        {
+            '+select' => ['pets.name'],
+            '+as'     => ['pet_name'],
+            join      => ['pets'],
+            order_by  => { -desc => ['created'] }
+        }
+    );
+    $ddp =  Data::Printer::Object->new(
+        colored => 0,
+        filters => ['DB'],
+    );
+    is ($ddp->parse($rs), 'User ResultSet {
+    current search parameters: {
+        email       {
+            like   "foo%"
+        },
+        pets.name   {
+            -in   [
+                [0] "Rex",
+                [1] "Mewmew"
+            ]
+        },
+        state       [
+            [0] "CA",
+            [1] "NY"
+        ]
     }
-    methods: foo, bar <-- follows class.*, but can be overriden by filter_db.class.*
-}'
+    as query:
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created, pets.name FROM user me LEFT JOIN pet pets ON pets.user = me.user_id WHERE ( ( email LIKE ? AND pets.name IN ( ?, ? ) AND ( state = ? OR state = ? ) ) ) ORDER BY created DESC)
+        foo% (varchar)
+        Rex (varchar(10))
+        Mewmew (varchar(10))
+        CA (varchar)
+        NY (varchar)
+}', 'resultset with search');
 
-'MyDDPTest::ResultSet::Pet (DBIx::Class::ResultSet) {
-    columns from table "pet":        <-- filter_db.show_resultset_columns
-        name varchar(10) not null,   <-- filter_db.describe_columns = 1
-        size integer default 10,
-        user integer null,
-    primary key: name,size           <-- filter_db.show_primary_key
-    belongs to: user (User) on foreign.user_id=self.user, <-- filter_db.show_relationships
-    public methods: sleep
-    current source alias: me
-    current search parameters:
-        me.name => { -like => "Test%" },
-        me.size => 23,
-    joins:
-    prefetches:
-    select query:
-    current result count: 
-    first 10 results:
-}'
-
-=cut
+    my $from_db = $schema->resultset('User')->search(
+        { user_id => 1 },
+        {
+            '+select' => [ { LENGTH => 'identity', -as => 'meep' } ],
+            '+as'     => ['length_test'],
+        }
+    )->single;
+    $ddp =  Data::Printer::Object->new(
+        colored => 0,
+        filters => ['DB'],
+    );
+    is ($ddp->parse($from_db), 'User Row (in storage) {
+    city:        rio
+    code1:       12.3
+    created:     2018-06-09 10:03:29
+    email:       test@example.com
+    identity:    123
+    length_test: 3 (extra)
+    state:       xx
+    user_id:     1
+}', 'db entry with extra col');
+    # TODO: test some ->all() with prefetch
 
     };
 }

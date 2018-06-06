@@ -131,6 +131,93 @@ filter 'DBIx::Class::Schema' => sub {
     return $output;
 };
 
+filter 'DBIx::Class::Row' => sub {
+    my ($row, $ddp) = @_;
+
+    my $output = $row->result_source->source_name
+               . ' Row (' . ($row->in_storage ? '' : 'NOT ') . 'in storage) {';
+
+    $ddp->indent;
+    my %orig_columns = map { $_ => 1 } $row->columns;
+    my %data     = $row->get_columns;
+    my %dirty    = $row->get_dirty_columns;
+    # TODO: maybe also get_inflated_columns() ?
+    my @ordered = Data::Printer::Common::_nsort(keys %data);
+    my $longest = 0;
+    foreach my $col (@ordered) {
+        my $l = length $col;
+        $longest = $l if $l > $longest;
+    }
+    foreach my $col (@ordered) {
+        my $padding = $longest - length($col);
+        $output .= $ddp->newline . $col . ': ' . (' ' x $padding)
+            . $data{$col}
+            . (' (updated)')x!!(exists $dirty{$col}) # show_updated_label, colorize_updated
+            . (' (extra)')x!!(!exists $orig_columns{$col}) # show_extra_label, colorize_extra
+            ;
+    }
+    # TODO: methods: foo, bar <-- follows class.*, but can be overriden by filter_db.class.*
+    $ddp->outdent;
+    $output .= $ddp->newline . '}';
+    return $output;
+};
+
+filter 'DBIx::Class::ResultSet' => sub {
+    my ($rs, $ddp) = @_;
+
+    $ddp->indent;
+    my $output = $rs->result_source->source_name
+               . ' ResultSet {' . $ddp->newline;
+
+    # NOTE: we're totally breaking DBIC's encapsulation here. But since DDP
+    # is a tool to inspect the inner workings of objects, it's okay. Ish.
+    $output .= 'current search parameters: ';
+    my $attrs;
+    if ($rs->can('_resolved_attrs') && eval {
+            $attrs = { %{ $rs->_resolved_attrs } }; 1;
+        } && ref $attrs eq 'HASH'
+    ) {
+        if (exists $attrs->{where} && keys %{$attrs->{where}}) {
+            $output .= $ddp->parse($attrs->{where});
+        }
+        else {
+            $output .= '-';
+        }
+    }
+    else {
+        $output .= '(unable to lookup - patches welcome!)';
+    }
+    # TODO: show joins/prefetches/from
+    # TODO: look at get_cache() for results
+    if ($rs->can('as_query')) {
+        my $query_data = $rs->as_query;
+        my @query_data = @$$query_data;
+        my $sql = shift @query_data;
+        $output .= $ddp->newline . 'as query:';
+        $ddp->indent;
+        $output .= $ddp->newline
+                . $ddp->maybe_colorize( $sql, 'string' )
+                ;
+        if (@query_data) {
+            $output .= $ddp->newline . join( $ddp->newline, map {
+                    $_->[1] . ' (' . $_->[0]{sqlt_datatype} . ')'
+                  } @query_data
+                );
+        }
+        $ddp->outdent;
+    }
+    if (my $cached = $rs->get_cache) {
+        $output .= $ddp->newline . 'cached results:';
+        $ddp->indent;
+        $output .= $ddp->newline . $ddp->parse($cached);
+        $ddp->outdent;
+    }
+
+    $ddp->outdent;
+    $output .= $ddp->newline . '}';
+    return $output;
+};
+
 filter 'DBIx::Class::ResultSource' => sub {
     my ($source, $ddp) = @_;
     my $cols = $source->columns_info;
@@ -143,6 +230,8 @@ filter 'DBIx::Class::ResultSource' => sub {
             ;
     }
     $ddp->indent;
+    # TODO: filter_db.show_source_table
+    # TODO: filter_db.describe_columns
     $output .= ' {' . $ddp->newline
             . 'table: ' . $ddp->parse(\$source->name)
             ;
@@ -238,6 +327,7 @@ filter 'DBIx::Class::ResultSource' => sub {
         }
         else {
             foreach my $colname (@primary_keys) {
+                # TODO: filter_db.show_primary_keys
                 $output .= $colname . ' (primary)';
                 delete $parsed_columns{$colname};
                 $output .= ', 'if keys %parsed_columns;
@@ -262,8 +352,10 @@ filter 'DBIx::Class::ResultSource' => sub {
         }
 
         # TODO: use $source->relationships and $source->relationship_info
-        # to list relationships between sources.
+        # to list relationships between sources. (filter_db.show_relationships
         # TODO: public methods implemented by the user
+        # TODO; "current result count" (touching the db)
+        # TODO: "first X eresults" (touching the db)
     }
     $ddp->outdent;
     return $output . $ddp->newline . '}';
