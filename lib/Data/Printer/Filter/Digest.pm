@@ -4,39 +4,29 @@ use warnings;
 use Data::Printer::Filter;
 use Term::ANSIColor;
 
-foreach my $digest ( qw(Digest::MD2 Digest::MD4) ) {
-    filter $digest => \&_print_digest;
-}
-
-filter '-class', sub {
-  my ($obj, $p) = @_;
-  return unless $obj->isa( 'Digest::base' );
-  return _print_digest( $obj, $p );
-};
-
+filter 'Digest::base' => \&_print_digest;
+filter 'Digest::MD2'  => \&_print_digest;
+filter 'Digest::MD4'  => \&_print_digest;
 
 sub _print_digest {
-  my ($obj, $p) = @_;
+  my ($obj, $ddp) = @_;
   my $digest = $obj->clone->hexdigest;
   my $str = $digest;
   my $ref = ref $obj;
 
-  if ( $p->{digest}{show_class_name} ) {
+  if ( $ddp->extra_config->{filter_digest}{show_class_name} ) {
       $str .= " ($ref)";
   }
 
-  unless ( exists  $p->{digest}{show_reset}
-              and !$p->{digest}{show_reset}
+  unless ( exists  $ddp->extra_config->{filter_digest}{show_reset}
+              and !$ddp->extra_config->{filter_digest}{show_reset}
    ) {
      if ($digest eq $ref->new->hexdigest) {
          $str .= ' [reset]';
      }
   }
 
-  my $color = $p->{color}{digest};
-  $color = 'bright_green' unless defined $color;
-
-  return colored( $str, $color );
+  return $ddp->maybe_colorize($str, 'datetime', '#ffaaff');
 }
 
 1;
@@ -45,46 +35,34 @@ __END__
 
 =head1 NAME
 
-Data::Printer::Filter::Digest - pretty-printing MD5, SHA and friends
+Data::Printer::Filter::Digest - pretty-printing MD5, SHA and many other digests
 
 =head1 SYNOPSIS
 
-In your program:
+In your C<.dataprinter> file:
 
-  use Data::Printer filters => {
-    -external => [ 'Digest' ],
-  };
+    filters = Digest
 
-or, in your C<.dataprinter> file:
+You may also setup the look and feel with the following options:
 
-  {
-    filters => {
-       -external => [ 'Digest' ],
-    },
-  };
+    filter_digest.show_class_name = 0
+    filter_digest.show_reset      = 1
 
-You can also setup color and display details:
+    # you can even customize your themes:
+    colors.digest = #27ac3c
 
-  use Data::Printer
-      filters => {
-          -external => [ 'Digest' ],
-      },
-      color   => {
-          digest => 'bright_green',
-      }
-      digest => {
-          show_class_name => 0,  # default.
-          show_reset      => 1,  # default.
-      },
-  };
+That's it!
 
 =head1 DESCRIPTION
 
 This is a filter plugin for L<Data::Printer>. It filters through
-several digest classes and displays their current value in
+several message digest objects and displays their current value in
 hexadecimal format as a string.
 
 =head2 Parsed Modules
+
+Any module that inherits from L<Digest::base>. The following ones
+are actively supported:
 
 =over 4
 
@@ -110,7 +88,7 @@ please let us know.
 =head2 Extra Options
 
 Aside from the display color, there are a few other options to
-be customized via the C<digest> option key:
+be customized via the C<filter_digest> option key:
 
 =head3 show_class_name
 
@@ -124,12 +102,15 @@ tag after dumping an empty digest object. See the rationale below.
 
 =head2 Note on dumping Digest::* objects
 
-The digest operation is effectively a destructive, read-once operation. Once it has been performed, most Digest::* objects are automatically reset and can be used to calculate another digest value.
+The digest operation is effectively a destructive, read-once operation. Once
+it has been performed, most Digest::* objects are automatically reset and can
+be used to calculate another digest value.
 
 This behaviour - or, rather, forgetting about this behaviour - is
 a common source of issues when working with Digests.
 
-This Data::Printer filter will B<not> destroy your object. Instead, we work on a cloned version to display the hexdigest, leaving your
+This Data::Printer filter will B<not> destroy your object. Instead, we
+work on a I<cloned> version to display the hexdigest, leaving your
 original object untouched.
 
 As another debugging convenience for developers, since the empty
