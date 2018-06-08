@@ -5,6 +5,8 @@ use Data::Printer::Filter;
 use Term::ANSIColor;
 
 filter 'Digest::base' => \&_print_digest;
+
+# these modules don't inherit from Digest::base but have the same interface:
 filter 'Digest::MD2'  => \&_print_digest;
 filter 'Digest::MD4'  => \&_print_digest;
 
