@@ -26,6 +26,7 @@ foreach my $module (qw(
             colored => 0,
             show_readonly => 0,
             filters => ['Digest'],
+            filter_digest => { show_class_name => 0 },
         );
 
         my $dump = $ddp->parse($digest);
@@ -34,7 +35,6 @@ foreach my $module (qw(
             colored       => 0,
             show_readonly => 0,
             filters       => ['Digest'],
-            filter_digest => { show_class_name => 1 },
         );
         my $named_dump = $ddp->parse($digest);
         my $hex = $digest->hexdigest;
@@ -52,7 +52,7 @@ foreach my $module (qw(
         );
         is(
             $ddp->parse($digest),
-            $digest->hexdigest . ' [reset]',
+            $digest->hexdigest . " ($module) [reset]",
             "reset $module"
         );
     };

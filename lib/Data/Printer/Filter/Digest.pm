@@ -16,7 +16,8 @@ sub _print_digest {
   my $str = $digest;
   my $ref = ref $obj;
 
-  if ( $ddp->extra_config->{filter_digest}{show_class_name} ) {
+  if ( !exists $ddp->extra_config->{filter_digest}{show_class_name}
+      || $ddp->extra_config->{filter_digest}{show_class_name} ) {
       $str .= " ($ref)";
   }
 
@@ -94,8 +95,8 @@ be customized via the C<filter_digest> option key:
 
 =head3 show_class_name
 
-Set this to true to display the class name right next to the
-hexadecimal digest. Default is 0 (false).
+If set to true (the default) the class name will be displayed
+right next to the hexadecimal digest.
 
 =head3 show_reset
 
