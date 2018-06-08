@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_014 2018-06-08
+    BUG FIXES:
+        - DateTime filter: fix Class::Date test on systems
+          that treat GMT as UTC.
+
 0.99_013 2018-06-08
     NEW FEATURES:
         - dualvar lax mode accepts leading/trailing whitespace in numbers
