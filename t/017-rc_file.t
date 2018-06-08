@@ -15,12 +15,15 @@ class.data.may.not = 1
 class.simple = bla
     ; and
 ; some more comments
+filters = Foo, Bar
 
 [Some::Module]
 meep = moop
+filters = Meep
 
    [Other::Module]
 hard.times = come.easy
+filters =
 
 EOTEXT
 
@@ -38,10 +41,11 @@ my $expected = {
                     }
                 }
             }
-        }
+        },
+        filters => ['Foo', 'Bar'],
     },
-    'Some::Module' => { meep => 'moop' },
-    'Other::Module' => { hard => { times => 'come.easy' } }
+    'Some::Module' => { meep => 'moop', filters => ['Meep'] },
+    'Other::Module' => { hard => { times => 'come.easy' }, filters => [] }
 };
 
 my $data = Data::Printer::Config::_str2data('data.rc', $good_content);

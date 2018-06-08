@@ -52,6 +52,16 @@ sub _str2data {
             # turn a.b.c.d into {a}{b}{c}{d}
             my @subpath = split /\./, $path_str;
             my $current = $config->{$ns};
+
+            # the root "filters" key is a special case, because we want
+            # it to always be an arrayref. In other words:
+            #     filters = abc,def    --> filters => ['abc', 'def']
+            #     filters = abc        --> filters => ['abc']
+            #     filters =            --> filters => []
+            if (@subpath == 1 && $subpath[0] eq 'filters') {
+                $value = [ split /\s*,\s*/ => $value ];
+            }
+
             while (my $subpath = shift @subpath) {
                 if (@subpath > 0) {
                     $current->{$subpath} ||= {};
