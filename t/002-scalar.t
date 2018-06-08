@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 59;
+use Test::More tests => 67;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -198,6 +198,10 @@ sub test_dualvar_lax {
         [ '1.10', 'number'],
         [ 1.100, 'number'],
         [ 1.000, 'number'],
+        [ '123   ', 'number', 123],
+        [ '123.040   ', 'number', '123.040'],
+        [ '   123', 'number', 123],
+        [ '   123.040', 'number', '123.040'],
         [
             Scalar::Util::dualvar( 42, "The Answer" ),
             'dualvar',
@@ -205,7 +209,7 @@ sub test_dualvar_lax {
         ],
         [ "Nil",  'string',  '"Nil"' ],
         [ 0123,   'number' ],
-        [ "0123", 'dualvar', '"0123" (dualvar: 123)' ],
+        [ "0199", 'dualvar', '"0199" (dualvar: 199)' ],
       )
     {
         my ( $var, $type, $expected ) = @$t;
@@ -213,7 +217,7 @@ sub test_dualvar_lax {
         is(
             $ddp->parse( \$var ),
             defined $expected ? $expected : "$var",
-            "$var is a $type"
+            "$var in lax mode is a $type"
         );
     }
 
@@ -237,6 +241,10 @@ sub test_dualvar_strict {
         [ '1.10', 'dualvar', '"1.10" (dualvar: 1.1)'],
         [ 1.10, 'number'],
         [ 1.000, 'number'],
+        [ '123   ', 'dualvar', '"123   " (dualvar: 123)' ],
+        [ '123.040   ', 'dualvar', '"123.040   " (dualvar: 123.04)' ],
+        [ '   123', 'dualvar', '"   123" (dualvar: 123)' ],
+        [ '   123.040', 'dualvar', '"   123.040" (dualvar: 123.04)' ],
         [
             Scalar::Util::dualvar( 42, "The Answer" ),
             'dualvar',
@@ -244,7 +252,7 @@ sub test_dualvar_strict {
         ],
         [ "Nil",  'string',  '"Nil"' ],
         [ 0123,   'number' ],
-        [ "0123", 'dualvar', '"0123" (dualvar: 123)' ],
+        [ "0199", 'dualvar', '"0199" (dualvar: 199)' ],
       )
     {
         my ( $var, $type, $expected ) = @$t;
@@ -252,7 +260,7 @@ sub test_dualvar_strict {
         is(
             $ddp->parse( \$var ),
             defined $expected ? $expected : "$var",
-            "$var is a $type"
+            "$var in strict mode is a $type"
         );
     }
 

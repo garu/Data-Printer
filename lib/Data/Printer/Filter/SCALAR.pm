@@ -31,10 +31,12 @@ sub _parse_scalar {
                 || (
                     # lax mode allows decimal zeroes
                     $ddp->show_dualvar eq 'lax'
-                    && ((index("$numified",'.') != -1 && $value =~ /\A${numified}[0]*\z/)
-                        || (index("$numified",'.') == -1 && $value =~ /\A$numified\.[0]*\z/))
+                    && ((index("$numified",'.') != -1 && $value =~ /\A\s*${numified}[0]*\s*\z/)
+                        || (index("$numified",'.') == -1 && $value =~ /\A\s*$numified(?:\.[0]*)?\s*\z/))
                 )
             ) {
+                $value =~ s/\A\s+//;
+                $value =~ s/\s+\z//;
                 $ret = $ddp->maybe_colorize($value, 'number');
             }
             else {
