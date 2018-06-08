@@ -24,6 +24,7 @@ foreach my $module (qw(
 
         my $ddp = Data::Printer::Object->new(
             colored => 0,
+            show_readonly => 0,
             filters => ['Digest'],
         );
 
@@ -31,30 +32,28 @@ foreach my $module (qw(
 
         $ddp = Data::Printer::Object->new(
             colored       => 0,
+            show_readonly => 0,
             filters       => ['Digest'],
             filter_digest => { show_class_name => 1 },
         );
-        my %is_readonly = (
-            'Digest::SHA'  => 1,
-            'Digest::SHA1' => 1,
-            'Digest::MD2'  => 1,
-            'Digest::MD4'  => 1,
-        );
         my $named_dump = $ddp->parse($digest);
         my $hex = $digest->hexdigest;
-        is( $dump, $hex . ($is_readonly{$module} ? ' (read-only)' : ''), $module );
+        is( $dump, $hex, "$module digest dump");
         is(
             $named_dump,
-            "$hex ($module)" . ($is_readonly{$module} ? ' (read-only)' : ''),
-            "$module with class name"
+            "$hex ($module)",
+            "$module digest dump with class name"
         );
 
         $ddp = Data::Printer::Object->new(
             colored => 0,
+            show_readonly => 0,
             filters => ['Digest'],
         );
-        is( $ddp->parse($digest), $digest->hexdigest . ' [reset]'
-            . ($is_readonly{$module} ? ' (read-only)' : ''), "reset $module"
+        is(
+            $ddp->parse($digest),
+            $digest->hexdigest . ' [reset]',
+            "reset $module"
         );
     };
 
