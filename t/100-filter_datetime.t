@@ -265,7 +265,12 @@ sub test_class_date {
             colored => 0,
             filters => ['DateTime'],
         );
-        is( $ddp->parse($d), '2003-03-11 00:00:00 [GMT]', 'Class::Date' );
+        my $parsed = $ddp->parse($d);
+        ok(
+               $parsed eq '2003-03-11 00:00:00 [GMT]'
+            || $parsed eq '2003-03-11 00:00:00 [UTC]' # some BSDs name GTM as UTC
+            , "Class::Date is '$parsed'"
+        );
 
         skip 'Class::Date::Rel not found', 1 unless eval 'use Class::Date::Rel; 1';
         my $reldate = Class::Date::Rel->new( "3Y 1M 3D 6h 2m 4s" );
