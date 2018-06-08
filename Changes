@@ -1,5 +1,21 @@
 Revision history for Data-Printer
 
+0.99_013 2018-06-08
+    NEW FEATURES:
+        - dualvar lax mode accepts leading/trailing whitespace in numbers
+        - DB filter: improve display of replication lag
+        - DB filter: list unique constraints on DBIC
+        - DB filter: improved parsing of DBIC sources/resultsets/rows
+    BUG FIXES:
+        - filter listings in RC file now always an array ref
+        - DateTime filter: fix parsing of old Mojo::Date objects
+        - DB filter: test fixes
+        - Digest filter updated and re-added
+    OTHER:
+        - DB filter: improve documentation
+        - DB filter: increase test coverage
+        - Digest filter: show class name by default on parsing digests
+
 0.99_012 2018-05-25
     NEW FEATURES:
         - show_dualvar now accepts 'strict', 'lax' and 'off'. Default is
