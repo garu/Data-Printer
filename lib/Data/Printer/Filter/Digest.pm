@@ -20,8 +20,8 @@ sub _print_digest {
       $str .= " ($ref)";
   }
 
-  unless ( exists  $ddp->extra_config->{filter_digest}{show_reset}
-              and !$ddp->extra_config->{filter_digest}{show_reset}
+  if( !exists  $ddp->extra_config->{filter_digest}{show_reset}
+    || $ddp->extra_config->{filter_digest}{show_reset}
    ) {
      if ($digest eq $ref->new->hexdigest) {
          $str .= ' [reset]';
