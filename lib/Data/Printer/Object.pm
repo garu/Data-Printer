@@ -385,7 +385,7 @@ sub _detect_color_level {
     my $colored = $self->colored;
     my $color_level;
 
-    # first we honour ANSI_COLORS_DISABLED, colored and tty piping 
+    # first we honour ANSI_COLORS_DISABLED, colored and tty piping
     if (   !$colored
         || ($colored eq 'auto' && exists $ENV{ANSI_COLORS_DISABLED})
 #        || ! -t $self->{_output} # <-- FIXME TODO

@@ -94,7 +94,7 @@ or your inline calls to C<p()>, like so:
     use DDP filters => [{
         SCALAR => sub { 'OMG A SCALAR!!' }
     }];
-    
+
     p @x, filters => [{ HASH => sub { die 'oh, noes! found a hash in my array' } }];
 
 Most of the time you probably want to create full-featured filters as a

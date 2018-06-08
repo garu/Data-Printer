@@ -9,7 +9,7 @@ my $good_content = <<'EOTEXT';
 # some comment
     # another comment
 whatever = Something Interesting
-answer         =   42    
+answer         =   42
 class.data.may.be.deep = 0 but true
 class.data.may.not = 1
 class.simple = bla
