@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 22;
+use Test::More tests => 23;
 use Data::Printer::Object;
 
 test_dbi();
@@ -110,7 +110,7 @@ __PACKAGE__->add_columns(
     city     => { data_type => 'varchar', size => 10 },
     state    => { data_type => 'varchar', size => 3 },
     code1    => { data_type => 'decimal', size => [8,2] },
-    created  => { data_type => 'datetime' },
+    created  => { data_type => 'datetime', is_nullable => 1 },
 );
 
 __PACKAGE__->set_primary_key('user_id');
@@ -223,7 +223,7 @@ EOPACKAGES
 }',
             'schema dump with show_handle'
         );
-        $ddp =  Data::Printer::Object->new(
+        $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DB'],
             filter_db => {
@@ -237,7 +237,7 @@ EOPACKAGES
 }',
             'schema dump with loaded_sources => none'
         );
-        $ddp =  Data::Printer::Object->new(
+        $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DB'],
             filter_db => {
@@ -253,7 +253,7 @@ EOPACKAGES
             colored => 0,
             filters => ['DB'],
             filter_db => {
-                schema => { show_handle => 0, loaded_sources => 'expand' }
+                schema => { show_handle => 0, loaded_sources => 'details' }
             }
         );
         is(
@@ -268,6 +268,9 @@ q|MyDDPTest::Schema {
         },
         BigPet ResultSource (Virtual View) {
             table: "bigpet"
+            columns:
+                name (unknown data type),
+                size (unknown data type)
         },
         Pet ResultSource {
             table: "pet"
@@ -282,7 +285,7 @@ q|MyDDPTest::Schema {
                 user_id integer not null auto_increment (primary),
                 city varchar(10),
                 code1 decimal(8,2),
-                created datetime,
+                created datetime null,
                 email varchar(50) default "a@b.com",
                 identity integer,
                 state varchar(3)
@@ -290,8 +293,45 @@ q|MyDDPTest::Schema {
                 (email) as 'user_email'
         }
 }|,
-            'schema dump with loaded_sources => expand'
+            'schema dump with loaded_sources => details'
         );
+
+        $ddp =  Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DB'],
+            filter_db => {
+                schema => { show_handle => 0, loaded_sources => 'details' },
+                column_info => 'names',
+            }
+        );
+        is(
+            $ddp->parse($schema),
+q|MyDDPTest::Schema {
+    connection: SQLite Database Handle (connected)
+    loaded sources:
+        BadSize ResultSource {
+            table: "bad_size"
+            columns: foo
+        },
+        BigPet ResultSource (Virtual View) {
+            table: "bigpet"
+            columns: name, size
+        },
+        Pet ResultSource {
+            table: "pet"
+            columns: name (primary), size (primary), user
+        },
+        User ResultSource {
+            table: "user"
+            columns: user_id (primary), city, code1, created, email, identity, state
+            non-primary uniques:
+                (email) as 'user_email'
+        }
+}|,
+            'schema dump with loaded_sources => details and column_info => names'
+        );
+
+
 
         my $user_source = $schema->source('User');
         $ddp =  Data::Printer::Object->new(
@@ -305,7 +345,7 @@ q|User ResultSource {
         user_id integer not null auto_increment (primary),
         city varchar(10),
         code1 decimal(8,2),
-        created datetime,
+        created datetime null,
         email varchar(50) default "a@b.com",
         identity integer,
         state varchar(3)
@@ -331,7 +371,7 @@ q|User ResultSource {
             city     => 'berlin',
             state    => 'xx',
             code1    => 12.3,
-            created  => '2018-06-09 10:03:29'
+            created  => undef,
         });
         $ddp = Data::Printer::Object->new(
             colored => 0,
@@ -344,21 +384,21 @@ q|User ResultSource {
 }', 'still empty after creation');
 
         is($ddp->parse($db_user), 'User Row (NOT in storage) {
-    city:     berlin
+    city:     "berlin"
     code1:    12.3
-    created:  2018-06-09 10:03:29
-    email:    test@example.com
+    created:  undef
+    email:    "test@example.com"
     identity: 123
-    state:    xx
+    state:    "xx"
 }', 'db user after new() NOT in storage and  no user_id ');
         $db_user->insert;
         is ($ddp->parse($db_user), 'User Row (in storage) {
-    city:     berlin
+    city:     "berlin"
     code1:    12.3
-    created:  2018-06-09 10:03:29
-    email:    test@example.com
+    created:  undef
+    email:    "test@example.com"
     identity: 123
-    state:    xx
+    state:    "xx"
     user_id:  1
 }', 'db user after insert');
 
@@ -369,23 +409,23 @@ q|User ResultSource {
 
     $db_user->city('rio');
     is ($ddp->parse($db_user), 'User Row (in storage) {
-    city:     rio (updated)
+    city:     "rio" (updated)
     code1:    12.3
-    created:  2018-06-09 10:03:29
-    email:    test@example.com
+    created:  undef
+    email:    "test@example.com"
     identity: 123
-    state:    xx
+    state:    "xx"
     user_id:  1
 }', 'dirty db user');
 
     $db_user->update;
     is ($ddp->parse($db_user), 'User Row (in storage) {
-    city:     rio
+    city:     "rio"
     code1:    12.3
-    created:  2018-06-09 10:03:29
-    email:    test@example.com
+    created:  undef
+    email:    "test@example.com"
     identity: 123
-    state:    xx
+    state:    "xx"
     user_id:  1
 }', 'updated db user');
 
@@ -399,7 +439,7 @@ q|User ResultSource {
             '+select' => ['pets.name'],
             '+as'     => ['pet_name'],
             join      => ['pets'],
-            order_by  => { -desc => ['created'] }
+            order_by  => { -desc => ['city'] }
         }
     );
     $ddp =  Data::Printer::Object->new(
@@ -423,7 +463,7 @@ q|User ResultSource {
         ]
     }
     as query:
-        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created, pets.name FROM user me LEFT JOIN pet pets ON pets.user = me.user_id WHERE ( ( email LIKE ? AND pets.name IN ( ?, ? ) AND ( state = ? OR state = ? ) ) ) ORDER BY created DESC)
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created, pets.name FROM user me LEFT JOIN pet pets ON pets.user = me.user_id WHERE ( ( email LIKE ? AND pets.name IN ( ?, ? ) AND ( state = ? OR state = ? ) ) ) ORDER BY city DESC)
         foo% (varchar)
         Rex (varchar(10))
         Mewmew (varchar(10))
@@ -443,13 +483,13 @@ q|User ResultSource {
         filters => ['DB'],
     );
     is ($ddp->parse($from_db), 'User Row (in storage) {
-    city:        rio
+    city:        "rio"
     code1:       12.3
-    created:     2018-06-09 10:03:29
-    email:       test@example.com
+    created:     undef
+    email:       "test@example.com"
     identity:    123
     length_test: 3 (extra)
-    state:       xx
+    state:       "xx"
     user_id:     1
 }', 'db entry with extra col');
     # TODO: test some ->all() with prefetch

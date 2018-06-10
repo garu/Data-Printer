@@ -102,12 +102,12 @@ filter 'DBIx::Class::Schema' => sub {
     my $load_sources = 'names';
     if (exists $config->{loaded_sources}) {
         my $type = $config->{loaded_sources};
-        if ($type && ($type eq 'names' || $type eq 'expand' || $type eq 'none')) {
+        if ($type && ($type eq 'names' || $type eq 'details' || $type eq 'none')) {
             $load_sources = $type;
         }
         else {
             Data::Printer::Common::_warn(
-                "filter_db.schema.loaded_sources must be names,expand or none"
+                "filter_db.schema.loaded_sources must be names, details or none"
             );
         }
     }
@@ -253,20 +253,85 @@ filter 'DBIx::Class::ResultSource' => sub {
             . 'View' . $ddp->maybe_colorize(')', 'brackets')
             ;
     }
-    $ddp->indent;
-    # TODO: filter_db.show_source_table
-    # TODO: filter_db.describe_columns
-    $output .= ' {' . $ddp->newline
-            . 'table: ' . $ddp->parse(\$source->name)
-            ;
 
-    my $columns = $source->columns_info;
+    my $show_source_table = !exists $ddp->extra_config->{filter_db}{show_source_table}
+                         || $ddp->extra_config->{filter_db}{show_source_table};
+    my $column_info = 'details';
+    if (exists $ddp->extra_config->{filter_db}{column_info}) {
+        my $new = $ddp->extra_config->{filter_db}{column_info};
+        if ($new && ($new eq 'names' || $new eq 'details' || $new eq 'none')) {
+            $column_info = $new;
+        }
+        else {
+            Data::Printer::Common::_warn(
+                "filter_db.column_info must be names, details or none"
+            );
+        }
+    }
+    return $output if !$show_source_table && $column_info eq 'none';
+
+    $ddp->indent;
+    $output .= ' ' . $ddp->maybe_colorize('{', 'brackets');
+    if ($show_source_table) {
+        $output .= $ddp->newline . 'table: ' . $ddp->parse(\$source->name);
+    }
+    if ($column_info ne 'none') {
+        my $columns = $source->columns_info;
+        $output .= $ddp->newline . 'columns:';
+        $output .= ' - ' unless %$columns;
+        my $separator = $ddp->maybe_colorize(',', 'separator') . ' ';
+        if ($column_info eq 'names') {
+            my %parsed_cols = map { $_ => 1 } keys %$columns;
+            my @primary = Data::Printer::Common::_nsort($source->primary_columns);
+            if (@primary) {
+                delete $parsed_cols{$_} foreach @primary;
+                $output .= ' ' . join($separator => map {
+                        $ddp->maybe_colorize($_, 'method') . ' (primary)'
+                    } @primary
+                );
+                $output .= ',' if keys %parsed_cols;
+            }
+            if (keys %parsed_cols) {
+                $output .= ' ' . join($separator => map {
+                        $ddp->maybe_colorize($_, 'method')
+                    } Data::Printer::Common::_nsort(keys %parsed_cols)
+                );
+            }
+        }
+        else { # details!
+            $output .= _show_column_details($source, $columns, $ddp);
+        }
+        my %uniques = $source->unique_constraints;
+        delete $uniques{primary};
+        if (keys %uniques) {
+            $output .= $ddp->newline . 'non-primary uniques:';
+            $ddp->indent;
+            foreach my $key (Data::Printer::Common::_nsort(keys %uniques)) {
+                $output .= $ddp->newline
+                        . $ddp->maybe_colorize('(', 'brackets')
+                        . join($separator, @{$uniques{$key}})
+                        . $ddp->maybe_colorize(')', 'brackets') . " as '$key'"
+                        ;
+            }
+            $ddp->outdent;
+        }
+
+        # TODO: use $source->relationships and $source->relationship_info
+        # to list relationships between sources. (filter_db.show_relationships
+        # TODO: public methods implemented by the user
+        # TODO; "current result count" (touching the db)
+        # TODO: "first X eresults" (touching the db)
+    }
+    $ddp->outdent;
+    return $output . $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
+};
+
+sub _show_column_details {
+    my ($source, $columns, $ddp) = @_;
+    my $output = '';
     my %parsed_columns;
-    my $has_meta;
     foreach my $colname (keys %$columns) {
         my $meta = $columns->{$colname};
-        next unless keys %$meta;
-        $has_meta = 1;
         my $parsed = ' ';
         if (exists $meta->{data_type} && defined $meta->{data_type}) {
             $parsed .= $meta->{data_type};
@@ -324,66 +389,33 @@ filter 'DBIx::Class::ResultSource' => sub {
 
     my @primary_keys = $source->primary_columns;
     if (keys %parsed_columns || @primary_keys) {
-        $output .= $ddp->newline . 'columns:';
-        if ($has_meta) {
-            $ddp->indent;
-            foreach my $colname (@primary_keys) {
-                my $value = exists $parsed_columns{$colname}
-                    ? delete $parsed_columns{$colname} : '';
-                $output .= $ddp->newline . $colname
-                        . (defined $value ? $value : '')
-                        . ' (primary)'
-                        . (keys %parsed_columns ? ',' : '')
-                        ;
-            }
-            if (keys %parsed_columns) {
-                my @sorted_columns = Data::Printer::Common::_nsort(keys %parsed_columns);
-                foreach my $i (0 .. $#sorted_columns) {
-                    my $colname = $sorted_columns[$i];
-                    # TODO: v-align column names (like hash keys)
-                    $output .= $ddp->newline . $colname
-                    . $parsed_columns{$colname}
-                    . ($i == $#sorted_columns ? '' : ',')
+        my $separator = $ddp->maybe_colorize(',', 'separator');
+        $ddp->indent;
+        foreach my $colname (@primary_keys) {
+            my $value = exists $parsed_columns{$colname}
+                ? delete $parsed_columns{$colname} : '';
+            $output .= $ddp->newline . $colname
+                    . (defined $value ? $value : '')
+                    . ' (primary)'
+                    . (keys %parsed_columns ? $separator : '')
                     ;
-                }
-            }
-            $ddp->outdent;
         }
-        else {
-            foreach my $colname (@primary_keys) {
-                # TODO: filter_db.show_primary_keys
-                $output .= $colname . ' (primary)';
-                delete $parsed_columns{$colname};
-                $output .= ', 'if keys %parsed_columns;
-            }
-            if (keys %parsed_columns) {
-                my @sorted_cols = Data::Printer::Common::_nsort(keys %parsed_columns);
-                $output .= join(', ' => @sorted_cols);
+        if (keys %parsed_columns) {
+            my @sorted_columns = Data::Printer::Common::_nsort(keys %parsed_columns);
+            foreach my $i (0 .. $#sorted_columns) {
+                my $colname = $sorted_columns[$i];
+                # TODO: v-align column names (like hash keys)
+                $output .= $ddp->newline . $colname
+                . $parsed_columns{$colname}
+                . ($i == $#sorted_columns ? '' : $separator)
+                ;
             }
         }
-        my %uniques = $source->unique_constraints;
-        delete $uniques{primary};
-        if (keys %uniques) {
-            $output .= $ddp->newline . 'non-primary uniques:';
-            $ddp->indent;
-            foreach my $key (Data::Printer::Common::_nsort(keys %uniques)) {
-                $output .= $ddp->newline
-                        . '(' . join(',', @{$uniques{$key}})
-                        . ") as '$key'"
-                        ;
-            }
-            $ddp->outdent;
-        }
-
-        # TODO: use $source->relationships and $source->relationship_info
-        # to list relationships between sources. (filter_db.show_relationships
-        # TODO: public methods implemented by the user
-        # TODO; "current result count" (touching the db)
-        # TODO: "first X eresults" (touching the db)
+        $ddp->outdent;
     }
-    $ddp->outdent;
-    return $output . $ddp->newline . '}';
-};
+    return $output;
+}
+
 
 sub _get_db_status {
     my ($status, $ddp) = @_;
@@ -392,39 +424,6 @@ sub _get_db_status {
         : $ddp->maybe_colorize('disconnected', 'filter_db_disconnected', '#b3422d')
         ;
 }
-
-filter '-class' => sub {
-    my ($obj, $ddp) = @_;
-
-    # TODO: if it's a Result, show columns and relationships (anything that
-    #       doesn't involve touching the database
-    if ( grep { $obj->isa($_) } qw(DBIx::Class::ResultSet DBIx::Class::ResultSetColumn) ) {
-
-        my $str = $ddp->maybe_colorize( ref($obj), 'class' );
-        $str .= ' (' . $obj->result_class . ')'
-          if $obj->can( 'result_class' );
-
-        if (my $query_data = $obj->as_query) {
-          my @query_data = @$$query_data;
-          $ddp->indent;
-          my $sql = shift @query_data;
-          $str .= ' {'
-               . $ddp->newline . $ddp->maybe_colorize($sql, 'string')
-               . $ddp->newline . join ( $ddp->newline, map {
-                      $_->[1] . ' (' . $_->[0]{sqlt_datatype} . ')'
-                    } @query_data
-               )
-               ;
-          $ddp->outdent;
-          $str .= $ddp->newline . '}';
-        }
-
-        return $str;
-    }
-    else {
-        return;
-    }
-};
 
 1;
 __END__
@@ -439,13 +438,43 @@ In your C<.dataprinter> file:
 
     filters = DB
 
-You may also customize the look and feel with the following options:
+You may also customize the look and feel with the following options
+(defaults shown):
 
-    filter_db.expand_dbh = 1
+    ### DBH settings:
 
-    # you can even customize your themes:
-    colors.filter_db_connected    = #00cc00
-    colors.filter_db_disconnected = #cc0000
+    # expand database handle objects
+    filter_db.connection_details = 1
+
+
+    ### DBIx::Class settings:
+
+    # signal when a result column is dirty:
+    filter_db.show_updated_label = 1
+
+    # signal when result rows contain extra columns:
+    filter_db.show_extra_label = 1
+
+    # override class.expand for schema dump
+    filter_db.schema.expand = 1
+
+    # expand DBH handle on schema dump (may touch DB)
+    filter_db.schema.show_handle = 0
+
+    # show source details (connected tables) on schema dump
+    # (may be set to 'names', 'details' or 'none')
+    filter_db.schema.loaded_sources = names
+
+    # show source table name ResultSource objects
+    filter_db.show_source_table = 1
+
+    # show source columns ('names', 'details' or 'none'):
+    filter_db.column_info = details
+
+    # this plugin honors theme colors where applicable
+    # and provides the following custom colors for you to use:
+    colors.filter_db_connected    = #a0d332
+    colors.filter_db_disconnected = #b3422d
 
 That's it!
 
@@ -514,7 +543,7 @@ Other available options for the schema are (default values shown):
     # to fetch a healthy DBH:
     filter_db.schema.show_handle = 0
 
-    # set to 'expand' to view source details, or 'none' to skip it:
+    # set to 'details' to view source details, or 'none' to skip it:
     filter_db.schema.loaded_sources = names
 
 B<DBIx::Class::ResultSource> objects will be expanded to show details
