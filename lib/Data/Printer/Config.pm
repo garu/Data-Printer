@@ -147,8 +147,9 @@ This module is used internally to load C<.dataprinter> files.
 
 =head1 THE RC FILE
 
-    # line comments are ok, DO NOT USE inline comments at the end of a line!
-    ; this is also a line comment
+    # line comments are ok with "#" or ";"
+    ; this is also a full line comment.
+    ; Comments at the end of a line (inline) are not allowed
     multiline  = 0
     hash_max   = 5
     array_max  = 5
