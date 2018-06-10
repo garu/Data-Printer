@@ -7,7 +7,7 @@ use Scalar::Util;
 my $mro_initialized = 0;
 my $nsort_initialized;
 
-sub merge_options {
+sub _merge_options {
     my ($old, $new) = @_;
     if (ref $new eq 'HASH') {
         my %merged;
@@ -15,11 +15,11 @@ sub merge_options {
         foreach my $k (keys %$new, keys %$to_merge) {
             # if the key exists in $new, we recurse into it:
             if (exists $new->{$k}) {
-                $merged{$k} = merge_options($to_merge->{$k}, $new->{$k});
+                $merged{$k} = _merge_options($to_merge->{$k}, $new->{$k});
             }
             else {
                 # otherwise we keep the old version (recursing in case of refs)
-                $merged{$k} = merge_options(undef, $to_merge->{$k});
+                $merged{$k} = _merge_options(undef, $to_merge->{$k});
             }
         }
         return \%merged;
@@ -29,7 +29,7 @@ sub merge_options {
         # in case array elements contain other data structures.
         my @merged;
         foreach my $element (@$new) {
-            push @merged, merge_options(undef, $element);
+            push @merged, _merge_options(undef, $element);
         }
         return \@merged;
     }
