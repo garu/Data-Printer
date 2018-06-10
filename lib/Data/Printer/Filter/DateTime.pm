@@ -34,7 +34,9 @@ sub _filter_Panda_Date {
     if (!exists $ddp->extra_config->{filter_datetime}{show_timezone}
         || $ddp->extra_config->{filter_datetime}{show_timezone}
     ) {
-        $string .= ' [' . $date->tzabbr . ']';
+        $string .= ' ' . $ddp->maybe_colorize('[', 'brackets')
+                 . $date->tzabbr
+                 . $ddp->maybe_colorize(']', 'brackets');
     }
     return $string;
 }
@@ -92,7 +94,9 @@ filter 'DateTime', sub {
     if (!exists $ddp->extra_config->{filter_datetime}{show_timezone}
         || $ddp->extra_config->{filter_datetime}{show_timezone}
     ) {
-        $string .= ' [' . $obj->time_zone->name . ']';
+        $string .= ' ' . $ddp->maybe_colorize('[', 'brackets')
+                . $obj->time_zone->name
+                . $ddp->maybe_colorize(']', 'brackets');
     }
     return _format( $string, @_ );
 };
@@ -112,7 +116,9 @@ filter 'Class::Date', sub {
     if (!exists $ddp->extra_config->{filter_datetime}{show_timezone}
         || $ddp->extra_config->{filter_datetime}{show_timezone}
     ) {
-        $string .= ' [' . $obj->tzdst . ']';
+        $string .= ' ' . $ddp->maybe_colorize('[', 'brackets')
+                . $obj->tzdst
+                . $ddp->maybe_colorize(']', 'brackets');
     }
     return _format( $string, @_ );
 };
@@ -121,7 +127,9 @@ sub _format {
     my ($str, $obj, $ddp) = @_;
 
     if ($ddp->extra_config->{filter_datetime}{show_class_name}) {
-        $str .= ' (' . Scalar::Util::blessed($obj) . ')';
+        $str .= ' ' . $ddp->maybe_colorize('(', 'brackets')
+             . Scalar::Util::blessed($obj)
+             . $ddp->maybe_colorize(')', 'brackets');
     }
     return $ddp->maybe_colorize($str, 'datetime', '#aaffaa');
 }

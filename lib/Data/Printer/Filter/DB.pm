@@ -8,19 +8,21 @@ filter 'DBI::db', sub {
     my ($dbh, $ddp) = @_;
     my $name = $dbh->{Driver}{Name};
 
-    my $string = "$name Database Handle ("
+    my $string = "$name Database Handle "
+               . $ddp->maybe_colorize('(', 'brackets')
                . _get_db_status($dbh->{Active}, $ddp)
-               . ')'
+               . $ddp->maybe_colorize(')', 'brackets')
                ;
     return $string
         if exists $ddp->extra_config->{filter_db}{connection_details}
            && !$ddp->extra_config->{filter_db}{connection_details};
 
-    $string .= ' {';
+    $string .= ' ' . $ddp->maybe_colorize('{', 'brackets');
     $ddp->indent;
     my %dsn = split( /[;=]/, $dbh->{Name} );
     foreach my $k (keys %dsn) {
-        $string .= $ddp->newline . "$k: " . $dsn{$k};
+        $string .= $ddp->newline . $k . $ddp->maybe_colorize(':', 'separator')
+                . ' ' . $dsn{$k};
     }
     $string .= $ddp->newline . 'Auto Commit: ' . $dbh->{AutoCommit};
 
@@ -37,7 +39,7 @@ filter 'DBI::db', sub {
             . $ddp->maybe_colorize(($dbh->{Statement} || '-'), 'string');
 
     $ddp->outdent;
-    $string .= $ddp->newline . '}';
+    $string .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
     return $string;
 };
 
@@ -80,11 +82,16 @@ filter 'DBIx::Class::Schema' => sub {
         : $ddp->class->expand
         ;
     my $connected = _get_db_status($storage->connected, $ddp);
-    return "$name (" . $storage->sqlt_type . " - $connected)"
-        unless $expand;
+    if (!$expand) {
+        return "$name " . $ddp->maybe_colorize('(', 'brackets')
+            . $storage->sqlt_type . " - $connected"
+            . $ddp->maybe_colorize(')', 'brackets')
+            ;
+    }
 
     $ddp->indent;
-    my $output = $name . ' {' . $ddp->newline
+    my $output = $name . ' ' . $ddp->maybe_colorize('{', 'brackets')
+        . $ddp->newline
         . 'connection: ' . ($config->{show_handle}
             ? $ddp->parse($storage->dbh)
             : $storage->sqlt_type . " Database Handle ($connected)"
@@ -121,13 +128,13 @@ filter 'DBIx::Class::Schema' => sub {
             foreach my $i (0 .. $#sources) {
                 my $source = $schema->source($sources[$i]);
                 $output .= $ddp->newline . $ddp->parse($source);
-                $output .= ',' if $i < $#sources;
+                $output .= $ddp->maybe_colorize(',', 'separator') if $i < $#sources;
             }
             $ddp->outdent;
         }
     }
     $ddp->outdent;
-    $output .= $ddp->newline . '}';
+    $output .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
     return $output;
 };
 
@@ -135,7 +142,9 @@ filter 'DBIx::Class::Row' => sub {
     my ($row, $ddp) = @_;
 
     my $output = $row->result_source->source_name
-               . ' Row (' . ($row->in_storage ? '' : 'NOT ') . 'in storage) {';
+               . ' Row ' . $ddp->maybe_colorize('(', 'brackets')
+               . ($row->in_storage ? '' : 'NOT ') . 'in storage'
+               . $ddp->maybe_colorize(') {', 'brackets');
 
     $ddp->indent;
     my %orig_columns = map { $_ => 1 } $row->columns;
@@ -148,17 +157,30 @@ filter 'DBIx::Class::Row' => sub {
         my $l = length $col;
         $longest = $l if $l > $longest;
     }
+    my $show_updated_label = !exists $ddp->extra_config->{filter_db}{show_updated_label}
+                          || $ddp->extra_config->{filter_db}{show_updated_label};
+    my $show_extra_label = !exists $ddp->extra_config->{filter_db}{show_extra_label}
+                        || $ddp->extra_config->{filter_db}{show_extra_label};
+
     foreach my $col (@ordered) {
         my $padding = $longest - length($col);
-        $output .= $ddp->newline . $col . ': ' . (' ' x $padding)
-            . $data{$col}
-            . (' (updated)')x!!(exists $dirty{$col}) # show_updated_label, colorize_updated
-            . (' (extra)')x!!(!exists $orig_columns{$col}) # show_extra_label, colorize_extra
-            ;
+        my $content = $data{$col};
+        $output .= $ddp->newline . $col
+                . $ddp->maybe_colorize(':', 'separator')
+                . ' ' . (' ' x $padding)
+                . $ddp->parse(\$content, seen_override => 1)
+                ;
+
+        if (exists $dirty{$col} && $show_updated_label) {
+            $output .= ' (updated)';
+        }
+        if (!exists $orig_columns{$col} && $show_extra_label) {
+            $output .= ' (extra)';
+        }
     }
     # TODO: methods: foo, bar <-- follows class.*, but can be overriden by filter_db.class.*
     $ddp->outdent;
-    $output .= $ddp->newline . '}';
+    $output .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
     return $output;
 };
 
@@ -167,7 +189,8 @@ filter 'DBIx::Class::ResultSet' => sub {
 
     $ddp->indent;
     my $output = $rs->result_source->source_name
-               . ' ResultSet {' . $ddp->newline;
+               . ' ResultSet ' . $ddp->maybe_colorize('{', 'brackets')
+               . $ddp->newline;
 
     # NOTE: we're totally breaking DBIC's encapsulation here. But since DDP
     # is a tool to inspect the inner workings of objects, it's okay. Ish.
@@ -185,7 +208,7 @@ filter 'DBIx::Class::ResultSet' => sub {
         }
     }
     else {
-        $output .= '(unable to lookup - patches welcome!)';
+        $output .= $ddp->maybe_colorize('(unable to lookup - patches welcome!)', 'unknown');
     }
     # TODO: show joins/prefetches/from
     # TODO: look at get_cache() for results
@@ -200,7 +223,8 @@ filter 'DBIx::Class::ResultSet' => sub {
                 ;
         if (@query_data) {
             $output .= $ddp->newline . join( $ddp->newline, map {
-                    $_->[1] . ' (' . $_->[0]{sqlt_datatype} . ')'
+                    $_->[1] . ' ' . $ddp->maybe_colorize('(', 'brackets')
+                    . $_->[0]{sqlt_datatype} . $ddp->maybe_colorize(')', 'brackets')
                   } @query_data
                 );
         }
@@ -214,7 +238,7 @@ filter 'DBIx::Class::ResultSet' => sub {
     }
 
     $ddp->outdent;
-    $output .= $ddp->newline . '}';
+    $output .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
     return $output;
 };
 
@@ -224,9 +248,9 @@ filter 'DBIx::Class::ResultSource' => sub {
 
     my $output = $source->source_name . ' ResultSource';
     if ($source->isa('DBIx::Class::ResultSource::View')) {
-        $output .= ' ('
+        $output .= ' ' . $ddp->maybe_colorize('(', 'brackets')
             . ($source->is_virtual ? 'Virtual ' : '')
-            . 'View)'
+            . 'View' . $ddp->maybe_colorize(')', 'brackets')
             ;
     }
     $ddp->indent;
@@ -271,7 +295,7 @@ filter 'DBIx::Class::ResultSource' => sub {
             }
         }
         else {
-            $parsed .= '(unknown data type)';
+            $parsed .= $ddp->maybe_colorize('(unknown data type)', 'unknown');
         }
         if (exists $meta->{is_nullable}) {
             $parsed .= ((' not')x !$meta->{is_nullable}) . ' null';
