@@ -190,7 +190,7 @@ Other public functions, not really meant for general consumption, are:
 the associated data structure. If no filename is provided, looks
 for C<.dataprinter>.
 
-=item * C<convert( $filename )> - =back
+=back
 
 =head1 SEE ALSO
 
