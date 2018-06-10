@@ -4,8 +4,13 @@ use Test::More;
 
 my $success = eval "use Test::Pod::Coverage 1.04; 1";
 if ($success) {
-    foreach my $m (grep $_ !~ /(?:SCALAR|LVALUE|ARRAY|CODE|VSTRING|REF|GLOB|HASH|FORMAT|GenericClass)$/, all_modules()) {
-        pod_coverage_ok($m);
+    plan tests => 13;
+    foreach my $m (grep $_ !~ /(?:SCALAR|LVALUE|ARRAY|CODE|VSTRING|REF|GLOB|HASH|FORMAT|GenericClass|Regexp|Common)\z/, all_modules()) {
+        my $params;
+        if ($m =~ /\AData::Printer::Theme::/) {
+            $params = { also_private => [qr/\Acolors\z/] };
+        }
+        pod_coverage_ok($m, $params);
     }
 }
 else {
