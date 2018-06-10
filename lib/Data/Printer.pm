@@ -201,7 +201,7 @@ Want to see what's inside a variable in a complete, colored and human-friendly w
     use DDP; p $var;
     use DDP; p $var, as => "This label will be printed too!";
 
-    # no need to use '\' before arrays or hashes
+    # no need to use '\' before arrays or hashes!
     p @array;
     p %hash;
 
@@ -529,6 +529,24 @@ array index you had originally.
 =back
 
 =head2 Colors & Themes
+
+Data::Printer's colorization is set via the C<colorize> output, which can be
+set to C<1> (always colorize), C<0> (never colorize) or C<'auto'>.
+
+Data::Printer's default color mode is 'auto', meaning it will colorize
+the output only when all conditions below are met:
+
+=over 4
+
+=item * There is no C<ANSI_COLORS_DISABLED> environment variable;
+
+=item * The output is going to the terminal, not just returned;
+
+=item * The output handle (STDERR by default) is not being piped;
+
+=item * Your terminal supports colors (most do nowadays).
+
+=back
 
 Data::Printer's colored output is handled by the C<colors> option. You may
 set each color individually, using ANSIColors naming, hex color tags or RGB:

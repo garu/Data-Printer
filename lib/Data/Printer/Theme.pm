@@ -198,3 +198,145 @@ sub _rgb2short {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Data::Printer::Theme - create your own color themes for DDP!
+
+=head1 SYNOPSIS
+
+    package Data::Printer::Theme::MyCustomTheme;
+
+    sub colors {
+        return {
+            array       => '#aabbcc', # array index numbers
+            number      => '#aabbcc', # numbers
+            string      => '#aabbcc', # strings
+            class       => '#aabbcc', # class names
+            method      => '#aabbcc', # method names
+            undef       => '#aabbcc', # the 'undef' value
+            hash        => '#aabbcc', # hash keys
+            regex       => '#aabbcc', # regular expressions
+            code        => '#aabbcc', # code references
+            glob        => '#aabbcc', # globs (usually file handles)
+            vstring     => '#aabbcc', # version strings (v5.16.0, etc)
+            lvalue      => '#aabbcc', # lvalue label
+            format      => '#aabbcc', # format type
+            repeated    => '#aabbcc', # references to seen values
+            caller_info => '#aabbcc', # details on what's being printed
+            weak        => '#aabbcc', # weak references flag
+            tainted     => '#aabbcc', # tainted flag
+            unicode     => '#aabbcc', # utf8 flag
+            escaped     => '#aabbcc', # escaped characters (\t, \n, etc)
+            brackets    => '#aabbcc', # (), {}, []
+            separator   => '#aabbcc', # the "," between hash pairs, array elements, etc
+            quotes      => '#aabbcc', # q(")
+            unknown     => '#aabbcc', # any (potential) data type unknown to Data::Printer
+        };
+    }
+    1;
+
+Then in your C<.dataprinter> file:
+
+    theme = MyCustomTheme
+
+That's it! Alternatively, you can load it at runtime:
+
+    use DDP theme => 'MyCustomTheme';
+
+
+=head1 DESCRIPTION
+
+Data::Printer colorizes your output by default. Originally, the only way to
+customize colors was to override the default ones. Data::Printer 1.0 introduced
+themes, and now you can pick a theme or create your own.
+
+Data::Printer comes with 4 themes for you to choose from:
+
+=over 4
+
+=item * L<Material|Data::Printer::Theme::Material> I<(the default)>
+
+=item * L<Monokai|Data::Printer::Theme::Monokai>
+
+=item * L<Solarized|Data::Printer::Theme::Solarized>
+
+=item * L<Classic|Data::Printer::Theme::Classic> I<(original pre-1.0 colors)>
+
+=back
+
+Run C<< examples/color_themes.pl >> to see them in action on your own terminal!
+
+=head1 CREATING YOUR THEMES
+
+A theme is a module in the C<Data::Printer::Theme> namespace. It doesn't have
+to inherit or load any module. All you have to do is implement a single
+function, C<colors>, that returns a hash reference where keys are the
+expected color labels, and values are the colors you want to use.
+
+Feel free to copy & paste the code from the SYNOPSIS and customize at will :)
+
+=head2 Customizing Colors
+
+Setting any color to C<undef> means I<< "Don't colorize this" >>.
+Otherwise, the color is a string which can be one of the following:
+
+=head3 Named colors, Term::ANSIColor style (discouraged)
+
+Only 8 named colors are supported:
+
+black, red, green, yellow, blue, magenta, cyan, white
+
+and their C<bright_XXX>, C<on_XXX> and C<on_bright_XXX> variants.
+
+Those are provided only as backards compatibility with older versions
+of Data::Printer and, because of their limitation, we encourage you
+to try and use one of the other representations.
+
+=head3 SGR Escape code (Terminal style)
+
+You may provide any SGR escape sequence, and they will be honored
+as long as you use double quotes (e.g. C<"\e[38;5;196m">). You may
+use this to achieve extra control like blinking, etc. Note, however,
+that some terminals may not support them.
+
+=head3 An RGB value in one of those formats (Recommended)
+
+    'rgb(0,255,30)'
+    '#00FF3B'
+
+B<NOTE:> There may not be a real 1:1 conversion between RGB and
+terminal colors. In those cases we use approximation to achieve the
+closest option.
+
+=head1 PUBLIC INTERFACE
+
+This module is not meant for public use. The following documentation is
+meant for developers of Data::Printer.
+
+=over 4
+
+=item * C<< new( %params ) >> - creates a new theme object
+
+    my $theme = Data::Printer::Theme->new(
+        name            => 'Material',
+        color_level     => 1,
+        color_overrides => { ... },
+    );
+
+=item * C<< name >> - displays the theme name.
+
+=item * C<< customized >> - true if theme has at least one color override.
+
+=item * C<< color_for( $label ) >> - displays the color as-is.
+
+=item * C<< sgr_color_for( $label ) >> - prints the SGR (terminal) color modifier.
+
+=item * C<< color_reset >> - prints the SGR (terminal) color reset modifier.
+
+=back
+
+=head1 SEE ALSO
+
+L<Data::Printer>
