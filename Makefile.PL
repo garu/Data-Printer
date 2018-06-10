@@ -32,4 +32,17 @@ if ($^O =~ /Win32/i) {
     $options{PREREQ_PM}{'Win32::Console::ANSI'} = 1.0;
 }
 
+if ($ENV{DDPTESTCOVERAGE}) {
+    foreach my $p (qw(
+        DBI DBIx::Class
+        Time::Piece DateTime::TimeZone DateTime::Incomplete DateTime::Tiny
+        Date::Tiny Date::Calc::Object Date::Pcalc::Object Date::Handler
+        Date::Handler::Delta Date::Simple Date::Manip Panda::Date
+        DateTime DateTime::Duration Mojo::Date Class::Date Class::Date::Rel
+        Digest::MD5 Digest::SHA Digest::MD2 Digest::MD4
+    )) {
+        $options{PREREQ_PM}{$p} = 1;
+    }
+}
+
 WriteMakefile( %options );

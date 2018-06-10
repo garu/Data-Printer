@@ -15,7 +15,7 @@ sudo: false
 matrix:
   include:
     - perl: 5.26
-      env: COVERAGE=1
+      env: COVERAGE=1 DDPTESTCOVERAGE=1
   allow_failures:
     - perl: blead
 before_install:
