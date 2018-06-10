@@ -53,3 +53,29 @@ sub colors {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Data::Printer::Theme::Solarized - Solarized theme for DDP
+
+=head1 SYNOPSIS
+
+In your C<.dataprinter> file:
+
+    theme = Solarized
+
+Or during runtime:
+
+    use DDP theme => 'Solarized';
+
+=head1 DESCRIPTION
+
+This module implements the Solarized theme for Data::Printer, inspired by
+L<Ethan Schoonover's original work|http://ethanschoonover.com/solarized>
+
+=head1 SEE ALSO
+
+L<Data::Printer>
+
+L<Data::Printer::Theme>

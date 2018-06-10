@@ -715,3 +715,233 @@ sub _check_readonly {
 
 42;
 __END__
+
+=head1 NAME
+
+Data::Printer::Object - underlying object for Data::Printer
+
+=head1 SYNOPSIS
+
+Unless you're writing a plugin, you're probably looking for L<Data::Printer>.
+Seriously!
+
+    use Data::Printer::Object;
+
+    my $ddp = Data::Printer::Object->new(
+        colorized     => 1,
+        show_refcount => 0,
+        ...
+    );
+
+    my $data = 123;
+
+    say $ddp->parse( \$data );
+
+
+=head1 DESCRIPTION
+
+This module implements the underlying object used by Data::Printer to parse,
+format and print Perl data structures.
+
+It is passed to plugins so they can rely on contextual information from the
+caller like colors, spacing and other options.
+
+=head1 INSTANTIATION
+
+=head2 new( %options )
+
+Creates a new Data::Printer::Object instance. It may (optionally) receive a
+hash or hash reference with custom settings for any of its properties.
+
+=head1 PARSING
+
+=head2 parse( $data_ref )
+
+=head2 parse( $data_ref, %options )
+
+This method receives a reference to a data structure to parse, and returns the
+parsed string. It will call each filter and colorize the output accordingly.
+
+Use this inside filters whenever you want to use the result of a parsed data
+strucure.
+
+    my $ddp = Data::Printer::Object->new;
+
+    my $output = $ddp->parse( [3,2,1] );
+
+An optional set of parameters may be passed:
+
+=over 4
+
+=item * C<< force_type => $type >> - forces data to be treated as that type,
+where $type is the name of the Perl data strucuture as returned by
+Scalar::Util::reftype (e.g. 'HASH', 'ARRAY' etc). This is used when a filter
+wants to show the internals of blessed data. Otherwise parse would just call
+the same filter over and over again.
+
+=item * C<< seen_override => 1 >> - Data::Printer::Object tries to remember
+if it has already seen a data structure before, so it can show the circular
+reference instead of entenring an infinite loop. However, there are cases
+when you wanto to print the same data structure twice, like when you're doing
+a second pass on a blessed object to print its internals, or if you're using
+the same object over and over again. This setting overrides the internal
+counter and prints the same data again.
+
+=back
+
+=head2 parse_as( $type, $data_ref )
+
+This is a convenience method to force some data to be interpreted as a
+particular type. It is the same as:
+
+    $ddp->parse( $data, force_type => $type, seen_override => 1 );
+
+=head2 indent
+
+=head2 outdent
+
+=head2 newline
+
+These methods are used to control the indentation level of the string being
+created to represent your data. While C<indent> and C<outdent> respectively
+increase and decrease the indentation level, C<newline> will add a linebreak
+and position the "cursor" where you are expected to continue your dump string:
+
+    my $output = $ddp->newline . 'this is a new line';
+    $ddp->indent;
+    $output .= $ddp->newline . 'this is indented';
+    $ddp->outdent;
+    $output .= $ddp->newline . 'back to our previous indentation!';
+
+Unless multiline was set to 0, the code above should print something like:
+
+    this is a new line
+        this is indentend
+    back to our previous indentation
+
+=head2 maybe_colorize( $string, $label )
+
+=head2 maybe_colorize( $string, $label, $default_color )
+
+    my $output = $ddp->maybe_colorize( 12.3, 'number');
+
+Instead of simply adding raw content to your dump string, you should wrap it
+with this method, as it will look up colors on the current theme and print
+them (or not, depending on whether the terminal supports color or the user
+has explicitly turned them off).
+
+If you are writing a custom filter and don't want to use the core labels to
+colorize your content, you may want to set your own label and pass a default
+color. For example:
+
+    my $output = $ddp->maybe_colorize( $data, 'filter_myclass', '#ffccb3' );
+
+In the code above, if the user has C<colors.filter_myclass> set either on the
+C<.dataprinter> file or the runtime hashref, that one will be used. Otherwise,
+Data::Printer will use C<'#ffccb3'>.
+
+=head1 OTHER METHODS / PROPERTIES
+
+Most of them are described in L<Data::Printer>.
+
+=over 4
+
+=item * align_hash - vertically align hash keys (default: 1)
+
+=item * array_max - maximum array elements to show. Set to 0 to show all (default: 50)
+
+=item * array_overflow - message to display once array_max is reached
+
+=item * array_preserve - which part of the array to preserve after array_max (default: 'begin')
+
+=item * caller_info - whether the user wants to prepend dump with caller information or not (default: 0)
+
+=item * caller_message - what to print when caller_info is true.
+
+=item * class - class properties to override.
+
+=item * class_method - function name to look for custom dump of external classes (default: '_dataprinter')
+
+=item * color_level - what the current color level is. Used by themes to approximate (or disable) colors.
+
+=item * colored - whether to colorize the output or not (default: 'auto')
+
+=item * current_depth - shows the current depth level.
+
+=item * current_name - gets/sets the name for the current posistion, to be printed when the parser visits that data again. E.g. C<var[0]{abc}[2]>.
+
+=item * deparse - whether the user wants to see deparsed content or not (default: 0)
+
+=item * end_separator - should we print the trailing comma? (default: 0)
+
+=item * escape_chars - which characters to escape when parsing strings ('nonascii', 'nonlatin1', 'all' or 'none' (the default))
+
+=item * extra_config - all given options that were not recognized by Data::Printer::Object are kept here. Useful to create custom options in filters. See L<Data::Printer::Filter>.
+
+=item * hash_max - maximum hash pairs to show. Set to 0 to show all (default: 50)
+
+=item * hash_overflow - message to display once hash_max is reached
+
+=item * hash_preserve - which part of the (sorted) hash to preserve after hash_max (default: 'begin')
+
+=item * hash_separator - what to use to separate keys from values (default: '   ')
+
+=item * ignore_keys - arrayref of keys to ignore (default: [])
+
+=item * index - whether to show array index numbers or not (default: 1)
+
+=item * max_depth - how far inside the data strucuture should we go (default: 0 for infinite)
+
+=item * memsize_unit - show memory size as bytes (b), kbytes (k) or megabytes (m). Default is 'auto'
+
+=item * multiline - set to 0 to disable linebreaks, disable index and use ':' as hash separator.
+
+=item * output - where the user wants the output to be printed. Defaults to 'stderr', could be 'stdout', \$string or $filehandle.
+
+=item * output_handle - stores the proper handle for the given output so you can print to it.
+
+=item * print_escapes - whether to print invisible characters in strings, like \b, \n and \t (default: 0)
+
+=item * quote_keys - whether to quote hash keys or not (default: 'auto')
+
+=item * return_value - whether the user wants the return value to be a pass-through of the source data ('pass'), the dump content itself ('dump') or nothing at all ('void'). Defaults to 'pass'.
+
+=item * scalar_quotes - which quotation character to use when printing strings (default: ")
+
+=item * separator - what separator character to use for arrays/hashes (default: ,)
+
+=item * show_dualvar - whether to label dual-variables (default: 1)
+
+=item * show_lvalue - whether to label lvalues (default: 1)
+
+=item * show_memsize - whether to show memory size of data structure. Requires Devel::Size (default: 0)
+
+=item * show_readonly - whether label readonly data (default: 1)
+
+=item * show_refcount - whether to show data refcount it's above 1 (default: 0)
+
+=item * show_tainted - whether to label tainted data (default: 1)
+
+=item * show_unicode - whether to label data with the unicode flag set (default: 1)
+
+=item * show_weak - whether to label weak references (default: 1)
+
+=item * sort_keys - whether to sort hash keys (default: 1)
+
+=item * string_max - maxumum number of characters in a string. Set to 0 to show all (default: 1024)
+
+=item * string_overflow - message to display once string_max is reached
+
+=item * string_preserve - which part of the string to preserve after string_max (default: 'begin')
+
+=item * theme - points to the current theme object
+
+=item * unicode_charnames - whether to use the character's names when escaping unicode (e.g. SNOWMAN instead of \x{2603}) (default: 0)
+
+=item * write_label - returns the proper label string, as parsed from caller_message.
+
+=back
+
+=head1 SEE ALSO
+
+L<Data::Printer>

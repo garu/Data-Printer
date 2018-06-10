@@ -169,6 +169,29 @@ This module is used internally to load C<.dataprinter> files.
     [Other::Class]
     theme = Monokai
 
+=head1 PUBLIC INTERFACE
+
+This module is not meant for public use. However, because Data::Printer
+changed the format of the configuration file, we provide the following
+public function for people to use:
+
+=head2 convert( $filename )
+
+    perl -MDDP -E 'say Data::Printer::Config::convert( q(/path/to/my/.dataprinter) )'
+
+Loads a deprecated (pre-1.0) configuration file and returns a string
+with a converted version, which you can use for newer (post-1.0) versions.
+
+Other public functions, not really meant for general consumption, are:
+
+=over 4
+
+=item * C<load_rc_file( $filename )> - loads a configuration file and returns
+the associated data structure. If no filename is provided, looks
+for C<.dataprinter>.
+
+=item * C<convert( $filename )> - =back
+
 =head1 SEE ALSO
 
 L<Data::Printer>

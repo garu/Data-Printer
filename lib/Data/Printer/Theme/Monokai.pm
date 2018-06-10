@@ -42,3 +42,29 @@ sub colors {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Data::Printer::Theme::Monokai - Monokai theme for DDP
+
+=head1 SYNOPSIS
+
+In your C<.dataprinter> file:
+
+    theme = Monokai
+
+Or during runtime:
+
+    use DDP theme => 'Monokai';
+
+=head1 DESCRIPTION
+
+This module implements the Monokai theme for Data::Printer, inspired by
+L<Wimer Hazenberg's original work|https://monokai.nl>.
+
+=head1 SEE ALSO
+
+L<Data::Printer>
+
+L<Data::Printer::Theme>

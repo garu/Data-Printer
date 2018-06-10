@@ -54,3 +54,29 @@ sub colors {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Data::Printer::Theme::Material - Material theme for DDP
+
+=head1 SYNOPSIS
+
+In your C<.dataprinter> file:
+
+    theme = Material
+
+Or during runtime:
+
+    use DDP theme => 'Material';
+
+=head1 DESCRIPTION
+
+This module implements the Material theme for Data::Printer, inspired by
+L<Mattia Astorino's original work|https://github.com/equinusocio/vsc-material-theme>.
+
+=head1 SEE ALSO
+
+L<Data::Printer>
+
+L<Data::Printer::Theme>

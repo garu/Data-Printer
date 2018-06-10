@@ -313,7 +313,7 @@ closest option.
 =head1 PUBLIC INTERFACE
 
 This module is not meant for public use. The following documentation is
-meant for developers of Data::Printer.
+mostly for developers of Data::Printer itself.
 
 =over 4
 

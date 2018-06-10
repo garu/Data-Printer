@@ -32,3 +32,29 @@ sub colors {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Data::Printer::Theme::Classic - Classic DDP color theme for nostalgic users
+
+=head1 SYNOPSIS
+
+In your C<.dataprinter> file:
+
+    theme = Classic
+
+Or during runtime:
+
+    use DDP theme => 'Classic';
+
+=head1 DESCRIPTION
+
+This module implements the Classic theme for Data::Printer, which was
+the default theme before Data::Printer 1.0.
+
+=head1 SEE ALSO
+
+L<Data::Printer>
+
+L<Data::Printer::Theme>
