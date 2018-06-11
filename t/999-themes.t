@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 38;
+use Test::More tests => 41;
 use Data::Printer::Theme;
 
 test_basic_load();
@@ -102,6 +102,15 @@ sub test_basic_load {
     $sgr = $theme->sgr_color_for('class');
     $sgr =~ s{\e}{\\e};
     is $sgr, '\e[0;38;2;199;146;234m', 'fetched SGR variant for class color';
+
+    $theme = Data::Printer::Theme->new(name => 'Monokai', color_level => 3);
+    is $theme->name, 'Monokai', 'able to load Monokai theme';
+
+    $theme = Data::Printer::Theme->new(name => 'Solarized', color_level => 3);
+    is $theme->name, 'Solarized', 'able to load Solarized theme';
+
+    $theme = Data::Printer::Theme->new(name => 'Classic', color_level => 3);
+    is $theme->name, 'Classic', 'able to load Classic theme';
 }
 
 package
