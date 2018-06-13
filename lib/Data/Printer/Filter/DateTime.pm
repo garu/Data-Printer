@@ -148,7 +148,7 @@ In your C<.dataprinter> file:
 
     filters = DateTime
 
-You may also customize the look and feel with the following options:
+You may also customize the look and feel with the following options (defaults shown):
 
     filter_datetime.show_class_name = 1
     filter_datetime.show_timezone   = 0
