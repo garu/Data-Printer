@@ -80,7 +80,7 @@ filter 'SCALAR' => sub {
             elsif ($hex_4 eq '424d') {
                 $type = 'BMP Image';
             }
-            elsif ($hex_4 = '4d5a') {
+            elsif ($hex_4 eq '4d5a') {
                 $type = 'Binary Windows EXE data'
             }
             else {
