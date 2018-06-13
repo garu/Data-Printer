@@ -2,7 +2,6 @@ package Data::Printer::Filter::Digest;
 use strict;
 use warnings;
 use Data::Printer::Filter;
-use Term::ANSIColor;
 
 filter 'Digest::base' => \&_print_digest;
 
