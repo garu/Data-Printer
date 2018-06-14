@@ -1,5 +1,18 @@
 Revision history for Data-Printer
 
+0.99_015
+    NEW FEATURES:
+        - new ContentType filter to detect popular binaries in strings,
+          like images, videos and documents.
+    OTHER:
+        - code tidying
+        - greatly improved documentation
+        - test coverage increased
+    BUG FIXES:
+        - DateTime/Digest/DB filters now honor colorization from themes
+        - test fixes
+
+
 0.99_014 2018-06-08
     BUG FIXES:
         - DateTime filter: fix Class::Date test on systems
