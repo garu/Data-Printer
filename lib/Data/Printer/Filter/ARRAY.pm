@@ -69,14 +69,21 @@ filter 'ARRAY' => sub {
         # scalar references should be re-referenced to gain
         # a '\' in front of them.
         my $ref = ref $array_ref->[$idx];
-
-        if ( $ref && $ref eq 'SCALAR' ) {
-            $string .= $ddp->parse(\\$array_ref->[$idx]);
+        if ($ref) {
+            if ($ref eq 'SCALAR') {
+                $string .= $ddp->parse(\\$array_ref->[$idx]);
+            }
+            elsif ($ref eq 'REF') {
+                $string .= $ddp->parse(\$array_ref->[$idx]);
+            }
+            else {
+                $string .= $ddp->parse($array_ref->[$idx]);
+            }
         }
-        elsif ( $ref && $ref ne 'REF' ) {
-            $string .= $ddp->parse($array_ref->[$idx]);
-        } else {
-            $string .= $ddp->parse(\$array_ref->[$idx]);
+        else {
+            # not a reference, so we don't need to worry about refcounts.
+            # it helps to prevent cases where Perl reuses addresses:
+            $string .= $ddp->parse(\$array_ref->[$idx], seen_override => 1);
         }
 
         $string .= $ddp->maybe_colorize($ddp->separator, 'separator')
