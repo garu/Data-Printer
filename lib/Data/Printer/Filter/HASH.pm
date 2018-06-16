@@ -7,15 +7,20 @@ use Scalar::Util ();
 
 filter 'HASH' => sub {
     my ($hash_ref, $ddp) = @_;
+    my $tied = '';
+    if ($ddp->show_tied and my $tie = ref tied %$hash_ref) {
+        $tied = " (tied to $tie)";
+    }
     return       $ddp->maybe_colorize('{', 'brackets')
          . ' ' . $ddp->maybe_colorize('...', 'hash')
          . ' ' . $ddp->maybe_colorize('}', 'brackets')
+         . $tied
          if $ddp->max_depth && $ddp->current_depth >= $ddp->max_depth;
 
     my %ignore = map { $_ => 1 } @{$ddp->ignore_keys};
 
     my @src_keys = grep !exists $ignore{$_}, keys %$hash_ref;
-    return $ddp->maybe_colorize('{}', 'brackets') unless @src_keys;
+    return $ddp->maybe_colorize('{}', 'brackets') . $tied unless @src_keys;
     @src_keys = Data::Printer::Common::_nsort(@src_keys) if $ddp->sort_keys;
 
     my $len = 0;
@@ -104,7 +109,7 @@ filter 'HASH' => sub {
     }
     $ddp->outdent;
     $string .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
-    return $string;
+    return $string . $tied;
 };
 
 #######################################

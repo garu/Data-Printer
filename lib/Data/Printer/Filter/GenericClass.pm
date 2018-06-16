@@ -87,6 +87,10 @@ filter '-class' => sub {
         $string .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');
     }
     $ddp->{_class_depth}--;
+
+    if ($ddp->show_tied and my $tie = ref tied $object) {
+        $string .= " (tied to $tie)";
+    }
     return $string;
 };
 

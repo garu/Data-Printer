@@ -8,10 +8,17 @@ use Scalar::Util ();
 filter 'ARRAY' => sub {
     my ($array_ref, $ddp) = @_;
 
-    return $ddp->maybe_colorize('[]', 'brackets') unless @$array_ref;
+    my $tied = '';
+    if ($ddp->show_tied and my $tie = ref tied @$array_ref) {
+        $tied = " (tied to $tie)";
+    }
+
+    return $ddp->maybe_colorize('[]', 'brackets') . $tied
+        unless @$array_ref;
     return $ddp->maybe_colorize('[', 'brackets')
          . $ddp->maybe_colorize('...', 'array')
          . $ddp->maybe_colorize(']', 'brackets')
+         . $tied
          if $ddp->max_depth && $ddp->current_depth >= $ddp->max_depth;
 
     #Scalar::Util::weaken($array_ref);
@@ -86,7 +93,7 @@ filter 'ARRAY' => sub {
     $string .= $ddp->newline;
     $string .= $ddp->maybe_colorize(']', 'brackets');
 
-    return $string;
+    return $string . $tied;
 };
 
 #######################################

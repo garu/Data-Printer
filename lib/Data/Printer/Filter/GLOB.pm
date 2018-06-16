@@ -47,6 +47,9 @@ filter 'GLOB' => sub {
     $extra  .= "layers: @layers" unless $error;
     $string .= "  ($extra)" if $extra;
 
+    if ($ddp->show_tied and my $tie = ref tied *$$glob) {
+        $string .= " (tied to $tie)"
+    }
     return $string;
 };
 

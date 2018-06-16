@@ -18,6 +18,10 @@ filter 'VSTRING' => sub {
         $string = version->parse($$vstring)->normal;
     });
     $string = 'VSTRING object (unable to parse)' if $error;
+
+    if ($ddp->show_tied and my $tie = ref tied $$vstring) {
+        $string .= " (tied to $tie)";
+    }
     return $ddp->maybe_colorize($string, 'vstring');
 };
 

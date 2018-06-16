@@ -14,6 +14,10 @@ filter 'REF' => sub {
     }
     $string .= $ddp->parse($$ref);
 
+    if ($ddp->show_tied and my $tie = ref tied $ref) {
+        $string .= " (tied to $tie)";
+    }
+
     return $string;
 };
 

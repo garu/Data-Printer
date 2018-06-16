@@ -462,7 +462,7 @@ For a quick reference, below are all available properties and their
     use_prototypes => 1,
     indent         => 4,
     show_readonly  => 1,
-    show_tied      => ???
+    show_tied      => 1,
     show_dualvar   => 'lax', # strict, off
     show_weak      => 1,
     show_refcount  => 0,

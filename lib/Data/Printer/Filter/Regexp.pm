@@ -22,6 +22,10 @@ filter 'Regexp' => sub {
         Data::Printer::Common::_warn("Unrecognized regex $val. Please submit a bug report for Data::Printer.");
         $string = $ddp->maybe_colorize('Unknown Regexp', 'regex');
     }
+
+    if ($ddp->show_tied and my $tie = ref tied $regexp) {
+        $string .= " (tied to $tie)";
+    }
     return $string;
 };
 

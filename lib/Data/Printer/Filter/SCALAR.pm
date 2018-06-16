@@ -67,6 +67,10 @@ sub _parse_scalar {
     $ret .= _check_tainted($ddp, $scalar_ref);
     $ret .= _check_unicode($ddp, $scalar_ref);
 
+    if ($ddp->show_tied and my $tie = ref tied $$scalar_ref) {
+        $ret .= " (tied to $tie)";
+    }
+
     return $ret;
 };
 

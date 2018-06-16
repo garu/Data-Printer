@@ -66,7 +66,7 @@ my @method_names =qw(
     array_max array_overflow array_preserve hash_max hash_overflow
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
-    align_hash sort_keys quote_keys deparse return_value show_dualvar
+    align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -114,6 +114,7 @@ sub _init {
     $self->{'index'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'index', 1);
     $self->{'name'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'name', 'var');
     $self->{'show_tainted'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_tainted', 1);
+    $self->{'show_tied'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_tied', 1);
     $self->{'show_weak'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_weak', 1);
     $self->{'show_unicode'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_unicode', 0);
     $self->{'show_readonly'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_readonly', 1);
@@ -705,7 +706,6 @@ sub maybe_colorize {
     }
     return $output;
 }
-
 
 sub _check_readonly {
     my ($self) = @_;
