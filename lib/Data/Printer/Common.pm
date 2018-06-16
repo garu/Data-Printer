@@ -526,7 +526,9 @@ sub _get_symbol {
     my %IDs;
     my $Last_ID = "a";
     sub _object_id {
-        my $self = Scalar::Util::refaddr( $_[0] );
+        # according to Data::Dumper, packed numeric addresses take less memory
+        # and are faster than string querying.
+        my $self = pack "J", Scalar::Util::refaddr( $_[0] );
         # This is 15% faster than ||=
         return $IDs{$self} if exists $IDs{$self};
         return $IDs{$self} = ++$Last_ID;
