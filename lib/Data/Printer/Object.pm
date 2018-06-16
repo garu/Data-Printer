@@ -916,7 +916,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * show_memsize - whether to show memory size of data structure. Requires Devel::Size (default: 0)
 
-=item * show_readonly - whether label readonly data (default: 1)
+=item * show_readonly - whether to label readonly data (default: 1)
 
 =item * show_refcount - whether to show data refcount it's above 1 (default: 0)
 
@@ -925,6 +925,8 @@ Most of them are described in L<Data::Printer>.
 =item * show_unicode - whether to label data with the unicode flag set (default: 1)
 
 =item * show_weak - whether to label weak references (default: 1)
+
+=item * show_tied - whether to label tied variables (default: 1)
 
 =item * sort_keys - whether to sort hash keys (default: 1)
 
