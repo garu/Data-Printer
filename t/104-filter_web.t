@@ -1,10 +1,10 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 15;
 use Data::Printer::Object;
 
 test_json();
-done_testing;
+exit;
 
 sub test_json {
     my $json = '{"alpha":true,"bravo":false,"charlie":true,"delta":false}';
