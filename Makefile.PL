@@ -40,6 +40,8 @@ if ($ENV{DDPTESTCOVERAGE}) {
         Date::Handler::Delta Date::Simple Date::Manip Panda::Date
         DateTime DateTime::Duration Mojolicious Class::Date Class::Date::Rel
         Digest::MD5 Digest::SHA Digest::MD2 Digest::MD4
+        JSON::PP JSON::XS JSON JSON::Any JSON::MaybeXS JSON::DWIW JSON::Parser
+        JSON::SL Pegex::JSON Cpanel::JSON::XS JSON::Tiny
     )) {
         $options{PREREQ_PM}{$p} = 0;
     }
