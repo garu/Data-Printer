@@ -538,6 +538,15 @@ sub _see {
     return $self->{_seen}{$id};
 }
 
+sub unsee {
+    my ($self, $data) = @_;
+    return unless ref $data && keys %{$self->{_seen}};
+
+    my $id = Data::Printer::Common::_object_id($data);
+    delete $self->{_seen}{$id};
+    return;
+}
+
 sub _refcount {
     my ($self, $data) = @_;
 
@@ -785,7 +794,8 @@ reference instead of entenring an infinite loop. However, there are cases
 when you wanto to print the same data structure twice, like when you're doing
 a second pass on a blessed object to print its internals, or if you're using
 the same object over and over again. This setting overrides the internal
-counter and prints the same data again.
+counter and prints the same data again. Check L<usee|/unsee> below for another
+way to achieve this.
 
 =back
 
@@ -839,6 +849,13 @@ color. For example:
 In the code above, if the user has C<colors.filter_myclass> set either on the
 C<.dataprinter> file or the runtime hashref, that one will be used. Otherwise,
 Data::Printer will use C<'#ffccb3'>.
+
+=head2 unsee( $data )
+
+Sometimes you are writing a filter for data that you know will be repeated
+several times, like JSON Boolean objects. To prevent Data::Printer from
+showing this content as repeated, you can use the C<unsee> method to make
+the current object forget about having ever visited this data.
 
 =head1 OTHER METHODS / PROPERTIES
 
