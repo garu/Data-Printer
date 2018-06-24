@@ -41,7 +41,8 @@ if ($ENV{DDPTESTCOVERAGE}) {
         DateTime DateTime::Duration Mojolicious Class::Date Class::Date::Rel
         Digest::MD5 Digest::SHA Digest::MD2 Digest::MD4
         JSON::PP JSON::XS JSON JSON::Any JSON::MaybeXS JSON::DWIW JSON::Parser
-        JSON::SL Pegex::JSON Cpanel::JSON::XS JSON::Tiny JSON::Typist
+        JSON::SL Pegex::JSON Cpanel::JSON::XS JSON::Tiny JSON::Typist Dancer
+        Dancer2 HTTP::Message
     )) {
         $options{PREREQ_PM}{$p} = 0;
     }
