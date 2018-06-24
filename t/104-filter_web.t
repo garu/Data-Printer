@@ -1,10 +1,173 @@
 use strict;
 use warnings;
-use Test::More tests => 15;
+use Test::More tests => 21;
 use Data::Printer::Object;
 
 test_json();
+test_cookies();
+test_http_request();
+test_http_response();
 exit;
+
+sub test_http_request {
+    SKIP: {
+        my $error = !eval { require HTTP::Request; 1 };
+        skip 'HTTP::Request not available', 1 if $error;
+        my $r = HTTP::Request->new(
+            'POST',
+            'http://www.example.com/ddp',
+            [
+                'Content-Type'  => 'application/json; charset=UTF-8',
+                'Cache-Control' => 'no-cache, must-revalidate',
+            ],
+            '{"foo":"bar","baz":42}'
+        );
+        my $ddp = Data::Printer::Object->new(
+            colored   => 0,
+            filters   => ['Web'],
+        );
+        is(
+            $ddp->parse($r),
+            'POST http://www.example.com/ddp {
+    headers: {
+        Cache-Control   "no-cache, must-revalidate",
+        Content-Type    "application/json; charset=UTF-8"
+    }
+    content: {"foo":"bar","baz":42}
+}',
+            'HTTP::Request'
+        );
+    };
+}
+
+sub test_http_response {
+    SKIP: {
+        my $error = !eval { require HTTP::Response; 1 };
+        skip 'HTTP::Response not available', 1 if $error;
+        my $r = HTTP::Response->new(
+            '200',
+            'OK',
+            [
+                'Content-Type'  => 'application/json; charset=UTF-8',
+                'Cache-Control' => 'no-cache, must-revalidate',
+            ],
+            '{"foo":"bar","baz":42}'
+        );
+        $r->previous(
+            HTTP::Response->new(
+                '302', 'Moved Temporarily',[
+                    'Location' => 'https://example.com/original'
+                ]
+            )
+        );
+        my $ddp = Data::Printer::Object->new(
+            colored   => 0,
+            filters   => ['Web'],
+        );
+        is(
+            $ddp->parse($r),
+            "\x{e2}\x{a4}\x{bf}" . ' 302 Moved Temporarily (https://example.com/original)
+200 OK {
+    headers: {
+        Cache-Control   "no-cache, must-revalidate",
+        Content-Type    "application/json; charset=UTF-8"
+    }
+    content: {"foo":"bar","baz":42}
+}',
+            'HTTP::Response'
+        );
+    };
+}
+
+
+sub test_cookies {
+    test_mojo_cookie();
+    test_dancer_cookie();
+    test_dancer2_cookie();
+}
+
+sub test_dancer_cookie {
+    SKIP: {
+        my $error = !eval { require Dancer::Cookie; 1 };
+        skip 'Dancer::Cookie not available', 1 if $error;
+        my $c = Dancer::Cookie->new(
+            name      => 'ddp',
+            value     => 'test',
+            expires   => time,
+            domain    => 'localhost',
+            path      => '/test',
+            secure    => 1,
+            http_only => 1,
+        );
+
+        my $ddp = Data::Printer::Object->new(
+            colored   => 0,
+            filters   => ['Web'],
+        );
+
+        like(
+            $ddp->parse($c),
+            qr{ddp=test; expires=(?:[^;]+); domain=localhost; path=/test; secure; http-only \(Dancer::Cookie\)},
+            'Dancer::Cookie parsed correctly'
+        );
+    };
+}
+
+sub test_dancer2_cookie {
+    SKIP: {
+        my $error = !eval { require Dancer2::Core::Cookie; 1 };
+        skip 'Dancer2::Core::Cookie not available', 1 if $error;
+        my $c = Dancer2::Core::Cookie->new(
+            name      => 'ddp',
+            value     => 'test',
+            expires   => time,
+            domain    => 'localhost',
+            path      => '/test',
+            secure    => 1,
+            http_only => 1,
+        );
+
+        my $ddp = Data::Printer::Object->new(
+            colored   => 0,
+            filters   => ['Web'],
+        );
+
+        like(
+            $ddp->parse($c),
+            qr{ddp=test; expires=(?:[^;]+); domain=localhost; path=/test; secure; http-only \(Dancer2::Core::Cookie\)},
+            'Dancer2::Core::Cookie parsed correctly'
+        );
+    };
+}
+
+
+sub test_mojo_cookie {
+    SKIP: {
+        my $error = !eval { require Mojo::Cookie::Response; 1 };
+        skip 'Mojo::Cookie::Response not available', 1 if $error;
+        my $c = Mojo::Cookie::Response->new;
+        $c->name('ddp');
+        $c->value('test');
+        $c->expires( time );
+        $c->httponly(1);
+        $c->max_age(60);
+        $c->path('/test');
+        $c->secure(1);
+        $c->host_only(0);
+        $c->domain('localhost');
+
+        my $ddp = Data::Printer::Object->new(
+            colored   => 0,
+            filters   => ['Web'],
+        );
+
+        like(
+            $ddp->parse($c),
+            qr{ddp=test; expires=\d+; domain=localhost; path=/test; secure; http-only; max-age=60 \(Mojo::Cookie\)},
+            'Mojo::Cookie parsed correctly'
+        );
+    };
+}
 
 sub test_json {
     my $json = '{"alpha":true,"bravo":false,"charlie":true,"delta":false}';
@@ -21,6 +184,30 @@ sub test_json {
     test_json_pegex($json, $expected);
     test_json_cpanel($json, $expected);
     test_json_tiny($json, $expected);
+    test_json_typist();
+}
+
+sub test_json_typist {
+    SKIP: {
+        my $error = !eval { require JSON::Typist; require JSON; 1 };
+        skip 'JSON::Typist (or JSON, or both) not available', 1 if $error;
+
+        my $ddp = Data::Printer::Object->new(
+            colored       => 0,
+            multiline     => 0,
+            show_readonly => 0,
+            filters       => ['Web'],
+        );
+
+        my $json = '{ "trueVal": true, "falseVal": false, "strVal": "123", "numVal": 123 }';
+        my $payload = JSON->new->convert_blessed->canonical->decode($json);
+        my $typist =  JSON::Typist->new->apply_types( $payload );
+        is(
+            $ddp->parse($typist),
+            '{ falseVal:false, numVal:123, strVal:"123", trueVal:true }',
+            'JSON::Typist properly parsed'
+        );
+    };
 }
 
 sub test_json_pp {
