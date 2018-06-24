@@ -4,7 +4,9 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
+filter 'Time::Seconds'        => sub { _format($_[0]->pretty      , @_) };
 filter 'Time::Piece'          => sub { _format($_[0]->cdate       , @_) };
+filter 'Time::Moment'         => sub { _format($_[0]->to_string   , @_) };
 filter 'DateTime::TimeZone'   => sub { _format($_[0]->name        , @_) };
 filter 'DateTime::Incomplete' => sub { _format($_[0]->iso8601     , @_) };
 filter 'DateTime::Tiny'       => sub { _format($_[0]->as_string   , @_) };
@@ -168,7 +170,9 @@ as a string.
 
 =over 4
 
-=item * L<Time::Piece>
+=item * L<Time::Piece>, L<Time::Seconds>
+
+=item * L<Time::Moment>
 
 =item * L<DateTime>,  L<DateTime::Duration>, L<DateTime::Incomplete>, L<DateTime::TimeZone>
 

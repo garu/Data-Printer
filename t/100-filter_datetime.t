@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 25;
 use Data::Printer::Object;
 
 my $has_timepiece;
@@ -25,6 +25,8 @@ test_mojo_date();
 test_date_manip();
 test_class_date();
 test_panda_date();
+test_time_seconds();
+test_time_moment();
 
 sub test_time_piece {
     SKIP: {
@@ -275,6 +277,40 @@ sub test_class_date {
         skip 'Class::Date::Rel not found', 1 unless eval 'use Class::Date::Rel; 1';
         my $reldate = Class::Date::Rel->new( "3Y 1M 3D 6h 2m 4s" );
         is( $ddp->parse($reldate), '3Y 1M 3D 6h 2m 4s', 'Class::Date::Rel' );
+    };
+}
+
+sub test_time_seconds {
+    SKIP: {
+        skip 'Time:Seconds not found', 1, unless eval 'use Time::Seconds; 1';
+        my $d = Time::Seconds->new();
+
+        my $ddp = Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DateTime'],
+        );
+        is($ddp->parse($d), '0 seconds', "Time::Seconds");
+    };
+}
+
+sub test_time_moment {
+    SKIP: {
+        skip 'Time:Moment not found', 1, unless eval 'use Time::Moment; 1';
+        my $d = Time::Moment->new(
+            year       => 2012,
+            month      => 12,
+            day        => 24,
+            hour       => 15,
+            minute     => 30,
+            second     => 45,
+            offset     => 0,
+        );
+
+        my $ddp = Data::Printer::Object->new(
+            colored => 0,
+            filters => ['DateTime'],
+        );
+        is($ddp->parse($d), '2012-12-24T15:30:45Z', "Time::Moment");
     };
 }
 
