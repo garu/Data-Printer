@@ -259,7 +259,17 @@ sub test_json_json {
             filters       => ['Web'],
         );
 
-        my $data = JSON->new->decode($json);
+        my $data;
+        my $obj = JSON->new;
+        if ($obj->can('decode')) {
+            $data = $obj->decode($json);
+        }
+        elsif ($obj->can('jsonToObj')) {
+            $data = $obj->jsonToObj($json);
+        }
+        else {
+            skip 'not sure how to load JSON object', 1;
+        }
         is( $ddp->parse($data), $expected, 'parsed whatever powered JSON' );
     };
 }
