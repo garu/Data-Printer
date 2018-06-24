@@ -16,6 +16,19 @@ sub _parse_json_boolean {
 # JSON::NotString is from JSON::Parser (JSON 1.x)
 filter 'JSON::NotString' => sub { _parse_json_boolean($_[0]->{value}, $_[1]) };
 
+# JSON::Typist
+filter 'JSON::Typist::String' => sub {
+    my ($obj, $ddp) = @_;
+    require Data::Printer::Common;
+    my $ret = Data::Printer::Common::_process_string($ddp, "$obj", 'string');
+    my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
+    return $quote . $ret . $quote;
+};
+
+filter 'JSON::Typist::Number' => sub {
+    return $_[1]->maybe_colorize($_[0], 'number');
+};
+
 # NOTE: boolean is used by Pegex::JSON
 foreach my $json (qw(
     JSON::DWIW::Boolean   JSON::PP::Boolean   JSON::SL::Boolean
