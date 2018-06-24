@@ -258,7 +258,7 @@ sub test_json_json {
             filters       => ['Web'],
         );
 
-        my $data = JSON::decode_json($json);
+        my $data = JSON->new->decode($json);
         is( $ddp->parse($data), $expected, 'parsed whatever powered JSON' );
     };
 }
