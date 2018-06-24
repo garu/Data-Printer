@@ -250,7 +250,7 @@ sub test_json_json {
     SKIP: {
         my $error = !eval { require JSON; 1 };
         skip 'JSON not available', 1 if $error;
-        diag('loaded JSON ' . $JSON::VERSION');
+        diag('loaded JSON ' . $JSON::VERSION);
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
