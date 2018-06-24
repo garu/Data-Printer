@@ -4,7 +4,6 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
-filter 'Time::Seconds'        => sub { _format($_[0]->pretty      , @_) };
 filter 'Time::Piece'          => sub { _format($_[0]->cdate       , @_) };
 filter 'Time::Moment'         => sub { _format($_[0]->to_string   , @_) };
 filter 'DateTime::TimeZone'   => sub { _format($_[0]->name        , @_) };
@@ -123,6 +122,44 @@ filter 'Class::Date', sub {
                 . $ddp->maybe_colorize(']', 'brackets');
     }
     return _format( $string, @_ );
+};
+
+sub _time_seconds_formatter {
+    my ($n, $counted) = @_;
+    my $number = sprintf("%d", $n); # does a "floor"
+    $counted .= 's' if 1 != $number;
+    return ($number, $counted);
+}
+filter 'Time::Seconds', sub {
+    my ($obj, $ddp) = @_;
+    my $str = '';
+    if ($obj->can('pretty')) {
+        $str = $obj->pretty;
+    }
+    else {
+        # simple pretty() implementation:
+        if ($obj < 0) {
+            $obj = -$obj;
+            $str = 'minus ';
+        }
+        if ($obj >= 60) {
+            if ($obj >= 3600) {
+                if ($obj >= 86400) {
+                    my ($days, $sd) = _time_seconds_formatter($obj->days, "day");
+                    $str .= "$days $sd, ";
+                    $obj -= ($days * 86400);
+                }
+                my ($hours, $sh) = _time_seconds_formatter($obj->hours, "hour");
+                $str .= "$hours $sh, ";
+                $obj -= ($hours * 3600);
+            }
+            my ($mins, $sm) = _time_seconds_formatter($obj->minutes, "minute");
+            $str .= "$mins $sm, ";
+            $obj -= ($mins * 60);
+        }
+        $str .= join ' ', _time_seconds_formatter($obj->seconds, "second");
+    }
+    return _format($str, $obj, $ddp);
 };
 
 sub _format {
