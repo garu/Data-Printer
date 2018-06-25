@@ -153,7 +153,7 @@ sub test_mojo_cookie {
         $c->max_age(60);
         $c->path('/test');
         $c->secure(1);
-        $c->host_only(0);
+        $c->host_only(0) if $c->can('host_only');
         $c->domain('localhost');
 
         my $ddp = Data::Printer::Object->new(
