@@ -141,8 +141,11 @@ filter 'HTTP::Request' => sub {
         $output .= ' {';
         $ddp->indent;
         if ($expand_headers) {
-            my %headers = $obj->headers->flatten;
-            $output .= $ddp->newline . 'headers: ' . $ddp->parse(\%headers);
+            my $header_obj = $obj->headers;
+            if ($header_obj->can('flatten')) {
+                my %headers = $obj->headers->flatten;
+                $output .= $ddp->newline . 'headers: ' . $ddp->parse(\%headers);
+            }
         }
         if ($content) {
             $output .= $ddp->newline . 'content: '

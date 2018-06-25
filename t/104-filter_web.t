@@ -22,6 +22,7 @@ sub test_http_request {
             ],
             '{"foo":"bar","baz":42}'
         );
+        skip 'HTTP::Headers is too old', 1 unless $r->headers->can('flatten');
         my $ddp = Data::Printer::Object->new(
             colored   => 0,
             filters   => ['Web'],
