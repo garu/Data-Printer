@@ -20,6 +20,8 @@ foreach my $module (qw(
         skip "$module not available", 3 if $@;
 
         my $digest = $module->new;
+        skip "$module is too old", 3 if $module eq 'Digest::MD5' and !$digest->can('clone');
+
         $digest->add( $data );
 
         my $ddp = Data::Printer::Object->new(
