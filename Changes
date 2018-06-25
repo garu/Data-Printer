@@ -1,5 +1,19 @@
 Revision history for Data-Printer
 
+0.99_016 2018-06-25
+    NEW FEATURES:
+        - unsee() method in DDP objects to ignore visits
+        - new Web filter bundle parsing JSON, Cookies and HTTP Request/Response.
+        - DateTime filter now understands Time::Seconds and Time::Moment.
+    BUG FIXES:
+        - fixed show_tied, which was not working properly since the refactor.
+        - prevent non-ref counters from being refcounted
+        - fix floating point test error in unusual hardware/OS combinations.
+    OTHER:
+        - improved implementation of "seen" counter
+        - improved documentation
+        - removed unused code
+
 0.99_015 2018-06-14
     NEW FEATURES:
         - new ContentType filter to detect popular binaries in strings,
