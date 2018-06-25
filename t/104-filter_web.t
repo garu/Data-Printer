@@ -200,7 +200,14 @@ sub test_json_typist {
         );
 
         my $json = '{ "trueVal": true, "falseVal": false, "strVal": "123", "numVal": 123 }';
-        my $payload = JSON->new->convert_blessed->canonical->decode($json);
+        my $obj = JSON->new;
+        my $payload;
+        if ($obj->can('convert_blessed') && $obj->can('canonical') && $obj->can('decode')) {
+            $payload = $obj->convert_blessed->canonical->decode($json);
+        }
+        else {
+            skip 'not sure how to load JSON object for JSON::Typist', 1;
+        }
         my $typist =  JSON::Typist->new->apply_types( $payload );
         is(
             $ddp->parse($typist),
