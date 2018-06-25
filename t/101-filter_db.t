@@ -482,16 +482,17 @@ q|User ResultSource {
         colored => 0,
         filters => ['DB'],
     );
-    is ($ddp->parse($from_db), 'User Row (in storage) {
+    my $code1 = $from_db->code1; # OpenBSD sometimes says 12.3000000000000007
+    is ($ddp->parse($from_db), qq(User Row (in storage) {
     city:        "rio"
-    code1:       12.3
+    code1:       $code1
     created:     undef
-    email:       "test@example.com"
+    email:       "test\@example.com"
     identity:    123
     length_test: 3 (extra)
     state:       "xx"
     user_id:     1
-}', 'db entry with extra col');
+}), 'db entry with extra col');
     # TODO: test some ->all() with prefetch
     };
 }
