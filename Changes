@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_017 2018-06-25
+    BUG FIXES:
+        - fix filter test failure on older Mojolicious
+        - fix filter test failure on older Digest::MD5
+
 0.99_016 2018-06-25
     NEW FEATURES:
         - unsee() method in DDP objects to ignore visits
