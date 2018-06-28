@@ -176,6 +176,7 @@ use base 'DBIx::Class::Schema';
 EOPACKAGES
 
     SKIP: {
+        skip 'DBD::SQLite not available', 15 unless eval "use DBD::SQLite; 1";
         skip 'DBIx::Class not available', 15 unless eval "$packages";
         package main;
         my $schema;
