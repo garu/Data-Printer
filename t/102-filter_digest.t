@@ -20,7 +20,7 @@ foreach my $module (qw(
         skip "$module not available", 3 if $@;
 
         my $digest = $module->new;
-        skip "$module is too old", 3 if $module eq 'Digest::MD5' and !$digest->can('clone');
+        skip "$module is too old", 3 if $module eq 'Digest::MD5' and !$digest->isa('Digest::base');
 
         $digest->add( $data );
 
