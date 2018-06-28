@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_019 2018-06-27
+    BUG FIXES:
+        - more filter fixes on different module versions
+          (many thanks to Slaven Rezić and all other CPAN testers).
+
 0.99_018 2018-06-25
     BUG FIXES:
         - fix filter test on older HTTP::Message
