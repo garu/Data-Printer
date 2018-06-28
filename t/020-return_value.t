@@ -158,7 +158,11 @@ EOT
         (Data::Printer::p $foo->bar->baz)->biff;
     });
     is $stdout, '', 'STDOUT should be empty after p() (object, direct)';
+
+    # remove warning line before test:
+    $stderr =~ s/\A\[Data::Printer\] MRO::Compat not found.+\n//m;
     is $stderr, $expected, 'pass-through STDERR (object, direct)';
+
     is $foo->{meep}, 3, 'pass-through return (object, direct)';
 
     # once again, but this time in indirect object notation
