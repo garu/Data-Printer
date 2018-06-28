@@ -37,6 +37,7 @@ filter 'JSON::Typist::Number' => sub {
 foreach my $json (qw(
     JSON::DWIW::Boolean   JSON::PP::Boolean   JSON::SL::Boolean
     JSON::XS::Boolean     boolean             JSON::Tiny::_Bool
+    Mojo::JSON::_Bool
 )) {
     filter "$json" => sub {
         my ($obj, $ddp) = @_;
