@@ -498,6 +498,7 @@ information on each of them:
     caller_message => 'Printing in line __LINE__ of __FILENAME__',
     max_depth      => 0,
     deparse        => 0,
+    alias          => 'p',  # what to call p() when importing
 
     # colorization (see Colors & Themes below)
     colored => 'auto', # 0, 1
