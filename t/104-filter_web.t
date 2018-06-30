@@ -54,6 +54,7 @@ sub test_http_response {
             ],
             '{"foo":"bar","baz":42}'
         );
+        skip 'HTTP::Headers is too old', 1 unless $r->headers->can('flatten');
         $r->previous(
             HTTP::Response->new(
                 '302', 'Moved Temporarily',[
