@@ -7,6 +7,7 @@ filter 'SCALAR' => sub {
     my ($data, $ddp) = @_;
 
     # don't bother looking on files that are just too small
+    return unless defined $$data;
     my $len = length($$data);
     return if $len < 22;
 
