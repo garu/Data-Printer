@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 28;
+use Test::More tests => 32;
 use Data::Printer::Object;
 
 # we pad a bunch of 'dd' because of a minimum length check inside the filter:
@@ -27,6 +27,10 @@ my %signatures = (
     "\x4D\x5A"         => "Binary Windows EXE data",
     "\x42\x4D"         => "BMP Image",
     "\xFF\xFB"         => "MP3 Audio",
+    "\x3d\x73\x72\x6c\x01" => "Binary Sereal v1 data",
+    "\x3d\x73\x72\x6c\x02" => "Binary Sereal v2 data",
+    "\x3d\xf3\x72\x6c\x03" => "Binary Sereal v3 data",
+    "\x3d\xf3\x72\x6c\x04" => "Binary Sereal v4 data",
 );
 
 my $ddp = Data::Printer::Object->new(

@@ -84,6 +84,18 @@ filter 'SCALAR' => sub {
             elsif ($hex_4 eq '4d5a') {
                 $type = 'Binary Windows EXE data'
             }
+            elsif ($hex_8 eq '3d73726c') {
+                my $v = substr($hex, 9, 1);
+                if ($v == 1 || $v == 2) {
+                    $type = "Binary Sereal v$v data";
+                }
+            }
+            elsif ($hex_8 eq '3df3726c') {
+                my $v = substr($hex, 9, 1);
+                if ($v == 3 || $v == 4) {
+                    $type = "Binary Sereal v$v data";
+                }
+            }
             else {
                 # type not found! Let other filters have a go.
                 return;
