@@ -550,6 +550,10 @@ we use a single space as linebreak and disable the array index. Setting it
 to 1 (the default) goes back to using "\n" as linebreak and restore whatever
 array index you had originally.
 
+=item * B<fulldump> - when set to 1, disables all max string/hash/array
+values. Use this to generate complete (full) dumps of all your content,
+which is trimmed by default.
+
 =back
 
 =head2 Colors & Themes

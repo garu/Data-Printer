@@ -217,6 +217,10 @@ sub _init {
         Data::Printer::Common::_fetch_scalar_or_default($props, 'multiline', 1)
     );
 
+    $self->fulldump(
+        Data::Printer::Common::_fetch_scalar_or_default($props, 'fulldump', 0)
+    );
+
     $self->_load_colors($props);
     $self->_load_filters($props);
     $self->output($props->{output} || 'stderr');
@@ -305,6 +309,29 @@ sub multiline {
         }
     }
     return $self->{multiline};
+}
+
+sub fulldump {
+    my ($self, $value) = @_;
+    if (defined $value) {
+        $self->{fulldump} = !!$value;
+        if ($value) {
+            $self->{_original_max_string} = $self->max_string;
+            $self->max_string(0);
+            $self->{_original_max_array} = $self->max_array;
+            $self->max_array(0);
+            $self->{_original_max_hash} = $self->max_hash;
+            $self->max_hash(0);
+        }
+        else {
+            $self->max_string($self->{_original_max_string})
+                if exists $self->{_original_max_string};
+            $self->max_array($self->{_original_max_array})
+                if exists $self->{_original_max_array};
+            $self->max_hash($self->{_original_max_hash})
+                if exists $self->{_original_max_hash};
+        }
+    }
 }
 
 sub _load_filters {
@@ -912,6 +939,8 @@ Most of them are described in L<Data::Printer>.
 =item * memsize_unit - show memory size as bytes (b), kbytes (k) or megabytes (m). Default is 'auto'
 
 =item * multiline - set to 0 to disable linebreaks, disable index and use ':' as hash separator.
+
+=item * fulldump - set to 1 to disable mas_string, max_array and max_hash at the same time.
 
 =item * output - where the user wants the output to be printed. Defaults to 'stderr', could be 'stdout', \$string or $filehandle.
 
