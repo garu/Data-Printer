@@ -654,8 +654,12 @@ your objects. The sub will be called with the object to be printed and also
 with a C<$ddp> object ready for you. See L<Data::Printer::Object> for
 how to use it to pretty-print your data.
 
-Note that having a filter for that particular class will of course
-override this setting.
+Having a filter for that particular class will of course override this setting.
+
+Finally, if your object implements string overload or provides a method called
+"to_string", "as_string" or "stringify", Data::Printer will use it. To disable
+this behaviour, set C<< class.stringify = 0 >> on your C<.dataprinter>
+file, or call p() with C<< class => { stringify => 0 } >>.
 
 =head1 CAVEATS
 

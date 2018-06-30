@@ -117,7 +117,7 @@ sub _get_stringification {
             return $string;
         }
     }
-    foreach my $method (qw(as_string stringify)) {
+    foreach my $method (qw(as_string stringify to_string)) {
         if ($object->can($method)) {
             my $string;
             my $error = Data::Printer::Common::_tryme(sub { $string = $object->$method });
