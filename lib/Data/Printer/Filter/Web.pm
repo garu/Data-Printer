@@ -293,7 +293,8 @@ hash, not an object.
 =head2 HTTP REQUEST/RESPONSE
 
 C<HTTP::Request> and C<HTTP::Response> objects are filtered to display
-headers and content.
+headers and content. These are returned by L<LWP::UserAgent>,
+L<WWW::Mechanize> and many others.
 
 If the response comes from chained redirects (that the source HTTP::Response
 object knows about), this filter will show you the entire redirect chain
