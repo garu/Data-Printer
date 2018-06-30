@@ -238,6 +238,7 @@ You may also customize the look and feel with the following options (defaults sh
     filter_contenttype.hexdump_indent = 0
 
     # you can even customize your themes:
+    colors.filter_contenttype         = #ca88dd
     colors.filter_contenttype_hexdump = #ffcb68
 
 That's it!
