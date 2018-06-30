@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 28;
 use Data::Printer::Object;
 
 # we pad a bunch of 'dd' because of a minimum length check inside the filter:
@@ -54,13 +54,18 @@ $ddp = Data::Printer::Object->new(
     filters => ['ContentType'],
     filter_contenttype => { show_size => 0 },
 );
-is $ddp->parse(\$png), '(PNG Image)', 'content type without size';
+is(
+    $ddp->parse(\$png),
+    "\x{f0}\x{9f}\x{96}\x{bc}  (PNG Image)",
+    'content type without size'
+);
 
 $ddp = Data::Printer::Object->new(
     colored => 0,
     filters => ['ContentType'],
     filter_contenttype => {
         size_unit => 'k',
+        show_symbol => 0,
     },
 );
 
@@ -71,6 +76,7 @@ $ddp = Data::Printer::Object->new(
     filters => ['ContentType'],
     filter_contenttype => {
         hexdump => 1,
+        show_symbol => 0,
     },
 );
 is $ddp->parse(\$png), '(PNG Image, 59B)
@@ -87,6 +93,7 @@ $ddp = Data::Printer::Object->new(
     filter_contenttype => {
         hexdump => 1,
         hexdump_size => 19,
+        show_symbol => 0,
     },
 );
 is $ddp->parse(\$png), '(PNG Image, 59B)
@@ -101,6 +108,7 @@ $ddp = Data::Printer::Object->new(
         hexdump => 1,
         hexdump_size => 19,
         hexdump_indent => 1,
+        show_symbol => 0,
     },
 );
 $ddp->indent;
@@ -116,10 +124,9 @@ $ddp = Data::Printer::Object->new(
         hexdump        => 1,
         hexdump_size   => 5,
         hexdump_offset => 10,
+        show_symbol    => 0,
     },
 );
 is $ddp->parse(\$png), '(PNG Image, 59B)
 0x0000000a (00010)  37383931 36                          78916',
     'content type with hexdump size 5 from offset 10';
-
-done_testing;

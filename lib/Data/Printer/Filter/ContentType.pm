@@ -115,9 +115,36 @@ filter 'SCALAR' => sub {
     my $show_size = !exists $ddp->extra_config->{filter_contenttype}{show_size}
                  || $ddp->extra_config->{filter_contenttype}{show_size};
 
-    my $output = $ddp->maybe_colorize('(', 'brackets')
-         . $type
-         . ((', ' . ($len < 0 ? sprintf("%.2f", $len) : int($len)) . $unit)x!!$show_size)
+    my $symbol = '';
+    if (!exists $ddp->extra_config->{filter_contenttype}{show_symbol}
+        || $ddp->extra_config->{filter_contenttype}{show_symbol}
+    ) {
+        if ($type =~ /Image/) {
+            $symbol = "\x{f0}\x{9f}\x{96}\x{bc}  "; # FRAME WITH PICTURE
+        }
+        elsif ($type =~ /Video/) {
+            $symbol = "\x{f0}\x{9f}\x{8e}\x{ac}  "; # CLAPPER BOARD
+        }
+        elsif ($type =~ /Audio/) {
+            $symbol = "\x{f0}\x{9f}\x{8e}\x{b5}  "; # MUSICAL NOTE
+        }
+        elsif ($type =~ /Archive/) {
+            $symbol = "\x{f0}\x{9f}\x{97}\x{84}  "; # FILE CABINET
+        }
+        elsif ($type =~ /Document/) {
+            $symbol = "\x{f0}\x{9f}\x{93}\x{84}  "; # PAGE FACING UP
+        }
+        elsif ($type =~ /Binary/) {
+            $symbol = "\x{f0}\x{9f}\x{96}\x{a5}  "; # DESKTOP COMPUTER
+        }
+    }
+    my $output = $symbol . $ddp->maybe_colorize('(', 'brackets')
+         . $ddp->maybe_colorize(
+             $type
+             . ((', ' . ($len < 0 ? sprintf("%.2f", $len) : int($len)) . $unit)x!!$show_size),
+             'filter_contenttype',
+             '#ca88dd'
+         )
          . $ddp->maybe_colorize(')', 'brackets')
          ;
 
