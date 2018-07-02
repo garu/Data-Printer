@@ -16,6 +16,10 @@ class.simple = bla
     ; and
 ; some more comments
 filters = Foo, Bar
+spaced1 = '   '
+spaced2 = '  " '
+spaced3 = "   "
+spaced4 = " ' "
 
 [Some::Module]
 meep = moop
@@ -30,6 +34,10 @@ EOTEXT
 my $expected = {
     _ => {
         answer => 42,
+        spaced1 => q(   ),
+        spaced2 => q(  " ),
+        spaced3 => q(   ),
+        spaced4 => q( ' ),
         whatever => 'Something Interesting',
         class => {
             simple => 'bla',

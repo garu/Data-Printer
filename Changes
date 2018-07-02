@@ -1,5 +1,18 @@
 Revision history for Data-Printer
 
+0.99_020 2018-06-30
+    NEW FEATURES:
+        - new 'fulldump' option to ignore max string/array/hash.
+        - also stringify on to_string()
+        - ContentType filter shows utf8 symbol for image/audio/video/etc
+        - ContentType filter now has its own color
+        - ContentType filter understands Sereal binaries
+    BUG FIXES:
+        - prevent 'undefined' warning in ContentType filter
+        - fix test on old HTTP::Headers
+    OTHER:
+        - improved documentation
+
 0.99_019 2018-06-27
     BUG FIXES:
         - more filter fixes on different module versions

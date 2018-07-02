@@ -53,6 +53,9 @@ sub _str2data {
             my @subpath = split /\./, $path_str;
             my $current = $config->{$ns};
 
+            # remove single/double (enclosing) quotes
+            $value =~ s/\A(['"])(.*)\1\z/$2/;
+
             # the root "filters" key is a special case, because we want
             # it to always be an arrayref. In other words:
             #     filters = abc,def    --> filters => ['abc', 'def']
