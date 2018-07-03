@@ -118,8 +118,11 @@ sub test_datetime {
 
 sub test_datetime_timezone {
     SKIP: {
-        skip 'DateTime::TimeZone not found', 1, unless eval 'use DateTime::TimeZone; 1';
-        my $d = DateTime::TimeZone->new( name => 'America/Sao_Paulo' );
+        my $d;
+        skip 'DateTime::TimeZone not found', 1
+            unless eval 'use DateTime::Duration; use DateTime::TimeZone; 1';
+        eval { $d = DateTime::TimeZone->new( name => 'America/Sao_Paulo' ) };
+        skip 'Error creating DateTime::TimeZone object', 1 unless $d;
         my $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DateTime'],
