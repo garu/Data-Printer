@@ -62,7 +62,8 @@ use Data::Printer::Filter::GenericClass;
 my @method_names =qw(
     name show_tainted show_unicode show_readonly show_lvalue show_refcount
     show_memsize memsize_unit print_escapes scalar_quotes escape_chars
-    caller_info caller_message string_max string_overflow string_preserve
+    caller_info caller_message caller_message_newline string_max
+    string_overflow string_preserve
     array_max array_overflow array_preserve hash_max hash_overflow
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
@@ -141,6 +142,7 @@ sub _init {
                             'caller_message',
                             'Printing in line __LINE__ of __FILENAME__:'
                         );
+    $self->{'caller_message_newline'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'caller_message_newline', 1);
     $self->{'string_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'string_max', 1024);
     $self->{'string_preserve'} = Data::Printer::Common::_fetch_anyof(
                              $props,
@@ -719,7 +721,7 @@ sub write_label {
     $message =~ s/\b__FILENAME__\b/$caller[1]/g;
     $message =~ s/\b__LINE__\b/$caller[2]/g;
 
-    return $message . "\n";
+    return $message . ($self->caller_message_newline ? "\n" : '');
 }
 
 sub maybe_colorize {
@@ -901,6 +903,8 @@ Most of them are described in L<Data::Printer>.
 =item * caller_info - whether the user wants to prepend dump with caller information or not (default: 0)
 
 =item * caller_message - what to print when caller_info is true.
+
+=item * caller_message_newline - skip line after printing caller_message (default: 1)
 
 =item * class - class properties to override.
 
