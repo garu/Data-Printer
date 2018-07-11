@@ -429,6 +429,8 @@ active only on C<p()>/C<np()> calls made inside a given module:
     max_depth       = 1
     theme           = Monokai
     class.stringify = 0
+    # use quotes if you want spaces to be significant:
+    hash_separator  = " => "
 
     # You can set rules that apply only to a specific
     # caller module (in this case, MyApp::Some::Module):

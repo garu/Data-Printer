@@ -157,6 +157,8 @@ This module is used internally to load C<.dataprinter> files.
     hash_max   = 5
     array_max  = 5
     string_max = 50
+    # use quotes if you need spaces to be significant:
+    hash_separator = " => "
     class.show_methods = none
     class.internals    = 0
     filters = DB, Web
