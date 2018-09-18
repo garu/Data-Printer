@@ -340,52 +340,33 @@ sub _my_home {
         mkdir($home, 0755) unless -d $home;
         return $home;
     }
-    elsif (exists $ENV{HOME} && defined $ENV{HOME}) {
-        return $ENV{HOME};
+    # Fallback measures if the above didn't work...
+    elsif ($^O eq 'MSWin32' and "$]" < 5.016) {
+        return $ENV{HOME} || $ENV{USERPROFILE};
     }
-    elsif ($^O eq 'MSWin32') {
-        return $ENV{USERPROFILE} if exists $ENV{USERPROFILE} and $ENV{USERPROFILE};
-        if (exists $ENV{HOMEDRIVE} and exists $ENV{HOMEPATH} and $ENV{HOMEDRIVE} and $ENV{HOMEPATH} ) {
-            require File::Spec;
-            return File::Spec->catpath($ENV{HOMEDRIVE}, $ENV{HOMEPATH}, '');
-        }
-        return undef;
+    elsif ($^O eq 'MacOS') {
+        require Mac::SystemDirectory;
+        return Mac::SystemDirectory::HomeDirectory();
     }
-    elsif ($^O eq 'darwin' || $^O eq 'MacOS') {
-        my $error = _tryme(sub { require Mac::SystemDirectory; 1; });
-        return Mac::SystemDirectory::HomeDirectory() unless $error;
-        $error = _tryme(sub { require Mac::Files; 1; });
-        if (!$error) {
-            my $folder = Mac::Files::FindFolder(
-                Mac::Files::kUserDomain(),
-                Mac::Files::kCurrentUserFolderType()
-            );
-            return undef unless defined $folder;
-            if (!-d $folder) {
-                # Make sure that symlinks resolve to directories.
-                return undef unless -l $folder;
-                my $dir = readlink $folder or return undef;
-                return undef unless -d $dir;
-            }
-            require Cwd;
-            return Cwd::abs_path($folder);
-        }
-        my $home;
-        SCOPE: { $home = (getpwuid($<))[7] }
-        if (defined $home && !-d $home) {
-            $home = undef;
-        }
-        return $home;
+    # this is the most common case, for most breeds of unix, as well as
+    # MSWin32 in more recent perls.
+    else {
+        my $home = (<~>)[0];
+        return $home if $home;
     }
-    else { # unix/linux/bsd/...
+
+    { # desperate measures that should never be needed.
         my $home;
         if (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
             $home = $ENV{LOGDIR};
         }
-        else {
-            # Light desperation on any (Unixish) platform
-            SCOPE: { $home = (getpwuid($<))[7] }
+        if (not $home and exists $ENV{HOME} and $ENV{HOME}) {
+            $home = $ENV{HOME};
         }
+
+        # Light desperation on any (Unixish) platform
+        SCOPE: { $home = (getpwuid($<))[7] if not defined $home }
+
         if (defined $home and ! -d $home ) {
             $home = undef;
         }

@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+    OTHER:
+        - simplified homedir logic for MSWin32, darwin and MacOS
+          (Karen Etheridge)
+
 0.99_020 2018-06-30
     NEW FEATURES:
         - new 'fulldump' option to ignore max string/array/hash.
