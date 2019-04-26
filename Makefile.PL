@@ -31,9 +31,6 @@ my %options = (
 if ($^O =~ /Win32/i) {
     $options{PREREQ_PM}{'Win32::Console::ANSI'} = 1.0;
 }
-if ($^O eq 'MacOS') {
-    $options{PREREQ_PM}{'Mac::SystemDirectory'} = 0;
-}
 
 if ($ENV{DDPTESTCOVERAGE}) {
     foreach my $p (qw(

@@ -1,7 +1,7 @@
 Revision history for Data-Printer
 
     OTHER:
-        - simplified homedir logic for MSWin32, darwin and MacOS
+        - simplified homedir logic for MSWin32, Linux and MacOS
           (Karen Etheridge)
 
 0.99_020 2018-06-30
