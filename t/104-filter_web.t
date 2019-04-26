@@ -399,6 +399,7 @@ sub test_json_mojo {
 
     my $ddp = Data::Printer::Object->new(
         colored       => 0,
+        show_readonly => 0,
         multiline     => 0,
         filters       => ['Web'],
     );
