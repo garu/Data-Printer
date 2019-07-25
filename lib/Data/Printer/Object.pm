@@ -823,8 +823,8 @@ reference instead of entenring an infinite loop. However, there are cases
 when you wanto to print the same data structure twice, like when you're doing
 a second pass on a blessed object to print its internals, or if you're using
 the same object over and over again. This setting overrides the internal
-counter and prints the same data again. Check L<usee|/unsee> below for another
-way to achieve this.
+counter and prints the same data again. Check L<unsee|/unsee( $data )> below
+for another way to achieve this.
 
 =back
 
