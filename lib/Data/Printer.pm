@@ -37,6 +37,7 @@ sub import {
     my $imported = _find_option('alias', $args, $caller, 'p');
 
     { no strict 'refs';
+      no warnings 'redefine';
         *{"$caller\::$imported"} = $exported;
         *{"$caller\::np"}        = \&np;
     }
