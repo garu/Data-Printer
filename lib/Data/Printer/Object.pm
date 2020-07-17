@@ -1038,6 +1038,11 @@ When true, skips a line when printing L<caller_message|/caller_message>.
 When false, only a single space is added between the message and the data.
 (default: 1)
 
+=head3 caller_plugin
+
+Name of caller plugin (default: undef). If you specify a name,
+e.g. c<PPI>, it will use c<Data::Printer::Plugin::Caller::PPI> to print the caller information label.
+
 =head3 caller_message_position
 
 This option controls where the L<caller_message|/caller_message> will appear
