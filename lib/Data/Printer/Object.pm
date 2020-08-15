@@ -318,20 +318,20 @@ sub fulldump {
     if (defined $value) {
         $self->{fulldump} = !!$value;
         if ($value) {
-            $self->{_original_max_string} = $self->max_string;
-            $self->max_string(0);
-            $self->{_original_max_array} = $self->max_array;
-            $self->max_array(0);
-            $self->{_original_max_hash} = $self->max_hash;
-            $self->max_hash(0);
+            $self->{_original_string_max} = $self->string_max;
+            $self->string_max(0);
+            $self->{_original_array_max} = $self->array_max;
+            $self->array_max(0);
+            $self->{_original_hash_max} = $self->hash_max;
+            $self->hash_max(0);
         }
         else {
-            $self->max_string($self->{_original_max_string})
-                if exists $self->{_original_max_string};
-            $self->max_array($self->{_original_max_array})
-                if exists $self->{_original_max_array};
-            $self->max_hash($self->{_original_max_hash})
-                if exists $self->{_original_max_hash};
+            $self->string_max($self->{_original_string_max})
+                if exists $self->{_original_string_max};
+            $self->array_max($self->{_original_array_max})
+                if exists $self->{_original_array_max};
+            $self->hash_max($self->{_original_hash_max})
+                if exists $self->{_original_hash_max};
         }
     }
 }
@@ -944,7 +944,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * multiline - set to 0 to disable linebreaks, disable index and use ':' as hash separator.
 
-=item * fulldump - set to 1 to disable mas_string, max_array and max_hash at the same time.
+=item * fulldump - set to 1 to disable string_max, array_max and hash_max at the same time.
 
 =item * output - where the user wants the output to be printed. Defaults to 'stderr', could be 'stdout', \$string or $filehandle.
 

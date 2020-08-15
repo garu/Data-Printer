@@ -1,6 +1,7 @@
 Revision history for Data-Printer
 
     BUG FIXES:
+        - fulldump typo fix
         - fix filter test failure when Mojo::JSON loads ::XS backends (GH#136)
     OTHER:
         - simplified homedir logic for MSWin32, Linux and MacOS
