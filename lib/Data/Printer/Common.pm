@@ -50,23 +50,23 @@ sub _filter_category_for {
 # worry about, and every single piece of that could have its own color.
 # That, and hash keys and strings share this. So we put it all in one place.
 sub _process_string {
-    my ($ddp, $string, $src_name) = @_;
+    my ($ddp, $string, $src_color) = @_;
 
     # colorizing messes with reduce_string because we are effectively
     # adding new (invisible) characters to the string. So we need to
     # handle reduction first. But! Because we colorize string_max
     # *and* we should escape any colors already present, we need to
     # do both at the same time.
-    $string = _reduce_string($ddp, $string, $src_name);
+    $string = _reduce_string($ddp, $string, $src_color);
 
     # now we escape all other control characters except for "\e", which was
     # already escaped in _reduce_string(), and convert any chosen charset
     # to the \x{} format. These could go in any particular order:
-    $string = _escape_chars($ddp, $string, $src_name);
-    $string = _print_escapes($ddp, $string, $src_name);
+    $string = _escape_chars($ddp, $string, $src_color);
+    $string = _print_escapes($ddp, $string, $src_color);
 
     # finally, send our wrapped string:
-    return $ddp->maybe_colorize($string, $src_name);
+    return $ddp->maybe_colorize($string, $src_color);
 }
 
 sub _colorstrip {
