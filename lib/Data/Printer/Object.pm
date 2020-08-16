@@ -63,7 +63,7 @@ my @method_names =qw(
     name show_tainted show_unicode show_readonly show_lvalue show_refcount
     show_memsize memsize_unit print_escapes scalar_quotes escape_chars
     caller_info caller_message caller_message_newline string_max
-    string_overflow string_preserve
+    string_overflow string_preserve resolve_scalar_refs
     array_max array_overflow array_preserve hash_max hash_overflow
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
@@ -143,6 +143,7 @@ sub _init {
                             'Printing in line __LINE__ of __FILENAME__:'
                         );
     $self->{'caller_message_newline'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'caller_message_newline', 1);
+    $self->{'resolve_scalar_refs'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'resolve_scalar_refs', 0);
     $self->{'string_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'string_max', 1024);
     $self->{'string_preserve'} = Data::Printer::Common::_fetch_anyof(
                              $props,
@@ -627,7 +628,13 @@ sub parse {
     # when parsing circular references:
     my $seen = $self->_see($data, %options);
     if (my $name = $seen->{name}) {
-        $parsed_string .= $self->maybe_colorize($name, 'repeated');
+        $parsed_string .= $self->maybe_colorize(
+            ((ref $data eq 'SCALAR' && $self->resolve_scalar_refs)
+                ? $$data
+                : $name
+            ),
+            'repeated'
+        );
         # on repeated references, the only extra data we put
         # is whether this reference is weak or not.
         $parsed_string .= $str_weak;
