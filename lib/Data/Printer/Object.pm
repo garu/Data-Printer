@@ -300,12 +300,24 @@ sub multiline {
                 if exists $self->{_original_index};
             $self->hash_separator( $self->{_original_separator} )
                 if exists $self->{_original_separator};
+            $self->array_overflow( $self->{_original_array_overflow} )
+                if exists $self->{_original_array_overflow};
+            $self->hash_overflow( $self->{_original_hash_overflow} )
+                if exists $self->{_original_hash_overflow};
+            $self->string_overflow( $self->{_original_string_overflow} )
+                if exists $self->{_original_string_overflow};
         }
         else {
             $self->{_original_index} = $self->index;
             $self->index(0);
             $self->{_original_separator} = $self->hash_separator;
             $self->hash_separator(':');
+            $self->{_original_array_overflow} = $self->array_overflow;
+            $self->array_overflow('(...)');
+            $self->{_original_hash_overflow} = $self->hash_overflow;
+            $self->hash_overflow('(...)');
+            $self->{_original_string_overflow} = $self->string_overflow;
+            $self->string_overflow('(...)');
             $self->{_linebreak} = ' ';
             $self->{_current_indent} = 0;
         }
@@ -942,7 +954,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * memsize_unit - show memory size as bytes (b), kbytes (k) or megabytes (m). Default is 'auto'
 
-=item * multiline - set to 0 to disable linebreaks, disable index and use ':' as hash separator.
+=item * multiline - defaults to 1. When set to 0, disables array index and linebreaks, uses ':' as hash separator and '(...)' as overflow for hashes, arrays and strings.
 
 =item * fulldump - set to 1 to disable string_max, array_max and hash_max at the same time.
 
