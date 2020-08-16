@@ -107,7 +107,8 @@ filter 'Dancer2::Core::Cookie' => sub {
 sub _format_cookie {
     my ($data, $ddp) = @_;
     return $ddp->maybe_colorize(
-          $data->{name} . '=' . $data->{value}
+          $data->{name} . '='
+        . Data::Printer::Common::_process_string($ddp, $data->{value})
         . '; expires=' . $data->{expires}
         . '; domain=' . $data->{domain}
         . '; path=' . $data->{path}
