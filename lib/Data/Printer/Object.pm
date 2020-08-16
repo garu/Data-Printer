@@ -855,7 +855,7 @@ and position the "cursor" where you are expected to continue your dump string:
 Unless multiline was set to 0, the code above should print something like:
 
     this is a new line
-        this is indentend
+        this is indented
     back to our previous indentation
 
 =head2 maybe_colorize( $string, $label )
@@ -980,7 +980,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * sort_keys - whether to sort hash keys (default: 1)
 
-=item * string_max - maxumum number of characters in a string. Set to 0 to show all (default: 1024)
+=item * string_max - maximum number of characters in a string. Set to 0 to show all (default: 1024)
 
 =item * string_overflow - message to display once string_max is reached
 
