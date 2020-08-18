@@ -57,7 +57,14 @@ sub np (\[@$%&];%) {
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
     }
-    return $printer->write_label . $printer->parse($_[0]);
+    my $output = $printer->parse($_[0]);
+    if ($printer->caller_message_position eq 'after') {
+        $output .= $printer->write_label;
+    }
+    else {
+        $output = $printer->write_label . $output;
+    }
+    return $output;
 }
 
 
@@ -73,7 +80,13 @@ sub p (\[@$%&];%) {
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
     }
-    my $output = $printer->write_label . $printer->parse($_[0]);
+    my $output = $printer->parse($_[0]);
+    if ($printer->caller_message_position eq 'after') {
+        $output .= $printer->write_label;
+    }
+    else {
+        $output = $printer->write_label . $output;
+    }
 
     return _handle_output($printer, $output, !!defined wantarray, $_[0]);
 }
@@ -101,7 +114,13 @@ sub _p_without_prototypes  {
         && ref(defined $item ? $item : ${$_[0]}) eq 'REF')) {
         $printer->{_refcount_base}++;
     }
-    my $output = $printer->write_label . $printer->parse((defined $item ? $item : $_[0]));
+    my $output = $printer->parse((defined $item ? $item : $_[0]));
+    if ($printer->caller_message_position eq 'after') {
+        $output .= $printer->write_label;
+    }
+    else {
+        $output = $printer->write_label . $output;
+    }
 
     return _handle_output($printer, $output, !!defined wantarray, $_[0]);
 }
