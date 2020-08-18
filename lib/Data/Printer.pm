@@ -28,24 +28,10 @@ sub import {
     }
     $arguments_for{$caller} = $args;
 
-    my $use_prototypes = exists $args->{use_prototypes}
-            ? $args->{use_prototypes}
-        : exists $rc_arguments->{$caller} && exists $rc_arguments->{$caller}{use_prototypes}
-            ? $rc_arguments->{$caller}{use_prototypes}
-        : exists $rc_arguments->{'_'}{use_prototypes}
-            ? $rc_arguments->{'_'}{use_prototypes}
-        : 1
-        ;
+    my $use_prototypes = _find_option('use_prototypes', $args, $caller, 1);
     my $exported = ($use_prototypes ? \&p : \&_p_without_prototypes);
 
-    my $imported = exists $args->{alias}
-            ? $args->{alias}
-        : exists $rc_arguments->{$caller} && exists $rc_arguments->{$caller}{alias}
-            ? $rc_arguments->{$caller}{alias}
-        : exists $rc_arguments->{'_'}{alias}
-            ? $rc_arguments->{'_'}{alias}
-        : 'p'
-        ;
+    my $imported = _find_option('alias', $args, $caller, 'p');
 
     { no strict 'refs';
         *{"$caller\::$imported"} = $exported;
@@ -184,6 +170,29 @@ sub _fetch_args_with {
     }
     return $args_to_use;
 }
+
+sub _find_option {
+    my ($key, $args, $caller, $default) = @_;
+
+    my $value;
+    if (exists $args->{$key}) {
+        $value =  $args->{$key};
+    }
+    elsif (
+          exists $rc_arguments->{$caller}
+       && exists $rc_arguments->{$caller}{$key}
+    ) {
+        $value = $rc_arguments->{$caller}{$key};
+    }
+    elsif (exists $rc_arguments->{'_'}{$key}) {
+        $value = $rc_arguments->{'_'}{$key};
+    }
+    else {
+        $value = $default;
+    }
+    return $value;
+}
+
 
 'Marielle, presente.';
 __END__
