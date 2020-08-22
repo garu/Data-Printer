@@ -52,6 +52,7 @@ sub np (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    $args_to_use->{output} = 'handle'; # force color level 0 on 'auto'
     my $printer = Data::Printer::Object->new($args_to_use);
     my $ref = ref $_[0];
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {

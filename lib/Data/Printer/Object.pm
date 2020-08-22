@@ -431,7 +431,12 @@ sub _detect_color_level {
 
     # first we honour ANSI_COLORS_DISABLED, colored and tty piping
     if (   !$colored
-        || ($colored eq 'auto' && exists $ENV{ANSI_COLORS_DISABLED})
+        || ($colored eq 'auto'
+            && (exists $ENV{ANSI_COLORS_DISABLED}
+                || $self->output eq 'handle'
+                || $self->output eq 'file'
+            )
+        )
 #        || ! -t $self->{_output} # <-- FIXME TODO
     ) {
         $color_level = 0;
@@ -932,7 +937,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * color_level - what the current color level is. Used by themes to approximate (or disable) colors.
 
-=item * colored - whether to colorize the output or not (default: 'auto')
+=item * colored - whether to colorize the output or not. Default is 'auto', meaning it will colorize only when printing to STDOUT or STDERR, never to a file or to a string (like when using np(). 'auto' also respects the ANSI_COLORS_DISABLED environment variable.
 
 =item * current_depth - shows the current depth level.
 
@@ -962,7 +967,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * memsize_unit - show memory size as bytes (b), kbytes (k) or megabytes (m). Default is 'auto'
 
-=item * multiline - defaults to 1. When set to 0, disables array index and linebreaks, uses ':' as hash separator and '(...)' as overflow for hashes, arrays and strings.
+=item * multiline - defaults to 1. When set to 0, disables array index and linebreaks, uses ':' as hash separator and '(...)' as overflow for hashes, arrays and strings, and also disables 'caller_message_newline'.
 
 =item * fulldump - set to 1 to disable string_max, array_max and hash_max at the same time.
 
