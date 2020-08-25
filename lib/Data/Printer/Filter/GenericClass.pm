@@ -20,7 +20,8 @@ filter '-class' => sub {
     my $linear_ISA = Data::Printer::Common::_linear_ISA_for($class_name, $ddp);
 
     # if the object overloads stringification, use it!
-    if ($ddp->class->stringify) {
+    # except for PDF::API2 which has a destructive stringify()
+    if ($ddp->class->stringify && $class_name ne 'PDF::API2') {
         my $str = _get_stringification($object, $class_name);
         return $ddp->maybe_colorize("$str ($class_name)", 'class')
             if defined $str;
