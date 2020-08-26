@@ -225,9 +225,9 @@ sub _init {
         Data::Printer::Common::_fetch_scalar_or_default($props, 'fulldump', 0)
     );
 
+    $self->output(defined $props->{output} ? $props->{output} : 'stderr');
     $self->_load_colors($props);
     $self->_load_filters($props);
-    $self->output($props->{output} || 'stderr');
 
     my %extra_config;
     my %core_options = map { $_ => 1 }
