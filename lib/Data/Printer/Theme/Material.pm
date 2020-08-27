@@ -7,7 +7,7 @@ use warnings;
 sub colors {
     my %code_for = (
         'very_light_gray' =>  '#EEFFFF',
-        'light_gray'      =>  '#B2CCD6',
+        'light_gray'      =>  '#A1BBC5',
         'middle_gray'     =>  '#808080',
         'gray'            =>  '#373b41',
         'dark_gray'       =>  '#282a2e',
@@ -15,7 +15,7 @@ sub colors {
         'green'           =>  '#90B55A', #'#C3E88D',
         'teal'            =>  '#009688',
         'light_teal'      =>  '#73d1c8',
-        'cyan'            =>  '#89DDF3',
+        'cyan'            =>  '#66D9EF',
         'blue'            =>  '#82AAFF',
         'indigo'          =>  '#7986CB',
         'purple'          =>  '#C792EA',
