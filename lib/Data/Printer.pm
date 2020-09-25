@@ -52,8 +52,13 @@ sub np (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
-    $args_to_use->{output} = 'handle'; # force color level 0 on 'auto'
     my $printer = Data::Printer::Object->new($args_to_use);
+
+    # force color level 0 on 'auto' colors:
+    if ($printer->colored eq 'auto') {
+        $printer->{_output_color_level} = 0;
+    }
+
     my $ref = ref $_[0];
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
@@ -77,6 +82,11 @@ sub p (\[@$%&];%) {
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
     my $printer = Data::Printer::Object->new($args_to_use);
+    my $want_value = defined wantarray;
+    if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
+        $printer->{_output_color_level} = 0;
+    }
+
     my $ref = ref $_[0];
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF' && ref ${$_[0]} eq 'REF')) {
         $printer->{_refcount_base}++;
@@ -89,7 +99,7 @@ sub p (\[@$%&];%) {
         $output = $printer->write_label . $output;
     }
 
-    return _handle_output($printer, $output, !!defined wantarray, $_[0]);
+    return _handle_output($printer, $output, $want_value, $_[0]);
 }
 
 # This is a p() clone without prototypes. Just like regular Data::Dumper,
@@ -110,6 +120,12 @@ sub _p_without_prototypes  {
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
     my $printer = Data::Printer::Object->new($args_to_use);
+
+    my $want_value = defined wantarray;
+    if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
+        $printer->{_output_color_level} = 0;
+    }
+
     my $ref = ref( defined $item ? $item : $_[0] );
     if ($ref eq 'ARRAY' || $ref eq 'HASH' || ($ref eq 'REF'
         && ref(defined $item ? $item : ${$_[0]}) eq 'REF')) {
@@ -123,7 +139,7 @@ sub _p_without_prototypes  {
         $output = $printer->write_label . $output;
     }
 
-    return _handle_output($printer, $output, !!defined wantarray, $_[0]);
+    return _handle_output($printer, $output, $want_value, $_[0]);
 }
 
 
@@ -152,14 +168,11 @@ sub _handle_output {
             return $data;
         }
     }
-    elsif ($printer->return_value eq 'void') {
+    elsif ($printer->return_value eq 'void' || !$wantarray) {
         print { $printer->output_handle } $output . "\n";
         return;
     }
     else {
-        if (!$wantarray) {
-            print { $printer->output_handle } $output . "\n";
-        }
         return $output;
     }
 }
