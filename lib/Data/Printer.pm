@@ -525,7 +525,7 @@ information on each of them:
 
     # general options
     name           => 'var', # the name to use for circular references
-    return_value   => 'pass', # dump, void
+    return_value   => 'pass', # also 'dump' and 'void'
     output         => 'stderr', # stdout, \$string, $filehandle
     use_prototypes => 1,
     indent         => 4,
