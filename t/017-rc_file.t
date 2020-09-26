@@ -174,7 +174,7 @@ EOCONTENT
     is $converted, <<'EOCONFIG';
 bar = bla
 foo = 1
-outer.greeting = hej hej
+outer.greeting = 'hej hej'
 outer.inner.further = hello!
 EOCONFIG
 };
