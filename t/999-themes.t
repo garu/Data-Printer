@@ -94,10 +94,10 @@ sub test_basic_load {
     can_ok $theme, qw(new name customized color_reset color_for sgr_color_for);
     is $theme->name, 'Material', 'got the right theme';
     is $theme->customized, 0, 'customized flag not set';
-    is $theme->color_for('array'), '#B2CCD6', 'fetched original color';
+    is $theme->color_for('array'), '#A1BBC5', 'fetched original color';
     my $sgr = $theme->sgr_color_for('array');
     $sgr =~ s{\e}{\\e};
-    is $sgr, '\e[0;38;2;178;204;214m', 'fetched SGR variant for array color';
+    is $sgr, '\e[0;38;2;161;187;197m', 'fetched SGR variant for array color';
 
     $sgr = $theme->sgr_color_for('class');
     $sgr =~ s{\e}{\\e};
