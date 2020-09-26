@@ -1,5 +1,5 @@
 ^\.git
-^[^/]+\.pl$
+^[^/]+\.p[lm]$
 ^ignore.txt
 ^_build
 ^Build$
