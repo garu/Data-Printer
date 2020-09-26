@@ -931,6 +931,8 @@ Most of them are described in L<Data::Printer>.
 
 =item * caller_message_newline - skip line after printing caller_message (default: 1)
 
+=item * caller_message_position - do you want the message displayed 'before' or 'after' the data? (default: 'before')
+
 =item * class - class properties to override.
 
 =item * class_method - function name to look for custom dump of external classes (default: '_dataprinter')
@@ -978,6 +980,8 @@ Most of them are described in L<Data::Printer>.
 =item * print_escapes - whether to print invisible characters in strings, like \b, \n and \t (default: 0)
 
 =item * quote_keys - whether to quote hash keys or not (default: 'auto')
+
+=item * resolve_scalar_refs - if a reference to a scalar value is found more than once, print the resolved value. Defaults to false.
 
 =item * return_value - whether the user wants the return value to be a pass-through of the source data ('pass'), the dump content itself ('dump') or nothing at all ('void'). Defaults to 'pass'.
 
