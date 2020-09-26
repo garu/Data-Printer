@@ -35,12 +35,42 @@ sub _str2data {
     my ($filename, $content) = @_;
     my $config = { _ => {} };
     my $counter = 0;
+    my $filter;
+    my $can_use_filters;
     my $ns = '_';
     # based on Config::Tiny
     foreach ( split /(?:\015{1,2}\012|\015|\012)/, $content ) {
         $counter++;
-        next if /^\s*(?:\#|\;|$)/; # skip comments and empty lines
-        if ( /^\s*\[\s*(.+?)\s*\]\s*$/ ) {
+        if (defined $filter) {
+            if ( /^end filter\s*$/ ) {
+                if (!defined $can_use_filters) {
+                    my $mode = sprintf('%04o', (stat(q(/Users/garu/.dataprinter)))[2] & 07777);
+                    $can_use_filters = (length($mode) == 4 && substr($mode, 2, 2) eq '00') ? 1 : 0;
+                }
+                if ($can_use_filters) {
+                    my $sub_str = 'sub { my ($obj, $ddp) = @_; '
+                                . $filter->{code_str}
+                                . '}'
+                                ;
+                    push @{$config->{$ns}{filters}}, +{ $filter->{name} => eval $sub_str };
+                }
+                else {
+                    Data::Printer::Common::_warn("ignored filter '$filter->{name}' from rc file '$filename': file is readable/writeable by others");
+                }
+                $filter = undef;
+            }
+            elsif ( /^begin\s+filter/ ) {
+                Data::Printer::Common::_warn("error reading rc file '$filename' line $counter: found 'begin filter' inside another filter definition ($filter->{name}). Are you missing an 'end filter' on line " . ($counter - 1) . '?');
+                return {};
+            }
+            else {
+                $filter->{code_str} .= $_;
+            }
+        }
+        elsif ( /^\s*(?:\#|\;|$)/ ) {
+            next # skip comments and empty lines
+        }
+        elsif ( /^\s*\[\s*(.+?)\s*\]\s*$/ ) {
             # Create the sub-hash if it doesn't exist.
             # Without this sections without keys will not
             # appear at all in the completed struct.
@@ -74,6 +104,10 @@ sub _str2data {
                     $current->{$subpath} = $value;
                 }
             }
+        }
+        elsif ( /^begin\s+filter\s+([^\s]+)\s*$/ ) {
+            my $filter_name = $1;
+            $filter = { name => $filter_name, code_str => '' };
         }
         else {
             Data::Printer::Common::_warn("error reading rc file '$filename': syntax error at line $counter: $_");
@@ -181,6 +215,16 @@ This module is used internally to load C<.dataprinter> files.
 
     [Other::Class]
     theme = Monokai
+
+    ; use "begin filter NAME" and "end filter" to add custom filter code.
+    ; it will expose $obj (the data structure to be parsed) and $ddp
+    ; (data printer's object). YOU MAY ONLY DO THIS IF YOUR FILE IS ONLY
+    ; READABLE AND WRITEABLE BY THE USER (i.e. chmod 0600).
+    begin filter HTTP::Request
+        return $ddp->maybe_colorize($obj->method . ' ' . $obj->uri, 'string')
+             . $obj->decoded_content;
+    end filter
+
 
 =head1 PUBLIC INTERFACE
 
