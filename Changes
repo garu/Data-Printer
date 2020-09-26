@@ -1,11 +1,33 @@
 Revision history for Data-Printer
 
+
+0.99_021 2020-09-26
+    NEW FEATURES:
+        - 'caller_message_position' option to control whether to show labels 'before'
+          or 'after' the dump (defaults to 'before');
+        - 'caller_message_newline' puts an automatic "\n" after the message;
+        - 'resolve_scalar_refs' option to show values instead of just
+          the reference indicator;
+        - when multiline is false, string/hash/array overflow become "(...)";
+        - filter loading errors are not fatal anymore, unless you set the
+          'die_on_filter_error' option;
     BUG FIXES:
-        - fulldump typo fix
-        - fix filter test failure when Mojo::JSON loads ::XS backends (GH#136)
+        - allow quoted values when parsing .dataprinter;
+        - np() is never colored on 'auto' colors;
+        - printing to a file or to a variable is never colored on 'auto' colors;
+        - fulldump typo fix;
+        - fix filter test failure when Mojo::JSON loads ::XS backends (GH#136);
+        - do not call 'stringify' on PDF::API2 objects as it's a destructive op;
+        - allow code filters in the new .dataprinter format, but only if the
+          file meets certain permissions criteria;
+        - 'dump' mode working as expected again;
     OTHER:
         - simplified homedir logic for MSWin32, Linux and MacOS
-          (Karen Etheridge)
+          (Karen Etheridge);
+        - new 'contributing to' data;
+        - minor color adjustments on Material theme to improve legibility
+          on lighter terminals;
+
 
 0.99_020 2018-06-30
     NEW FEATURES:
