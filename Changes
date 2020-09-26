@@ -1,6 +1,10 @@
 Revision history for Data-Printer
 
 
+0.99_022 2020-09-26
+    BUG FIXES:
+        - fix test case of rc option containing spaces
+
 0.99_021 2020-09-26
     NEW FEATURES:
         - 'caller_message_position' option to control whether to show labels 'before'
