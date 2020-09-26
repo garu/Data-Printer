@@ -80,7 +80,7 @@ sub _str2data {
             if ($counter == 1 && /\A\s*{/s) {
                 Data::Printer::Common::_warn(
                     "RC file format changed in 1.00. Usually all it takes is:\n"
-                  . "cp $filename $filename.old && perl -MData::Printer::Config -E 'Data::Printer::Config::convert(q($filename))' > $filename\n"
+                  . "cp $filename $filename.old && perl -MData::Printer::Config -E 'say Data::Printer::Config::convert(q($filename))' > $filename\n"
                   . "Please visit https://metacpan.org/pod/Data::Printer::Config for details."
                 );
             }
@@ -125,14 +125,22 @@ sub _convert {
         }
         return $str;
     }
+    if ($key_str && $key_str eq 'filters.-external' && ref $value eq 'ARRAY') {
+        return 'filters = ' . join(', ' => @$value) . "\n";
+    }
     elsif (ref $value) {
         Data::Printer::Common::_warn(
             " [*] path '$key_str': expected scalar, found " . ref($value)
-          . ". Filters must be in their own class now, loaded with 'filter'\n"
+          . ". Filters must be in their own class now, loaded with 'filter'.\n"
+          . "If you absolutely must put custom filters in, use the 'begin filter'"
+          . " / 'end filter' options manually, as explained in the documentation,"
+          . " making sure your .dataprinter file is not readable nor writeable to"
+          . " anyone other than your user."
         );
         return '';
     }
     else {
+        $value = "'$value'" if $value =~ /\s/;
         return "$key_str = $value\n";
     }
 }
@@ -185,7 +193,8 @@ public function for people to use:
     perl -MDDP -E 'say Data::Printer::Config::convert( q(/path/to/my/.dataprinter) )'
 
 Loads a deprecated (pre-1.0) configuration file and returns a string
-with a converted version, which you can use for newer (post-1.0) versions.
+with a (hopefully) converted version, which you can use for newer (post-1.0)
+versions.
 
 Other public functions, not really meant for general consumption, are:
 
