@@ -277,7 +277,7 @@ boolean objects to represent those. With this filter, you'll get "true" and
 on those booleans. This module filters through the following modules:
 
 C<JSON::PP>, C<JSON::XS>, C<JSON>, C<JSON::MaybeXS>, C<Cpanel::JSON::XS>,
-C<JSON::Parser>, C<JSON::SL>, C<Pegex::JSON>, C<JSON::Tiny>, C<JSON::Any>,
+C<JSON>, C<JSON::SL>, C<Pegex::JSON>, C<JSON::Tiny>, C<JSON::Any>,
 C<JSON::DWIW> and C<Mojo::JSON>.
 
 Also, if you use C<JSON::Typist> to parse your JSON strings, a Data::Printer
