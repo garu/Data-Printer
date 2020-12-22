@@ -9,6 +9,7 @@ filter 'Time::Moment'         => sub { _format($_[0]->to_string   , @_) };
 filter 'DateTime::TimeZone'   => sub { _format($_[0]->name        , @_) };
 filter 'DateTime::Incomplete' => sub { _format($_[0]->iso8601     , @_) };
 filter 'DateTime::Tiny'       => sub { _format($_[0]->as_string   , @_) };
+filter 'Date'                 => sub { _format($_[0]->to_string   , @_) };
 filter 'Date::Tiny'           => sub { _format($_[0]->as_string   , @_) };
 filter 'Date::Calc::Object'   => sub { _format($_[0]->string(2)   , @_) };
 filter 'Date::Pcalc::Object'  => sub { _format($_[0]->string(2)   , @_) };
@@ -214,6 +215,8 @@ as a string.
 =item * L<DateTime>,  L<DateTime::Duration>, L<DateTime::Incomplete>, L<DateTime::TimeZone>
 
 =item * L<DateTime::Tiny>
+
+=item * L<Date>
 
 =item * L<Date::Tiny>
 
