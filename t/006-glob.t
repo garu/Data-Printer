@@ -2,14 +2,14 @@ use strict;
 use warnings;
 use Test::More;
 use Data::Printer::Object;
-use Data::Printer::Common;
+use Data::Printer::Config;
 use File::Spec;
 use Fcntl;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );
 
 my $filename = File::Spec->catfile(
-    Data::Printer::Common::_my_home('testing'), 'test_file.dat'
+    Data::Printer::Config::_my_home('testing'), 'test_file.dat'
 );
 
 if ( open my $var, '>', $filename ) {

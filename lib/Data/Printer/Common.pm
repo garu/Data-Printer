@@ -328,44 +328,6 @@ sub _tryme {
     return ($error || '(unknown error)');
 }
 
-# adapted from File::HomeDir && File::HomeDir::Tiny
-sub _my_home {
-    my ($testing) = @_;
-    if ($testing) {
-        require File::Temp;
-        require File::Spec;
-        my $BASE  = File::Temp::tempdir( CLEANUP => 1 );
-        my $home  = File::Spec->catdir( $BASE, 'my_home' );
-        $ENV{HOME} = $home;
-        mkdir($home, 0755) unless -d $home;
-        return $home;
-    }
-    elsif ($^O eq 'MSWin32' and "$]" < 5.016) {
-        return $ENV{HOME} || $ENV{USERPROFILE};
-    }
-    elsif ($^O eq 'MacOS') {
-        my $error = _tryme(sub { require Mac::SystemDirectory; 1 });
-        return Mac::SystemDirectory::HomeDirectory() unless $error;
-    }
-    # this is the most common case, for most breeds of unix, as well as
-    # MSWin32 in more recent perls.
-    my $home = (<~>)[0];
-    return $home if $home;
-
-    # desperate measures that should never be needed.
-    if (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
-        $home = $ENV{LOGDIR};
-    }
-    if (not $home and exists $ENV{HOME} and $ENV{HOME}) {
-        $home = $ENV{HOME};
-    }
-    # Light desperation on any (Unixish) platform
-    SCOPE: { $home = (getpwuid($<))[7] if not defined $home }
-    if (defined $home and ! -d $home ) {
-        $home = undef;
-    }
-    return $home;
-}
 
 # When printing array elements or hash keys, we may traverse all of it
 # or just a few chunks. This function returns those chunks' indexes, and

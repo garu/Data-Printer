@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Data::Printer::Config;
 use Data::Printer::Common;
 
@@ -85,7 +85,7 @@ is_deeply($data2, {}, 'parse error returns valid structure');
 
 SKIP: {
     my $skipped_tests = 4;
-    my $dir = Data::Printer::Common::_my_home('testing');
+    my $dir = Data::Printer::Config::_my_home('testing');
     skip "unable to create temp dir", $skipped_tests unless $dir && -d $dir;
     require File::Spec;
     my $filename = File::Spec->catfile($dir, '.dataprinter');
@@ -104,14 +104,24 @@ SKIP: {
         local %ENV = %ENV;
         $ENV{DATAPRINTERRC} = $filename;
         { no warnings 'redefine';
-          *Data::Printer::Common::_my_home = sub { fail 'should never be reached'; die };
+          *Data::Printer::Config::_project_home = sub { fail '(project) should never be reached'; die };
+          *Data::Printer::Config::_my_home = sub { fail '(home) should never be reached'; die };
         }
         my $data_from_env = Data::Printer::Config::load_rc_file();
         is_deeply($data_from_env, $expected, 'loaded rc file from ENV');
         delete $ENV{DATAPRINTERRC};
         my $found_me = 0;
         { no warnings 'redefine';
-          *Data::Printer::Common::_my_home = sub { $found_me = 1; return $dir };
+            *Data::Printer::Config::_project_home = sub { $found_me = 1; return File::Spec->catdir($dir, 'lala') };
+        }
+        my $data_from_project = Data::Printer::Config::load_rc_file();
+        is $found_me, 1, 'overriden project dir was found';
+        is_deeply($data_from_project, $expected, 'loaded rc file from (custom) project dir');
+
+        $found_me = 0;
+        { no warnings 'redefine';
+            *Data::Printer::Config::_project_home = sub { return; };
+            *Data::Printer::Config::_my_home = sub { $found_me = 1; return $dir };
         }
         my $data_from_home = Data::Printer::Config::load_rc_file();
         is $found_me, 1, 'overriden homedir was found';

@@ -6,15 +6,7 @@ use Data::Printer::Common;
 sub load_rc_file {
     my ($filename) = @_;
     if (!$filename) {
-        if (exists $ENV{DATAPRINTERRC}) {
-            $filename = $ENV{DATAPRINTERRC};
-        }
-        else {
-            require File::Spec;
-            $filename = File::Spec->catfile(
-                Data::Printer::Common::_my_home, '.dataprinter'
-            );
-        }
+        $filename = _get_first_rc_file_available();
     }
     return unless $filename && -e $filename && !-d $filename;
     if (open my $fh, '<', $filename) {
@@ -29,6 +21,90 @@ sub load_rc_file {
         Data::Printer::Common::_warn("error opening '$filename': $!");
         return;
     }
+}
+
+sub _get_first_rc_file_available {
+    return $ENV{DATAPRINTERRC} if exists $ENV{DATAPRINTERRC};
+
+    # look for a .dataprinter file on the project home up until we reach '/'
+    my $dir = _project_home();
+    require File::Spec;
+    while (defined $dir) {
+        my $file = File::Spec->catfile($dir, '.dataprinter');
+        return $file if -f $file;
+        (my $updir = $dir) =~ s{/[^\/]+/?\z}{/};
+        last if !defined $updir || $updir eq $dir;
+        $dir = $updir;
+    }
+    # still here? look for .dataprinter on the user's HOME:
+    return File::Spec->catfile( _my_home(), '.dataprinter');
+}
+
+sub _my_cwd {
+    require Cwd;
+    my $cwd = Cwd::getcwd();
+    # try harder if we can't access the current dir.
+    $cwd = Cwd::cwd() unless defined $cwd;
+    return $cwd;
+}
+
+sub _project_home {
+    require Cwd;
+    if ($0 eq '-e' || $0 eq '-') {
+        my $path = _my_cwd();
+        return Cwd::abs_path($path) if defined $path;
+    }
+    else {
+        my $script = $0;
+        return unless -f $script;
+        require File::Spec;
+        require File::Basename;
+        # we need the full path if we have chdir'd:
+        $script = File::Spec->catfile(_my_cwd(), $script)
+            unless File::Spec->file_name_is_absolute($script);
+        my (undef, $path) = File::Basename::fileparse($script);
+        return Cwd::abs_path($path) if defined $path;
+    }
+    return;
+}
+
+# adapted from File::HomeDir && File::HomeDir::Tiny
+sub _my_home {
+    my ($testing) = @_;
+    if ($testing) {
+        require File::Temp;
+        require File::Spec;
+        my $BASE  = File::Temp::tempdir( CLEANUP => 1 );
+        my $home  = File::Spec->catdir( $BASE, 'my_home' );
+        $ENV{HOME} = $home;
+        mkdir($home, 0755) unless -d $home;
+        return $home;
+    }
+    elsif ($^O eq 'MSWin32' and "$]" < 5.016) {
+        return $ENV{HOME} || $ENV{USERPROFILE};
+    }
+    elsif ($^O eq 'MacOS') {
+        my $error = _tryme(sub { require Mac::SystemDirectory; 1 });
+        return Mac::SystemDirectory::HomeDirectory() unless $error;
+    }
+    # this is the most common case, for most breeds of unix, as well as
+    # MSWin32 in more recent perls.
+    my $home = (<~>)[0];
+    return $home if $home;
+
+    # desperate measures that should never be needed.
+    if (exists $ENV{LOGDIR} and $ENV{LOGDIR}) {
+        $home = $ENV{LOGDIR};
+    }
+    if (not $home and exists $ENV{HOME} and $ENV{HOME}) {
+        $home = $ENV{HOME};
+    }
+    # Light desperation on any (Unixish) platform
+    SCOPE: { $home = (getpwuid($<))[7] if not defined $home }
+    if (defined $home and ! -d $home ) {
+        $home = undef;
+    }
+    return $home;
 }
 
 sub _str2data {
