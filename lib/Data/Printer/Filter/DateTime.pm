@@ -12,36 +12,10 @@ filter 'DateTime::Tiny'       => sub { _format($_[0]->as_string   , @_) };
 filter 'Date'                 => sub { _format($_[0]->to_string   , @_) };
 filter 'Date::Tiny'           => sub { _format($_[0]->as_string   , @_) };
 filter 'Date::Calc::Object'   => sub { _format($_[0]->string(2)   , @_) };
-filter 'Date::Pcalc::Object'  => sub { _format($_[0]->string(2)   , @_) };
 filter 'Date::Handler'        => sub { _format("$_[0]"            , @_) };
 filter 'Date::Handler::Delta' => sub { _format($_[0]->AsScalar    , @_) };
 filter 'Date::Simple'         => sub { _format("$_[0]"            , @_) };
 filter 'Date::Manip::Obj'     => sub { _format(scalar $_[0]->value, @_) };
-
-filter 'Panda::Date'      => sub { _format(_filter_Panda_Date(@_), @_) };
-filter 'Panda::Date::Rel' => sub { _format( "$_[0]", @_) };
-filter 'Panda::Date::Int' => sub {
-    my ($date, $ddp) = @_;
-    _format(
-          _filter_Panda_Date($date->from, $ddp)
-        . ' ~ '
-        . _filter_Panda_Date($date->till, $ddp),
-        @_
-    );
-};
-
-sub _filter_Panda_Date {
-    my ($date, $ddp) = @_;
-    my $string = $date->iso;
-    if (!exists $ddp->extra_config->{filter_datetime}{show_timezone}
-        || $ddp->extra_config->{filter_datetime}{show_timezone}
-    ) {
-        $string .= ' ' . $ddp->maybe_colorize('[', 'brackets')
-                 . $date->tzabbr
-                 . $ddp->maybe_colorize(']', 'brackets');
-    }
-    return $string;
-}
 
 filter 'Mojo::Date' => sub {
     my $date = $_[0]->can('to_datetime')
@@ -222,8 +196,6 @@ as a string.
 
 =item * L<Date::Calc::Object>
 
-=item * L<Date::Pcalc::Object>
-
 =item * L<Date::Handler>, L<Date::Handler::Delta>
 
 =item * L<Date::Simple>
@@ -233,8 +205,6 @@ as a string.
 =item * L<Class::Date>, L<Class::Date::Rel>
 
 =item * L<Date::Manip>
-
-=item * L<Panda::Date>, L<Panda::Date::Rel>, L<Panda::Date::Int>
 
 =back
 

@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 25;
+use Test::More tests => 20;
 use Data::Printer::Object;
 
 my $has_timepiece;
@@ -18,13 +18,11 @@ test_datetime_incomplete();
 test_datetime_tiny();
 test_date_tiny();
 test_date_calc_object();
-test_date_pcalc_object();
 test_date_handler();
 test_date_simple();
 test_mojo_date();
 test_date_manip();
 test_class_date();
-test_panda_date();
 test_time_seconds();
 test_time_moment();
 
@@ -182,20 +180,6 @@ sub test_date_calc_object {
     };
 }
 
-sub test_date_pcalc_object {
-    SKIP: {
-        skip 'Date::Pcalc::Object not found', 1, unless eval 'use Date::Pcalc::Object; 1';
-        my $d = Date::Pcalc::Object->localtime( 1234567890 );
-
-        my $ddp = Data::Printer::Object->new(
-            colored => 0,
-            filters => ['DateTime'],
-        );
-        my $string = $d->string(2); # not sure when the epoch is :X
-        is( $ddp->parse($d), $string, 'Date::Pcalc::Object' );
-    };
-}
-
 sub test_date_handler {
     SKIP: {
         skip 'Date::Handler not found', 2, unless eval 'use Date::Handler; 1';
@@ -286,13 +270,15 @@ sub test_class_date {
 sub test_time_seconds {
     SKIP: {
         skip 'Time:Seconds not found', 1, unless eval 'use Time::Seconds; 1';
-        my $d = Time::Seconds->new();
-
         my $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DateTime'],
         );
+
+        my $d = Time::Seconds->new();
         is($ddp->parse($d), '0 seconds', "Time::Seconds");
+        { no warnings 'redefine'; *Time::Seconds::can = sub { 0 } }
+        is($ddp->parse($d), '0 seconds', "Time::Seconds (legacy)");
     };
 }
 
@@ -314,44 +300,5 @@ sub test_time_moment {
             filters => ['DateTime'],
         );
         is($ddp->parse($d), '2012-12-24T15:30:45Z', "Time::Moment");
-    };
-}
-
-sub test_panda_date {
-    SKIP: {
-        skip 'Panda::Date not found', 4, unless eval 'use Panda::Date; 1';
-        my $d = Panda::Date->new(
-            { year => 2003, month => 3, day => 11 },
-            'GMT'
-        );
-
-        my $ddp = Data::Printer::Object->new(
-            colored => 0,
-            filters => ['DateTime'],
-        );
-
-        is( $ddp->parse($d), '2003-03-11 00:00:00 [GMT]', 'Panda::Date' );
-
-        $ddp = Data::Printer::Object->new(
-            colored => 0,
-            filters => ['DateTime'],
-            filter_datetime => { show_timezone => 0 },
-        );
-        is( $ddp->parse($d), '2003-03-11 00:00:00', 'Panda::Date (no timezone)' );
-
-        $ddp = Data::Printer::Object->new(
-            colored => 0,
-            filters => ['DateTime'],
-        );
-
-        my $delta = Panda::Date::Rel->new('1M 2D 7h');
-        is( $ddp->parse($delta), "1M 2D 7h", 'Panda::Date::Rel' );
-
-        my $interval = Panda::Date::Int->new($d, $d + $delta);
-        is(
-            $ddp->parse($interval),
-            '2003-03-11 00:00:00 [GMT] ~ 2003-04-13 07:00:00 [GMT]',
-            'Panda::Date::Int'
-        );
     };
 }
