@@ -107,6 +107,14 @@ sub _my_home {
     return $home;
 }
 
+sub _file_mode_is_restricted {
+    my ($filename) = @_;
+    my $mode_raw = (stat($filename))[2];
+    return 0 unless defined $mode_raw;
+    my $mode = sprintf('%04o', $mode_raw & 07777);
+    return (length($mode) == 4 && substr($mode, 2, 2) eq '00') ? 1 : 0;
+}
+
 sub _str2data {
     my ($filename, $content) = @_;
     my $config = { _ => {} };
@@ -120,8 +128,7 @@ sub _str2data {
         if (defined $filter) {
             if ( /^end filter\s*$/ ) {
                 if (!defined $can_use_filters) {
-                    my $mode = sprintf('%04o', (stat(q(/Users/garu/.dataprinter)))[2] & 07777);
-                    $can_use_filters = (length($mode) == 4 && substr($mode, 2, 2) eq '00') ? 1 : 0;
+                    $can_use_filters = _file_mode_is_restricted($filename);
                 }
                 if ($can_use_filters) {
                     my $sub_str = 'sub { my ($obj, $ddp) = @_; '
