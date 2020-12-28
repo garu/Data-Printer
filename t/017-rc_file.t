@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 35;
 use Data::Printer::Config;
 use Data::Printer::Common;
 
@@ -29,6 +29,13 @@ filters = Meep
 hard.times = come.easy
 filters =
 
+[Module::With::CustomFilter]
+option = val
+
+begin filter MockObj
+    return ($ddp, $obj, 'ok!');
+end filter
+
 EOTEXT
 
 my $expected = {
@@ -53,14 +60,62 @@ my $expected = {
         filters => ['Foo', 'Bar'],
     },
     'Some::Module' => { meep => 'moop', filters => ['Meep'] },
-    'Other::Module' => { hard => { times => 'come.easy' }, filters => [] }
+    'Other::Module' => { hard => { times => 'come.easy' }, filters => [] },
+    'Module::With::CustomFilter' => { option => 'val', filters => [{ MockObj => sub {}}] }
 };
 
+my $warn_count = 0;
+{ no warnings 'redefine';
+    *Data::Printer::Common::_warn = sub {
+        $warn_count++;
+        my $message = shift;
+        like $message, qr/ignored filter 'MockObj' from rc file/, 'skip filters on permissive rc files';
+    }
+}
 my $data = Data::Printer::Config::_str2data('data.rc', $good_content);
+is $warn_count, 1, 'warning caught due to bad filters';
+is_deeply($data, {
+    _ => {
+        answer => 42,
+        spaced1 => q(   ),
+        spaced2 => q(  " ),
+        spaced3 => q(   ),
+        spaced4 => q( ' ),
+        whatever => 'Something Interesting',
+        class => {
+            simple => 'bla',
+            data => {
+                may => {
+                    not => 1,
+                    be => {
+                        deep => '0 but true',
+                    }
+                }
+            }
+        },
+        filters => ['Foo', 'Bar'],
+    },
+    'Some::Module' => { meep => 'moop', filters => ['Meep'] },
+    'Other::Module' => { hard => { times => 'come.easy' }, filters => [] },
+    'Module::With::CustomFilter' => { option => 'val' }
+}, 'filter was properly ignored');
+
+{ no warnings 'redefine';
+    *Data::Printer::Config::_file_mode_is_restricted = sub { 1 };
+}
+$warn_count = 0;
+$data = Data::Printer::Config::_str2data('data.rc', $good_content);
+is $warn_count, 0, 'no new warnings caught';
+ok exists $data->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'parsed MockObj';
+is ref $data->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'CODE', 'subref was set.';
+
+ok my @filter_ret = $data->{'Module::With::CustomFilter'}{filters}[0]{MockObj}->(123, 456), 'able to call filter function';
+is_deeply(\@filter_ret, [456, 123, 'ok!'], 'variables and code properly set!');
+
+$expected->{'Module::With::CustomFilter'}{filters}[0]{MockObj}
+    = $data->{'Module::With::CustomFilter'}{filters}[0]{MockObj};
 is_deeply($data, $expected, 'parsed rc file');
 
-
-my $warn_count = 0;
 { no warnings 'redefine';
     *Data::Printer::Common::_warn = sub {
         my $message = shift;
@@ -82,11 +137,12 @@ EOLEGACY
 
 my $data2 = Data::Printer::Config::_str2data('data.rc', $bad_content);
 is_deeply($data2, {}, 'parse error returns valid structure');
+is $warn_count, 2, 'parse error issues warnings';
+$warn_count = 0;
 
 SKIP: {
-    my $skipped_tests = 4;
     my $dir = Data::Printer::Config::_my_home('testing');
-    skip "unable to create temp dir", $skipped_tests unless $dir && -d $dir;
+    skip "unable to create temp dir", 22 unless $dir && -d $dir;
     require File::Spec;
     my $filename = File::Spec->catfile($dir, '.dataprinter');
 
@@ -96,10 +152,14 @@ SKIP: {
         print $fh $good_content or die "error writing to test rc file $filename: $!";
         return 1;
     });
-    skip $error, 11 if $error;
+    skip $error, 22 if $error;
 
     my $data_from_rc = Data::Printer::Config::load_rc_file($filename);
+    $expected->{'Module::With::CustomFilter'}{filters}[0]{MockObj}
+        = $data_from_rc->{'Module::With::CustomFilter'}{filters}[0]{MockObj};
     is_deeply($data_from_rc, $expected, 'loaded rc file');
+    is $warn_count, 0, 'no warnings after proper rc file';
+
     {
         local %ENV = %ENV;
         $ENV{DATAPRINTERRC} = $filename;
@@ -108,6 +168,12 @@ SKIP: {
           *Data::Printer::Config::_my_home = sub { fail '(home) should never be reached'; die };
         }
         my $data_from_env = Data::Printer::Config::load_rc_file();
+        is $warn_count, 0, 'no warnings after proper rc loaded from env';
+        ok exists $data_from_env->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'parsed MockObj';
+        is ref $data_from_env->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'CODE', 'subref was set.';
+        $expected->{'Module::With::CustomFilter'}{filters}[0]{MockObj}
+            = $data_from_env->{'Module::With::CustomFilter'}{filters}[0]{MockObj};
+
         is_deeply($data_from_env, $expected, 'loaded rc file from ENV');
         delete $ENV{DATAPRINTERRC};
         my $found_me = 0;
@@ -116,6 +182,12 @@ SKIP: {
         }
         my $data_from_project = Data::Printer::Config::load_rc_file();
         is $found_me, 1, 'overriden project dir was found';
+        is $warn_count, 0, 'no warnings after rc loaded from project home';
+        ok exists $data_from_project->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'parsed MockObj';
+        is ref $data_from_project->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'CODE', 'subref was set.';
+        $expected->{'Module::With::CustomFilter'}{filters}[0]{MockObj}
+            = $data_from_project->{'Module::With::CustomFilter'}{filters}[0]{MockObj};
+
         is_deeply($data_from_project, $expected, 'loaded rc file from (custom) project dir');
 
         $found_me = 0;
@@ -125,6 +197,12 @@ SKIP: {
         }
         my $data_from_home = Data::Printer::Config::load_rc_file();
         is $found_me, 1, 'overriden homedir was found';
+        is $warn_count, 0, 'no warnings after rc loaded from project home';
+        ok exists $data_from_home->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'parsed MockObj';
+        is ref $data_from_home->{'Module::With::CustomFilter'}{filters}[0]{MockObj}, 'CODE', 'subref was set.';
+        $expected->{'Module::With::CustomFilter'}{filters}[0]{MockObj}
+            = $data_from_home->{'Module::With::CustomFilter'}{filters}[0]{MockObj};
+
         is_deeply($data_from_home, $expected, 'loaded rc file from (custom) home');
     }
 
@@ -142,6 +220,7 @@ SKIP: {
         print $fh '1' or die "error writing to test rc file $filename: $!";
         return 1;
     });
+
     skip $error, 4 if $error;
     $error = Data::Printer::Common::_tryme(sub {
         Data::Printer::Config::convert($filename);
