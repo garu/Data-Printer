@@ -145,7 +145,7 @@ sub _init {
     $self->{'caller_message_newline'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'caller_message_newline', 1);
     $self->{'caller_message_position'} = Data::Printer::Common::_fetch_anyof($props, 'caller_message_position', 'before', [qw(before after)]);
     $self->{'resolve_scalar_refs'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'resolve_scalar_refs', 0);
-    $self->{'string_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'string_max', 1024);
+    $self->{'string_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'string_max', 4096);
     $self->{'string_preserve'} = Data::Printer::Common::_fetch_anyof(
                              $props,
                              'string_preserve',
@@ -157,7 +157,7 @@ sub _init {
                                 'string_overflow',
                                 '(...skipping __SKIPPED__ chars...)'
                             );
-    $self->{'array_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'array_max', 50);
+    $self->{'array_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'array_max', 100);
     $self->{'array_preserve'} = Data::Printer::Common::_fetch_anyof(
                              $props,
                              'array_preserve',
@@ -169,7 +169,7 @@ sub _init {
                                 'array_overflow',
                                 '(...skipping __SKIPPED__ items...)'
                         );
-    $self->{'hash_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'hash_max', 50);
+    $self->{'hash_max'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'hash_max', 100);
     $self->{'hash_preserve'} = Data::Printer::Common::_fetch_anyof(
                              $props,
                              'hash_preserve',
@@ -919,7 +919,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * align_hash - vertically align hash keys (default: 1)
 
-=item * array_max - maximum array elements to show. Set to 0 to show all (default: 50)
+=item * array_max - maximum array elements to show. Set to 0 to show all (default: 100)
 
 =item * array_overflow - message to display once array_max is reached
 
@@ -953,7 +953,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * extra_config - all given options that were not recognized by Data::Printer::Object are kept here. Useful to create custom options in filters. See L<Data::Printer::Filter>.
 
-=item * hash_max - maximum hash pairs to show. Set to 0 to show all (default: 50)
+=item * hash_max - maximum hash pairs to show. Set to 0 to show all (default: 100)
 
 =item * hash_overflow - message to display once hash_max is reached
 
@@ -1009,7 +1009,7 @@ Most of them are described in L<Data::Printer>.
 
 =item * sort_keys - whether to sort hash keys (default: 1)
 
-=item * string_max - maximum number of characters in a string. Set to 0 to show all (default: 1024)
+=item * string_max - maximum number of characters in a string. Set to 0 to show all (default: 4096)
 
 =item * string_overflow - message to display once string_max is reached
 
