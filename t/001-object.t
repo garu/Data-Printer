@@ -27,17 +27,17 @@ sub test_defaults {
     is $ddp->escape_chars, 'none', 'escape_chars defaults to "none"';
     is $ddp->caller_info, 0, 'caller_info default OFF';
     is $ddp->caller_message, 'Printing in line __LINE__ of __FILENAME__:', 'default message';
-    is $ddp->string_max, 1024, 'string_max defaults to 1024';
+    is $ddp->string_max, 4096, 'string_max defaults to 4096';
     is $ddp->string_preserve, 'begin', 'string_preserve defaults to "begin"';
     is(
         $ddp->string_overflow,
         '(...skipping __SKIPPED__ chars...)',
         'string_overflow'
     );
-    is $ddp->array_max, 50, 'array_max default to 50';
+    is $ddp->array_max, 100, 'array_max default to 100';
     is $ddp->array_preserve, 'begin', 'array_preserve defaults to "begin"';
     is $ddp->array_overflow, '(...skipping __SKIPPED__ items...)', 'array_overflow';
-    is $ddp->hash_max, 50, 'hash_max default 50';
+    is $ddp->hash_max, 100, 'hash_max default 100';
     is $ddp->hash_preserve, 'begin', 'hash_preserve defaults to "begin"';
     is $ddp->hash_overflow, '(...skipping __SKIPPED__ keys...)', 'hash_overflow';
     is_deeply $ddp->ignore_keys, [], 'ignore_keys';
