@@ -278,6 +278,8 @@ sub test_time_seconds {
         my $d = Time::Seconds->new();
         is($ddp->parse($d), '0 seconds', "Time::Seconds");
         { no warnings 'redefine'; *Time::Seconds::can = sub { 0 } }
+        my $has_original_can = Time::Seconds::can('new');
+        skip 'unable to override "can"', 1 if $has_original_can;
         is($ddp->parse($d), '0 seconds', "Time::Seconds (legacy)");
     };
 }
