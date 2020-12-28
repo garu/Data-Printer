@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 20;
+use Test::More tests => 21;
 use Data::Printer::Object;
 
 my $has_timepiece;
@@ -269,7 +269,7 @@ sub test_class_date {
 
 sub test_time_seconds {
     SKIP: {
-        skip 'Time:Seconds not found', 1, unless eval 'use Time::Seconds; 1';
+        skip 'Time:Seconds not found', 2, unless eval 'use Time::Seconds; 1';
         my $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DateTime'],
