@@ -4,7 +4,9 @@ use warnings;
 use Data::Printer::Filter;
 use Data::Printer::Common;
 
-filter 'VSTRING' => sub {
+filter 'VSTRING' => \&parse;
+
+sub parse {
     my ($vstring, $ddp) = @_;
     my $string = '';
 

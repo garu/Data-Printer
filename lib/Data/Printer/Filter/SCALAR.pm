@@ -4,17 +4,17 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
-filter 'SCALAR' => \&_parse_scalar;
+filter 'SCALAR' => \&parse;
 filter 'LVALUE' => sub {
     my ($scalar_ref, $ddp) = @_;
-    my $string = _parse_scalar($scalar_ref, $ddp);
+    my $string = parse($scalar_ref, $ddp);
     if ($ddp->show_lvalue) {
         $string .= $ddp->maybe_colorize(' (LVALUE)', 'lvalue');
     }
     return $string;
 };
 
-sub _parse_scalar {
+sub parse {
     my ($scalar_ref, $ddp) = @_;
 
     my $ret;

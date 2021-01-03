@@ -4,7 +4,9 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util ();
 
-filter 'REF' => sub {
+filter 'REF' => \&parse;
+
+sub parse {
     my ($ref, $ddp) = @_;
 
     my $string = '';

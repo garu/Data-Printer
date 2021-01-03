@@ -5,7 +5,10 @@ use Data::Printer::Filter;
 use Data::Printer::Common;
 use Scalar::Util ();
 
-filter 'ARRAY' => sub {
+filter 'ARRAY' => \&parse;
+
+
+sub parse {
     my ($array_ref, $ddp) = @_;
 
     my $tied = '';

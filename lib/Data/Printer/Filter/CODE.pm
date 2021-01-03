@@ -6,7 +6,10 @@ use Data::Printer::Common;
 use Scalar::Util ();
 use Fcntl;
 
-filter 'CODE' => sub {
+filter 'CODE' => \&parse;
+
+
+sub parse {
     my ($subref, $ddp) = @_;
     my $string = $ddp->deparse ? _deparse($subref, $ddp) : 'sub { ... }';
     return $ddp->maybe_colorize($string, 'code');

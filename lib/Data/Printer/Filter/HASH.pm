@@ -5,7 +5,10 @@ use Data::Printer::Filter;
 use Data::Printer::Common;
 use Scalar::Util ();
 
-filter 'HASH' => sub {
+filter 'HASH' => \&parse;
+
+
+sub parse {
     my ($hash_ref, $ddp) = @_;
     my $tied = '';
     if ($ddp->show_tied and my $tie = ref tied %$hash_ref) {

@@ -6,7 +6,10 @@ use Data::Printer::Common;
 use Scalar::Util ();
 use Fcntl;
 
-filter 'GLOB' => sub {
+filter 'GLOB' => \&parse;
+
+
+sub parse {
     my ($glob, $ddp) = @_;
 
     my $string = $ddp->maybe_colorize("$$glob", 'glob');
