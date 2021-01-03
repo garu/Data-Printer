@@ -155,7 +155,7 @@ sub _str2data {
         }
         elsif ( /^\s*\[\s*(.+?)\s*\]\s*$/ ) {
             # Create the sub-hash if it doesn't exist.
-            # Without this sections without keys will not
+            # Without this, sections without keys will not
             # appear at all in the completed struct.
             $config->{$ns = $1} ||= {};
         }
