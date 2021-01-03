@@ -39,20 +39,18 @@ sub parse {
         my $colored_key = Data::Printer::Common::_process_string($ddp, $raw_key, 'hash');
         my $new_key = Data::Printer::Common::_colorstrip($colored_key);
 
-        if ($ddp->quote_keys) {
-            my $needs_quote = 1;
-            if ($ddp->quote_keys eq 'auto') {
-                if ($raw_key eq $new_key && $new_key !~ /\s|\r|\n|\t|\f/) {
-                    $needs_quote = 0;
-                }
+        if (_needs_quote($ddp, $raw_key, $new_key)) {
+            my $quote_char = $ddp->scalar_quotes;
+            # foo'bar ==> 'foo\'bar'
+            if (index($new_key, $quote_char) >= 0) {
+                $new_key =~ s{$quote_char}{\\$quote_char}g;
+                $colored_key =~ s{$quote_char}{\\$quote_char}g;
             }
-            if ($needs_quote) {
-                $new_key     = q(') . $new_key . q(');
-                $colored_key = $ddp->maybe_colorize(q('), 'quotes')
-                             . $colored_key
-                             . $ddp->maybe_colorize(q('), 'quotes')
-                             ;
-            }
+            $new_key     = $quote_char . $new_key . $quote_char;
+            $colored_key = $ddp->maybe_colorize($quote_char, 'quotes')
+                            . $colored_key
+                            . $ddp->maybe_colorize($quote_char, 'quotes')
+                            ;
         }
         $processed_keys{$idx} = {
             raw     => $raw_key,
@@ -79,7 +77,7 @@ sub parse {
         my $key = $processed_keys{$idx};
 
         # update 'var' to 'var{key}':
-        $ddp->current_name( $ddp->current_name . '{' . $key->{raw} . '}' );
+        $ddp->current_name( $ddp->current_name . '{' . $key->{nocolor} . '}');
 
         my $padding = $len - length($key->{nocolor});
         $padding = 0 if $padding < 0;
@@ -105,7 +103,7 @@ sub parse {
             if $total_keys > 0 || $ddp->end_separator;
 
         # restore var name back to "var"
-        my $size = 2 + length($key->{raw});
+        my $size = 2 + length($key->{nocolor});
         my $name = $ddp->current_name;
         substr $name, -$size, $size, '';
         $ddp->current_name($name);
@@ -119,5 +117,17 @@ sub parse {
 ### Private auxiliary helpers below ###
 #######################################
 
+sub _needs_quote {
+    my ($ddp, $raw_key, $new_key) = @_;
+    my $quote_keys = $ddp->quote_keys;
+    my $scalar_quotes = $ddp->scalar_quotes;
+    return 0 unless defined $quote_keys && defined $scalar_quotes;;
+    if ($quote_keys eq 'auto'
+        && $raw_key eq $new_key
+        && $new_key !~ /\s|\r|\n|\t|\f/) {
+            return 0;
+    }
+    return 1;
+}
 
 1;
