@@ -848,7 +848,7 @@ the same filter over and over again.
 =item * C<< seen_override => 1 >> - Data::Printer::Object tries to remember
 if it has already seen a data structure before, so it can show the circular
 reference instead of entenring an infinite loop. However, there are cases
-when you wanto to print the same data structure twice, like when you're doing
+when you want to print the same data structure twice, like when you're doing
 a second pass on a blessed object to print its internals, or if you're using
 the same object over and over again. This setting overrides the internal
 counter and prints the same data again. Check L<unsee|/unsee( $data )> below
