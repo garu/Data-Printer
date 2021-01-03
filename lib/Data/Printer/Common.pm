@@ -7,36 +7,6 @@ use Scalar::Util;
 my $mro_initialized = 0;
 my $nsort_initialized;
 
-sub _merge_options {
-    my ($old, $new) = @_;
-    if (ref $new eq 'HASH') {
-        my %merged;
-        my $to_merge = ref $old eq 'HASH' ? $old : {};
-        foreach my $k (keys %$new, keys %$to_merge) {
-            # if the key exists in $new, we recurse into it:
-            if (exists $new->{$k}) {
-                $merged{$k} = _merge_options($to_merge->{$k}, $new->{$k});
-            }
-            else {
-                # otherwise we keep the old version (recursing in case of refs)
-                $merged{$k} = _merge_options(undef, $to_merge->{$k});
-            }
-        }
-        return \%merged;
-    }
-    elsif (ref $new eq 'ARRAY') {
-        # we'll only use the array on $new, but we still need to recurse
-        # in case array elements contain other data structures.
-        my @merged;
-        foreach my $element (@$new) {
-            push @merged, _merge_options(undef, $element);
-        }
-        return \@merged;
-    }
-    else {
-        return $new;
-    }
-}
 
 sub _filter_category_for {
     my ($name) = @_;

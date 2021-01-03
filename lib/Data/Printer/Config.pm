@@ -204,8 +204,72 @@ sub _str2data {
             return {};
         }
     }
+    # now that we have loaded the config, we must expand
+    # all existing 'rc_file' and 'profile' statements and
+    # merge them together.
+    foreach my $ns (keys %$config) {
+        $config->{$ns} = _expand_profile($config->{$ns})
+            if exists $config->{$ns}{profile};
+    }
     return $config;
 }
+
+sub _merge_options {
+    my ($old, $new) = @_;
+    if (ref $new eq 'HASH') {
+        my %merged;
+        my $to_merge = ref $old eq 'HASH' ? $old : {};
+        foreach my $k (keys %$new, keys %$to_merge) {
+            # if the key exists in $new, we recurse into it:
+            if (exists $new->{$k}) {
+                $merged{$k} = _merge_options($to_merge->{$k}, $new->{$k});
+            }
+            else {
+                # otherwise we keep the old version (recursing in case of refs)
+                $merged{$k} = _merge_options(undef, $to_merge->{$k});
+            }
+        }
+        return \%merged;
+    }
+    elsif (ref $new eq 'ARRAY') {
+        # we'll only use the array on $new, but we still need to recurse
+        # in case array elements contain other data structures.
+        my @merged;
+        foreach my $element (@$new) {
+            push @merged, _merge_options(undef, $element);
+        }
+        return \@merged;
+    }
+    else {
+        return $new;
+    }
+}
+
+
+sub _expand_profile {
+    my ($options) = @_;
+    my $profile = delete $options->{profile};
+    if ($profile !~ /\A[a-zA-Z0-9:]+\z/) {
+        Data::Printer::Common::_warn("invalid profile name '$profile'");
+        return;
+    }
+    my $class = 'Data::Printer::Profile::' . $profile;
+    my $error = Data::Printer::Common::_tryme(sub {
+        my $load_error = Data::Printer::Common::_tryme("use $class; 1;");
+        die $load_error if defined $load_error;
+        my $expanded = $class->profile();
+        die "profile $class did not return a HASH reference" unless ref $expanded eq 'HASH';
+        $options = Data::Printer::Config::_merge_options($expanded, $options);
+    });
+    if (defined $error) {
+        Data::Printer::Common::_warn("unable to load profile '$profile': $error");
+        return;
+    }
+    return $options;
+}
+
+
+
 
 # converts the old format to the new one
 sub convert {

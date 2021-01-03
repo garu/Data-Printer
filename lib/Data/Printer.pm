@@ -182,27 +182,30 @@ sub _fetch_args_with {
 
     my $args_to_use = {};
     if (keys %$rc_arguments) {
-        $args_to_use = Data::Printer::Common::_merge_options(
+        $args_to_use = Data::Printer::Config::_merge_options(
             $args_to_use, $rc_arguments->{'_'}
         );
         if (exists $rc_arguments->{$caller}) {
-            $args_to_use = Data::Printer::Common::_merge_options(
+            $args_to_use = Data::Printer::Config::_merge_options(
                 $args_to_use, $rc_arguments->{$caller}
             );
         }
     }
     if ($arguments_for{$caller}) {
-        $args_to_use = Data::Printer::Common::_merge_options(
+        $args_to_use = Data::Printer::Config::_merge_options(
             $args_to_use, $arguments_for{$caller}
         );
     }
     if (keys %$run_properties) {
-        $args_to_use = Data::Printer::Common::_merge_options(
+        $run_properties = Data::Printer::Config::_expand_profile($run_properties)
+            if exists $run_properties->{profile};
+        $args_to_use = Data::Printer::Config::_merge_options(
             $args_to_use, $run_properties
         );
     }
     return $args_to_use;
 }
+
 
 sub _find_option {
     my ($key, $args, $caller, $default) = @_;
