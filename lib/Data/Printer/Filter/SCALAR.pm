@@ -41,8 +41,7 @@ sub parse {
             }
             else {
                 $ret = Data::Printer::Common::_process_string( $ddp, "$value", 'string' );
-                my $quote = $ddp->maybe_colorize( $ddp->scalar_quotes, 'quotes' );
-                $ret = $quote . $ret . $quote;
+                $ret = _quoteme($ddp, $ret);
                 $ret .= ' (dualvar: ' . $ddp->maybe_colorize( $numified, 'number' ) . ')';
             }
         }
@@ -51,18 +50,15 @@ sub parse {
         }
         else {
             $ret = Data::Printer::Common::_process_string($ddp, $value, 'string');
-            my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
-            $ret = $quote . $ret . $quote;
+            $ret = _quoteme($ddp, $ret);
         }
     }
     elsif (_is_number($value)) {
         $ret = $ddp->maybe_colorize($value, 'number');
     }
     else {
-        # share code with hash keys:
         $ret = Data::Printer::Common::_process_string($ddp, $value, 'string');
-        my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
-        $ret = $quote . $ret . $quote;
+        $ret = _quoteme($ddp, $ret);
     }
     $ret .= _check_tainted($ddp, $scalar_ref);
     $ret .= _check_unicode($ddp, $scalar_ref);
@@ -77,6 +73,18 @@ sub parse {
 #######################################
 ### Private auxiliary helpers below ###
 #######################################
+sub _quoteme {
+    my ($ddp, $text) = @_;
+
+    my $scalar_quotes = $ddp->scalar_quotes;
+    if (defined $scalar_quotes) {
+        # foo'bar ==> 'foo\'bar'
+        $text =~ s{$scalar_quotes}{\\$scalar_quotes}g if index($text, $scalar_quotes) >= 0;
+        my $quote = $ddp->maybe_colorize( $scalar_quotes, 'quotes' );
+        $text = $quote . $text . $quote;
+    }
+    return $text;
+}
 
 sub _check_tainted {
     my ($self, $var) = @_;
