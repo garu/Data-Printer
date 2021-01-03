@@ -520,18 +520,21 @@ sub _filters_for_data {
     my $ref_kind = Scalar::Util::reftype($data);
     $ref_kind = 'SCALAR' unless $ref_kind;
 
-    # Huh. ref() returns 'Regexp' but reftype() returns 'REGEXP'
+    # ref() returns 'Regexp' but reftype() returns 'REGEXP', so we picked one:
     $ref_kind = 'Regexp' if $ref_kind eq 'REGEXP';
 
     my @potential_filters;
 
     # first, try class name + full inheritance for a specific name.
-    # NOTE: blessed() is returning true for regexes.
-    my $class = $ref_kind eq 'Regexp' ? () : Scalar::Util::blessed($data);
-    # before 5.11 regexes are blessed SCALARs:
-    if ($] < 5.011 && $ref_kind eq 'SCALAR' && defined $class && $class eq 'Regexp') {
-        $ref_kind = 'Regexp';
-        undef $class;
+    my $class = Scalar::Util::blessed($data);
+
+    # a regular regexp is blessed, but in that case we want a
+    # regexp filter, not a class filter.
+    if (defined $class && $class eq 'Regexp') {
+        if ($ref_kind eq 'Regexp' || ($] < 5.011 && $ref_kind eq 'SCALAR')) {
+            $ref_kind = 'Regexp';
+            undef $class;
+        }
     }
     if (defined $class) {
         if ($self->class->parent_filters) {

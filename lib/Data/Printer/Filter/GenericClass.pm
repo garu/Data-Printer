@@ -31,7 +31,10 @@ filter '-class' => sub {
     my $show_reftype = $ddp->class->show_reftype;
     my $show_internals = $ddp->class->internals;
     my $reftype;
-    $reftype = Scalar::Util::reftype($object) if $show_reftype || $show_internals;
+    if ($show_reftype || $show_internals) {
+        $reftype = Scalar::Util::reftype($object);
+        $reftype = 'Regexp' if $reftype eq 'REGEXP';
+    }
 
     $ddp->{_class_depth}++;
     my $string = $ddp->maybe_colorize( $class_name, 'class' );
