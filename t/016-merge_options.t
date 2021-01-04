@@ -1,41 +1,41 @@
 use strict;
 use warnings;
 use Test::More tests => 12;
-use Data::Printer::Common;
+use Data::Printer::Config;
 
 is_deeply(
-    Data::Printer::Common::_merge_options(undef, { foo => 42, bar => 27 }),
+    Data::Printer::Config::_merge_options(undef, { foo => 42, bar => 27 }),
     { foo => 42, bar => 27 },
     'merge undef and hash'
 );
 is_deeply(
-    Data::Printer::Common::_merge_options(undef,[ foo => 42, bar => 27 ]),
+    Data::Printer::Config::_merge_options(undef,[ foo => 42, bar => 27 ]),
     [ 'foo', 42, 'bar',27 ],
     'merge undef and array'
 );
 is_deeply(
-    Data::Printer::Common::_merge_options({}, { foo => 42, bar => 27 }),
+    Data::Printer::Config::_merge_options({}, { foo => 42, bar => 27 }),
     { foo => 42, bar => 27 },
     'merge hash and hash'
 );
 is_deeply(
-    Data::Printer::Common::_merge_options([],[ foo => 42, bar => 27 ]),
+    Data::Printer::Config::_merge_options([],[ foo => 42, bar => 27 ]),
     [ 'foo', 42, 'bar',27 ],
     'merge array and array'
 );
 is_deeply(
-    Data::Printer::Common::_merge_options([], { foo => 42, bar => 27 }),
+    Data::Printer::Config::_merge_options([], { foo => 42, bar => 27 }),
     { foo => 42, bar => 27 },
     'merge array and hash'
 );
 is_deeply(
-    Data::Printer::Common::_merge_options({},[ foo => 42, bar => 27 ]),
+    Data::Printer::Config::_merge_options({},[ foo => 42, bar => 27 ]),
     [ 'foo', 42, 'bar',27 ],
     'merge hash and array'
 );
 
 is_deeply(
-    Data::Printer::Common::_merge_options(
+    Data::Printer::Config::_merge_options(
         { foo => 42, bar => 27 },
         { foo => 666 },
     ),
@@ -44,7 +44,7 @@ is_deeply(
 );
 
 is_deeply(
-    Data::Printer::Common::_merge_options(
+    Data::Printer::Config::_merge_options(
         { foo => { bar => 42, baz => 27 } },
         { foo => { bar => 666 } },
     ),
@@ -54,7 +54,7 @@ is_deeply(
 
 my $old = { x => [1], foo => { bar => 42, baz => { a => 1, b => 2 } } };
 my $new = { x => [9,8], bar => 10, foo => { meep => 1, baz => { b => 4, c => q(a) } } };
-my $merged = Data::Printer::Common::_merge_options($old, $new);
+my $merged = Data::Printer::Config::_merge_options($old, $new);
 
 is_deeply(
     $merged,
@@ -78,7 +78,7 @@ is_deeply(
 
 
 is_deeply(
-    Data::Printer::Common::_merge_options(
+    Data::Printer::Config::_merge_options(
         { foo => 1, bar => 2, baz => { meep => 666, moop => [444], bla => [3,2,1] } },
         { foo => 42, baz => { otherkey => 42, moop => [44,3] } }
     ),
