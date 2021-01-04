@@ -148,7 +148,7 @@ Data::Printer itself will be put here. You are encouraged to provide your
 own customization options by labelling them C<filter_*>, which is guaranteed
 to never collide with a local setting.
 
-=item * C<< $ddp->parse( $date ) >> - parses and returns the string output of
+=item * C<< $ddp->parse( $data ) >> - parses and returns the string output of
 the given data structure.
 
 =back
