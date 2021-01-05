@@ -46,9 +46,9 @@ sub profile {
                 'CODE'    => \&_data_dumper_code_filter,
                 'FORMAT'  => \&_data_dumper_format_filter,
                 'GLOB'    => \&_data_dumper_glob_filter,
-                #'REF'     => ,
+                'REF'     => \&_data_dumper_ref_filter,,
                 'Regexp'  => \&_data_dumper_regexp_filter,
-                #'VSTRING' => ,
+                'VSTRING' => \&_data_dumper_vstring_filter,,
             },
         ],
     };
@@ -88,6 +88,20 @@ sub _data_dumper_scalar_filter {
     return _output_wrapper($ddp, $ret);
 }
 
+sub _data_dumper_ref_filter {
+    my ($scalar, $ddp) = @_;
+    $ddp->indent;
+    my $ret = Data::Printer::Filter::REF::parse(@_);
+    $ddp->outdent;
+    return _output_wrapper($ddp, $ret);
+}
+
+sub _data_dumper_vstring_filter {
+    my ($scalar, $ddp) = @_;
+    my $ret = Data::Printer::Filter::VSTRING::parse(@_);
+    return _output_wrapper($ddp, $ret);
+}
+
 sub _data_dumper_format_filter {
     my (undef, $ddp) = @_;
     Data::Printer::Common::_warn('cannot handle ref type 14');
@@ -117,8 +131,9 @@ sub _data_dumper_class_filter {
     my $reftype = Scalar::Util::reftype($obj);
     $reftype = 'Regexp' if $reftype eq 'REGEXP';
     my ($parse_prefix, $parse_suffix) = ('', '');
-    if ($reftype eq 'SCALAR') {
+    if ($reftype eq 'SCALAR' || $reftype eq 'REF' || $reftype eq 'VSTRING') {
         $parse_prefix = 'do{\(my $o = ';
+        $parse_prefix .= '\\' if $reftype eq 'REF';
         $parse_suffix = ')}';
     }
     $ddp->indent;
@@ -175,6 +190,7 @@ still happening in a much DDP-ish way.
 * return value
 * prototypes
 * still called 'p' (say alias = 'Dumper' if you want)
+* arg is always a reference, so on the top level, references to scalars will be rendered as scalars. References to references and inner references will be rendered properly.
 
 
 =head1 SEE ALSO
