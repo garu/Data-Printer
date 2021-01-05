@@ -4,7 +4,7 @@ use Test::More;
 
 my $success = eval "use Test::Pod::Coverage 1.04; 1";
 if ($success) {
-    plan tests => 22;
+    plan tests => 17;
     foreach my $m (grep $_ !~ /(?:SCALAR|LVALUE|ARRAY|CODE|VSTRING|REF|GLOB|HASH|FORMAT|GenericClass|Regexp|Common)\z/, all_modules()) {
         my $params;
         if ($m =~ /\AData::Printer::Theme::/) {
