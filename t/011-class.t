@@ -123,7 +123,7 @@ my $object = Foo->new;
 is(
     $ddp->parse($object),
 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -138,8 +138,8 @@ is(
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 1 } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
-    Linear @ISA   Foo, Bar
+    parents: Bar
+    linear @ISA   Foo, Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -164,7 +164,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'none' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     internals: {
         test   42
     }
@@ -172,7 +172,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'public' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -184,7 +184,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (1):
         Bar:
             bar
@@ -196,7 +196,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private', inherited => 'private' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     private methods (2):
         _other
         Bar:
@@ -208,7 +208,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'private', inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     private methods (1): _other
     internals: {
         test   42
@@ -217,7 +217,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { show_methods => 'all', inherited => 'all' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -233,7 +233,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { internals => 0 } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -243,7 +243,7 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (4): baz, borg, foo, new
     private methods (1): _other
     internals: {
@@ -273,7 +273,7 @@ else {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'string' } );
 is( $ddp->parse($object), "Foo  {
-    Parents       Bar
+    parents: Bar
     public methods ($n): $public_method_list
     private methods (2): _moo (Bar), _other
     internals: {
@@ -289,7 +289,7 @@ my $universal_methods = $has_uc_sort
     ;
 
 is( $ddp->parse($object), "Foo  {
-    Parents       Bar
+    parents: Bar
     public methods ($n):
         baz, borg, foo, new
         Bar:
@@ -313,7 +313,7 @@ $object->borg( Foo->new );
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (4): baz, borg, foo, new
     private methods (1): _other
     internals: {
@@ -324,12 +324,12 @@ is( $ddp->parse($object), 'Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { expand => 'all', inherited => 'none' } );
 is( $ddp->parse($object), 'Foo  {
-    Parents       Bar
+    parents: Bar
     public methods (4): baz, borg, foo, new
     private methods (1): _other
     internals: {
         borg   Foo  {
-            Parents       Bar
+            parents: Bar
             public methods (4): baz, borg, foo, new
             private methods (1): _other
             internals: {
@@ -348,8 +348,8 @@ SKIP: {
 
 $ddp = Data::Printer::Object->new( colored => 0 );
 is( $ddp->parse($obj_with_isa), 'Meep  {
-    Parents       Foo, Baz
-    Linear @ISA   Meep, Foo, Bar, Baz
+    parents: Foo, Baz
+    linear @ISA   Meep, Foo, Bar, Baz
     public methods (5):
         Foo:
             baz, borg, foo, new
@@ -363,8 +363,8 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
-    Parents       Foo, Baz
-    Linear @ISA   Meep, Foo, Bar, Baz
+    parents: Foo, Baz
+    linear @ISA   Meep, Foo, Bar, Baz
     public methods (0)
     private methods (0)
     internals: {
@@ -374,8 +374,8 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none', universal => 1 } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
-    Parents       Foo, Baz
-    Linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
+    parents: Foo, Baz
+    linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
     public methods (0)
     private methods (0)
     internals: {
@@ -386,7 +386,7 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 0, inherited => 'none' } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
-    Parents       Foo, Baz
+    parents: Foo, Baz
     public methods (0)
     private methods (0)
     internals: {
@@ -534,7 +534,7 @@ SKIP: {
     my $obj = MyDDPXSChild->new( meep => 12, bar => 'test' );
     my $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all' } );
     is( $ddp->parse($obj), 'MyDDPXSChild  {
-    Parents       MyDDPXSClass
+    parents: MyDDPXSClass
     public methods (6):
         meep, moop
         MyDDPXSClass:

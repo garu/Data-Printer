@@ -52,7 +52,7 @@ filter '-class' => sub {
 
         my @superclasses = Data::Printer::Common::_get_superclasses_for($class_name);
         if (@superclasses && $ddp->class->parents) {
-            $string .= $ddp->newline . 'Parents       '
+            $string .= $ddp->newline . 'parents: '
                     . join(', ', map $ddp->maybe_colorize($_, 'class'), @superclasses)
                     ;
         }
@@ -64,7 +64,7 @@ filter '-class' => sub {
         my $show_methods = $ddp->class->show_methods && $ddp->class->show_methods ne 'none';
 
         if ($show_linear_isa && @$linear_ISA) {
-            $string .= $ddp->newline . 'Linear @ISA   '
+            $string .= $ddp->newline . 'linear @ISA   '
                     . join(', ' => map $ddp->maybe_colorize($_, 'class'), @$linear_ISA)
                     ;
         }
