@@ -139,7 +139,7 @@ is(
 $ddp = Data::Printer::Object->new( colored => 0, class => { linear_isa => 1 } );
 is( $ddp->parse($object), 'Foo  {
     parents: Bar
-    linear @ISA   Foo, Bar
+    linear @ISA: Foo, Bar
     public methods (5):
         baz, borg, foo, new
         Bar:
@@ -349,12 +349,12 @@ SKIP: {
 $ddp = Data::Printer::Object->new( colored => 0 );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     parents: Foo, Baz
-    linear @ISA   Meep, Foo, Bar, Baz
+    linear @ISA: Meep, Foo, Bar, Baz
     public methods (5):
-        Foo:
-            baz, borg, foo, new
         Bar:
             bar
+        Foo:
+            baz, borg, foo, new
     private methods (0)
     internals: {
         test   42
@@ -364,7 +364,7 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none' } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     parents: Foo, Baz
-    linear @ISA   Meep, Foo, Bar, Baz
+    linear @ISA: Meep, Foo, Bar, Baz
     public methods (0)
     private methods (0)
     internals: {
@@ -375,7 +375,7 @@ is( $ddp->parse($obj_with_isa), 'Meep  {
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'none', universal => 1 } );
 is( $ddp->parse($obj_with_isa), 'Meep  {
     parents: Foo, Baz
-    linear @ISA   Meep, Foo, Bar, Baz, UNIVERSAL
+    linear @ISA: Meep, Foo, Bar, Baz, UNIVERSAL
     public methods (0)
     private methods (0)
     internals: {

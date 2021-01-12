@@ -102,7 +102,7 @@ filter '-class' => sub {
         my $show_methods = $ddp->class->show_methods && $ddp->class->show_methods ne 'none';
 
         if ($show_linear_isa && @$linear_ISA) {
-            $string .= $ddp->newline . 'linear @ISA   '
+            $string .= $ddp->newline . 'linear @ISA: '
                     . join(', ' => map $ddp->maybe_colorize($_, 'class'), @$linear_ISA)
                     ;
         }
