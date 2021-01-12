@@ -56,6 +56,44 @@ filter '-class' => sub {
                     . join(', ', map $ddp->maybe_colorize($_, 'class'), @superclasses)
                     ;
         }
+        my (%roles, %attributes);
+        if ($INC{'Role/Tiny.pm'} && exists $Role::Tiny::APPLIED_TO{$class_name}) {
+            %roles = %{ $Role::Tiny::APPLIED_TO{$class_name} };
+            $string .= $ddp->newline . 'roles (' . scalar(keys %roles) . '): '
+                    . join(', ' => map $ddp->maybe_colorize($_, 'class'), keys %roles)
+                    ;
+        }
+
+        foreach my $parent (@superclasses) {
+            if ($parent eq 'Moo::Object') {
+                Data::Printer::Common::_tryme(sub {
+                    my $moo_maker = 'Moo'->_constructor_maker_for($class_name);
+                    if (defined $moo_maker) {
+                        %attributes = %{ $moo_maker->all_attribute_specs };
+                    }
+                });
+                last;
+            }
+            elsif ($parent eq 'Moose::Object') {
+                Data::Printer::Common::_tryme(sub {
+                    %attributes = map {
+                        $_->name => {
+                            index => $_->insertion_order,
+                            init_arg => $_->init_arg,
+                            is => (defined $_->writer ? 'rw' : 'ro'),
+                            reader => $_->reader,
+                            required => $_->is_required,
+                        }
+                    } $class_name->meta->get_all_attributes();
+                });
+                last;
+            }
+        }
+        if (keys %attributes) {
+            $string .= $ddp->newline . 'attributes (' . scalar(keys %attributes) . '): '
+                    . join(', ' => map $ddp->maybe_colorize($_, 'method'), keys %attributes)
+                    ;
+        }
 
         my $show_linear_isa = $ddp->class->linear_isa && (
              ($ddp->class->linear_isa eq 'auto' and @superclasses > 1)
@@ -225,8 +263,7 @@ sub _show_methods {
                 $string .= (keys %lined_methods ? $ddp->newline : ' ') . $base_string;
                 $ddp->outdent;
             }
-            foreach my $pkg (@$linear_ISA) {
-                next unless exists $lined_methods{$pkg};
+            foreach my $pkg (sort keys %lined_methods) {
                 $ddp->indent;
                 $string .= $ddp->newline . "$pkg:";
                 @{$lined_methods{$pkg}} = Data::Printer::Common::_nsort(@{$lined_methods{$pkg}})
