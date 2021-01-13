@@ -59,9 +59,6 @@ filter '-class' => sub {
         my (%roles, %attributes);
         if ($INC{'Role/Tiny.pm'} && exists $Role::Tiny::APPLIED_TO{$class_name}) {
             %roles = %{ $Role::Tiny::APPLIED_TO{$class_name} };
-            $string .= $ddp->newline . 'roles (' . scalar(keys %roles) . '): '
-                    . join(', ' => map $ddp->maybe_colorize($_, 'class'), keys %roles)
-                    ;
         }
 
         foreach my $parent (@superclasses) {
@@ -76,6 +73,7 @@ filter '-class' => sub {
             }
             elsif ($parent eq 'Moose::Object') {
                 Data::Printer::Common::_tryme(sub {
+                    my $class_meta = $class_name->meta;
                     %attributes = map {
                         $_->name => {
                             index => $_->insertion_order,
@@ -84,11 +82,20 @@ filter '-class' => sub {
                             reader => $_->reader,
                             required => $_->is_required,
                         }
-                    } $class_name->meta->get_all_attributes();
+                    } $class_meta->get_all_attributes();
+                    foreach my $role ($class_meta->calculate_all_roles()) {
+                        $roles{ $role->name } = 1;
+                    }
                 });
                 last;
             }
         }
+        if (keys %roles) {
+            $string .= $ddp->newline . 'roles (' . scalar(keys %roles) . '): '
+                    . join(', ' => map $ddp->maybe_colorize($_, 'class'), keys %roles)
+                    ;
+        }
+
         if (keys %attributes) {
             $string .= $ddp->newline . 'attributes (' . scalar(keys %attributes) . '): '
                     . join(', ' => map $ddp->maybe_colorize($_, 'method'), keys %attributes)
@@ -99,7 +106,6 @@ filter '-class' => sub {
              ($ddp->class->linear_isa eq 'auto' and @superclasses > 1)
           or ($ddp->class->linear_isa ne 'auto')
         );
-        my $show_methods = $ddp->class->show_methods && $ddp->class->show_methods ne 'none';
 
         if ($show_linear_isa && @$linear_ISA) {
             $string .= $ddp->newline . 'linear @ISA: '
@@ -107,8 +113,8 @@ filter '-class' => sub {
                     ;
         }
 
-        if ($show_methods) {
-            $string .= _show_methods($class_name, $linear_ISA, $ddp);
+        if ($ddp->class->show_methods && $ddp->class->show_methods ne 'none') {
+            $string .= _show_methods($class_name, $linear_ISA, \%attributes, $ddp);
         }
 
         if ($ddp->class->show_overloads) {
@@ -186,7 +192,7 @@ sub _get_overloads {
 }
 
 sub _show_methods {
-    my ($class_name, $linear_ISA, $ddp) = @_;
+    my ($class_name, $linear_ISA, $attributes, $ddp) = @_;
 
     my %methods = ( public => {}, private => {} );
     my @all_methods = map _methods_of(
@@ -197,6 +203,7 @@ sub _show_methods {
     my %seen_method_name;
     foreach my $method (@all_methods) {
         my ($package_string, $method_string) = @$method;
+        next if exists $attributes->{$method_string};
         next if $seen_method_name{$method_string}++;
         next if $method_string eq '__ANON__'; # anonymous subs don't matter here.
         my $type = substr($method_string, 0, 1) eq '_' ? 'private' : 'public';
