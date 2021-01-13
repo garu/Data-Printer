@@ -39,7 +39,7 @@ sub test_moo {
         my $moo_error = Data::Printer::Common::_tryme(
             'package MooTestRole; use Moo::Role; has attr_from_role => (is => "ro", required => 0);sub role_x {} sub role_y {} 1; package MooTestClass; use Moo; with q(MooTestRole); no Moo; 1;'
         );
-        skip 'Moo not found: ' . $moo_error, 2 if $moo_error;
+        skip 'Moo not found: ' . $moo_error, 3 if $moo_error;
 
         my $ddp = Data::Printer::Object->new( colored => 0 );
         my $obj = MooTestClass->new;
@@ -68,7 +68,7 @@ sub test_moose {
         my $moose_error = Data::Printer::Common::_tryme(
             'package MooseTestRole; use Moose::Role; has my_attr => (is => "ro", required => 0);sub role_p {} sub role_q {} 1; package MooseTestClass; use Moose; with q(MooseTestRole); no Moose; __PACKAGE__->meta->make_immutable; 1;'
         );
-        skip 'Moose not found: ' . $moose_error, 2 if $moose_error;
+        skip 'Moose not found: ' . $moose_error, 3 if $moose_error;
 
         my $ddp = Data::Printer::Object->new( colored => 0 );
         my $obj = MooseTestClass->new;
