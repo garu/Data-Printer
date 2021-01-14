@@ -1,9 +1,8 @@
-dist: trusty
+dist: focal
 language: perl
 
 perl:
   - "blead"
-  - "5.32"
   - "5.30"
   - "5.28"
   - "5.26"
@@ -13,15 +12,19 @@ perl:
   - "5.18"
   - "5.16"
   - "5.14"
-  - "5.12"
-  - "5.10"
 
 sudo: false
 
-matrix:
+jobs:
+  fast_finish: true
   include:
     - perl: 5.32
       env: COVERAGE=1 DDPTESTCOVERAGE=1
+    # 5.12 and lower are not available on recent dists
+    - perl: 5.10
+      dist: trusty
+    - perl: 5.12
+      dist: trusy
   allow_failures:
     - perl: blead
 
