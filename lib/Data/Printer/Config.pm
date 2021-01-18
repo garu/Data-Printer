@@ -195,7 +195,7 @@ sub _str2data {
         }
         else {
             Data::Printer::Common::_warn("error reading rc file '$filename': syntax error at line $counter: $_");
-            if ($counter == 1 && /\A\s*{/s) {
+            if ($counter == 1 && /\A\s*\{/s) {
                 Data::Printer::Common::_warn(
                     "RC file format changed in 1.00. Usually all it takes is:\n"
                   . "cp $filename $filename.old && perl -MData::Printer::Config -E 'say Data::Printer::Config::convert(q($filename))' > $filename\n"
