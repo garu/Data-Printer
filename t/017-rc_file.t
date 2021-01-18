@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 35;
+use Test::More tests => 39;
 use Data::Printer::Config;
 use Data::Printer::Common;
 
@@ -140,6 +140,19 @@ is_deeply($data2, {}, 'parse error returns valid structure');
 is $warn_count, 2, 'parse error issues warnings';
 $warn_count = 0;
 
+$bad_content = <<'EODOUBLEBEGIN';
+begin filter lala
+begin filter lele
+end filter lele
+end filter lala
+EODOUBLEBEGIN
+
+my $double_begin = Data::Printer::Config::_str2data('data.rc', $bad_content);
+is_deeply($double_begin, {}, 'double begin returns valid structure');
+is $warn_count, 1, 'double begin issues warnings';
+$warn_count = 0;
+
+
 SKIP: {
     my $dir = Data::Printer::Config::_my_home('testing');
     skip "unable to create temp dir", 22 unless $dir && -d $dir;
@@ -236,13 +249,16 @@ SKIP: {
      greeting => 'hej hej',
      other    => sub { return 1 },
    },
+   filters => {
+     -external => ['Something'],
+     SCALAR => sub { 1 },
+   },
 }
 EOCONTENT
 
-    my $warn_message;
-    my $warn_count = 0;
+    my @warn_messages;
     {no warnings 'redefine';
-     *Data::Printer::Common::_warn = sub { $warn_message = shift; $warn_count++; };
+     *Data::Printer::Common::_warn = sub { push @warn_messages, shift; };
     };
 
     $error = Data::Printer::Common::_tryme(sub {
@@ -253,17 +269,22 @@ EOCONTENT
     });
 
     ####
-    skip $error, 3 if $error;
+    skip $error, 4 if $error;
     my $converted;
     $error = Data::Printer::Common::_tryme(sub {
         $converted = Data::Printer::Config::convert($filename);
     });
-    is $warn_count, 1, 'only got one warning';
-    like $warn_message, qr/path 'outer.other': expected scalar, found/, 'proper warning';
-    is $converted, <<'EOCONFIG';
+    is @warn_messages, 2, 'two warnings generated';
+    like $warn_messages[0], qr/path 'filters.SCALAR': expected scalar, found/, 'proper warning for filter subref';
+    like $warn_messages[1], qr/path 'outer.other': expected scalar, found/, 'proper warning for subref';
+
+    my $expected_conversion = <<'EOCONFIG';
 bar = bla
+filters = Something
 foo = 1
 outer.greeting = 'hej hej'
 outer.inner.further = hello!
 EOCONFIG
+
+    is $converted, $expected_conversion, 'rc file converted successfully';
 };
