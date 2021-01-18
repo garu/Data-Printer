@@ -50,9 +50,10 @@ sub _my_cwd {
 
 sub _project_home {
     require Cwd;
+    my $path;
     if ($0 eq '-e' || $0 eq '-') {
-        my $path = _my_cwd();
-        return Cwd::abs_path($path) if defined $path;
+        my $cwd = _my_cwd();
+        $path = Cwd::abs_path($cwd) if defined $cwd;
     }
     else {
         my $script = $0;
@@ -62,10 +63,10 @@ sub _project_home {
         # we need the full path if we have chdir'd:
         $script = File::Spec->catfile(_my_cwd(), $script)
             unless File::Spec->file_name_is_absolute($script);
-        my (undef, $path) = File::Basename::fileparse($script);
-        return Cwd::abs_path($path) if defined $path;
+        my (undef, $maybe_path) = File::Basename::fileparse($script);
+        $path = Cwd::abs_path($maybe_path) if defined $maybe_path;
     }
-    return;
+    return $path;
 }
 
 # adapted from File::HomeDir && File::HomeDir::Tiny
