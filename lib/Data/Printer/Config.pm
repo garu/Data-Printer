@@ -252,19 +252,19 @@ sub _expand_profile {
     my $profile = delete $options->{profile};
     if ($profile !~ /\A[a-zA-Z0-9:]+\z/) {
         Data::Printer::Common::_warn("invalid profile name '$profile'");
-        return;
     }
-    my $class = 'Data::Printer::Profile::' . $profile;
-    my $error = Data::Printer::Common::_tryme(sub {
-        my $load_error = Data::Printer::Common::_tryme("use $class; 1;");
-        die $load_error if defined $load_error;
-        my $expanded = $class->profile();
-        die "profile $class did not return a HASH reference" unless ref $expanded eq 'HASH';
-        $options = Data::Printer::Config::_merge_options($expanded, $options);
-    });
-    if (defined $error) {
-        Data::Printer::Common::_warn("unable to load profile '$profile': $error");
-        return;
+    else {
+        my $class = 'Data::Printer::Profile::' . $profile;
+        my $error = Data::Printer::Common::_tryme(sub {
+            my $load_error = Data::Printer::Common::_tryme("use $class; 1;");
+            die $load_error if defined $load_error;
+            my $expanded = $class->profile();
+            die "profile $class did not return a HASH reference" unless ref $expanded eq 'HASH';
+            $options = Data::Printer::Config::_merge_options($expanded, $options);
+        });
+        if (defined $error) {
+            Data::Printer::Common::_warn("unable to load profile '$profile': $error");
+        }
     }
     return $options;
 }
