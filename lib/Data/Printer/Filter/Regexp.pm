@@ -19,7 +19,7 @@ filter 'Regexp' => sub {
         }
     }
     else {
-        Data::Printer::Common::_warn("Unrecognized regex $val. Please submit a bug report for Data::Printer.");
+        Data::Printer::Common::_warn($ddp, "Unrecognized regex $val. Please submit a bug report for Data::Printer.");
         $string = $ddp->maybe_colorize('Unknown Regexp', 'regex');
     }
 

@@ -13,6 +13,6 @@ sub warnings(&) {
     return $got
 }
 
-my $got = warnings { Data::Printer::Common::_warn("HA!") };
+my $got = warnings { Data::Printer::Common::_warn(undef, "HA!") };
 
 is( $got, "[Data::Printer] HA! at t/000.2-warn.t line 16.\n", 'warn with proper caller/line' );

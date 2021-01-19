@@ -67,8 +67,8 @@ my $expected = {
 my $warn_count = 0;
 { no warnings 'redefine';
     *Data::Printer::Common::_warn = sub {
+        my (undef, $message) = @_;
         $warn_count++;
-        my $message = shift;
         like $message, qr/ignored filter 'MockObj' from rc file/, 'skip filters on permissive rc files';
     }
 }
@@ -118,7 +118,7 @@ is_deeply($data, $expected, 'parsed rc file');
 
 { no warnings 'redefine';
     *Data::Printer::Common::_warn = sub {
-        my $message = shift;
+        my (undef, $message) = @_;
         $warn_count++;
         if ($warn_count == 1) {
             like $message, qr/error reading rc file/, 'message about parse error found';
@@ -258,7 +258,7 @@ EOCONTENT
 
     my @warn_messages;
     {no warnings 'redefine';
-     *Data::Printer::Common::_warn = sub { push @warn_messages, shift; };
+     *Data::Printer::Common::_warn = sub { push @warn_messages, $_[1]; };
     };
 
     $error = Data::Printer::Common::_tryme(sub {

@@ -22,7 +22,7 @@ filter '-class' => sub {
     # if the object overloads stringification, use it!
     # except for PDF::API2 which has a destructive stringify()
     if ($ddp->class->stringify && $class_name ne 'PDF::API2') {
-        my $str = _get_stringification($object, $class_name);
+        my $str = _get_stringification($ddp, $object, $class_name);
         return $ddp->maybe_colorize("$str ($class_name)", 'class')
             if defined $str;
     }
@@ -147,7 +147,7 @@ filter '-class' => sub {
 #######################################
 
 sub _get_stringification {
-    my ($object, $class_name) = @_;
+    my ($ddp, $object, $class_name) = @_;
     require overload;
     if (overload::Overloaded($object)
         && (overload::Method($object, q(""))
@@ -158,6 +158,7 @@ sub _get_stringification {
         my $error = Data::Printer::Common::_tryme(sub { $string = '' . $object });
         if ($error) {
             Data::Printer::Common::_warn(
+                $ddp,
                 "string/number overload error for object $class_name: $error"
             );
         }
@@ -171,6 +172,7 @@ sub _get_stringification {
             my $error = Data::Printer::Common::_tryme(sub { $string = $object->$method });
             if ($error) {
                 Data::Printer::Common::_warn(
+                    $ddp,
                     "error stringifying object $class_name with $method\(\): $error"
                 );
             }

@@ -18,7 +18,7 @@ sub load_rc_file {
         return _str2data($filename, $rc_data);
     }
     else {
-        Data::Printer::Common::_warn("error opening '$filename': $!");
+        Data::Printer::Common::_warn(undef, "error opening '$filename': $!");
         return;
     }
 }
@@ -139,12 +139,12 @@ sub _str2data {
                     push @{$config->{$ns}{filters}}, +{ $filter->{name} => eval $sub_str };
                 }
                 else {
-                    Data::Printer::Common::_warn("ignored filter '$filter->{name}' from rc file '$filename': file is readable/writeable by others");
+                    Data::Printer::Common::_warn(undef, "ignored filter '$filter->{name}' from rc file '$filename': file is readable/writeable by others");
                 }
                 $filter = undef;
             }
             elsif ( /^begin\s+filter/ ) {
-                Data::Printer::Common::_warn("error reading rc file '$filename' line $counter: found 'begin filter' inside another filter definition ($filter->{name}). Are you missing an 'end filter' on line " . ($counter - 1) . '?');
+                Data::Printer::Common::_warn(undef, "error reading rc file '$filename' line $counter: found 'begin filter' inside another filter definition ($filter->{name}). Are you missing an 'end filter' on line " . ($counter - 1) . '?');
                 return {};
             }
             else {
@@ -194,9 +194,10 @@ sub _str2data {
             $filter = { name => $filter_name, code_str => '' };
         }
         else {
-            Data::Printer::Common::_warn("error reading rc file '$filename': syntax error at line $counter: $_");
+            Data::Printer::Common::_warn(undef, "error reading rc file '$filename': syntax error at line $counter: $_");
             if ($counter == 1 && /\A\s*\{/s) {
                 Data::Printer::Common::_warn(
+                    undef,
                     "RC file format changed in 1.00. Usually all it takes is:\n"
                   . "cp $filename $filename.old && perl -MData::Printer::Config -E 'say Data::Printer::Config::convert(q($filename))' > $filename\n"
                   . "Please visit https://metacpan.org/pod/Data::Printer::Config for details."
@@ -248,10 +249,10 @@ sub _merge_options {
 
 
 sub _expand_profile {
-    my ($options) = @_;
+    my ($options, $ddp) = @_;
     my $profile = delete $options->{profile};
     if ($profile !~ /\A[a-zA-Z0-9:]+\z/) {
-        Data::Printer::Common::_warn("invalid profile name '$profile'");
+        Data::Printer::Common::_warn($ddp,"invalid profile name '$profile'");
     }
     else {
         my $class = 'Data::Printer::Profile::' . $profile;
@@ -263,7 +264,7 @@ sub _expand_profile {
             $options = Data::Printer::Config::_merge_options($expanded, $options);
         });
         if (defined $error) {
-            Data::Printer::Common::_warn("unable to load profile '$profile': $error");
+            Data::Printer::Common::_warn($ddp, "unable to load profile '$profile': $error");
         }
     }
     return $options;
@@ -312,6 +313,7 @@ sub _convert {
     }
     elsif (ref $value) {
         Data::Printer::Common::_warn(
+            undef,
             " [*] path '$key_str': expected scalar, found " . ref($value)
           . ". Filters must be in their own class now, loaded with 'filter'.\n"
           . "If you absolutely must put custom filters in, use the 'begin filter'"

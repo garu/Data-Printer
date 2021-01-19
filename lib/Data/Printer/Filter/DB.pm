@@ -107,6 +107,7 @@ filter 'DBIx::Class::Schema' => sub {
         }
         else {
             Data::Printer::Common::_warn(
+                $ddp,
                 "filter_db.schema.loaded_sources must be names, details or none"
             );
         }
@@ -264,6 +265,7 @@ filter 'DBIx::Class::ResultSource' => sub {
         }
         else {
             Data::Printer::Common::_warn(
+                $ddp,
                 "filter_db.column_info must be names, details or none"
             );
         }

@@ -108,7 +108,7 @@ filter 'SCALAR' => sub {
     if (exists $ddp->extra_config->{filter_contenttype}{size_unit}) {
         $unit = uc $ddp->extra_config->{filter_contenttype}{size_unit};
         if (!$unit || ($unit ne 'AUTO' && $unit ne 'B' && $unit ne 'K' && $unit ne 'M')) {
-            Data::Printer::Common::_warn('filter_contenttype.size_unit must be auto, b, k or m');
+            Data::Printer::Common::_warn($ddp, 'filter_contenttype.size_unit must be auto, b, k or m');
             $unit = 'auto';
         }
     }

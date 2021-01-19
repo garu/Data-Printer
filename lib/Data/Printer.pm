@@ -23,6 +23,7 @@ sub import {
     if (@_ > 0) {
         $args = @_ == 1 ? shift : {@_};
         Data::Printer::Common::_warn(
+            undef,
             'Data::Printer can receive either a hash or a hash reference'
         ) unless ref $args eq 'HASH';
     }

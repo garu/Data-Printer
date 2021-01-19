@@ -68,6 +68,7 @@ my @method_names =qw(
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
+    warnings
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -111,6 +112,7 @@ sub _init {
     $self->{'_array_padding'} = 0;
     $self->{'_seen'} = {};
     $self->{_refcount_base} = 3;
+    $self->{'warnings'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'warning', 1);
     $self->{'indent'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'indent', 4);
     $self->{'index'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'index', 1);
     $self->{'name'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'name', 'var');
@@ -279,7 +281,7 @@ sub _load_output_handle {
         $error = 'unknown output data';
     }
     if ($error) {
-        Data::Printer::Common::_warn("error opening custom output handle: $error");
+        Data::Printer::Common::_warn($self, "error opening custom output handle: $error");
         $self->{output_handle} = $targets{'stderr'}
     }
     return;
@@ -363,6 +365,7 @@ sub _load_filters {
     if (exists $props->{filters}) {
         if (ref $props->{filters} eq 'HASH') {
             Data::Printer::Common::_warn(
+                $self,
                 'please update your code: filters => { ... } is now filters => [{ ... }]'
             );
             push @filters, $props->{filters};
@@ -371,7 +374,7 @@ sub _load_filters {
             @filters = @{ $props->{filters} };
         }
         else {
-            Data::Printer::Common::_warn('filters must be an ARRAY reference');
+            Data::Printer::Common::_warn($self, 'filters must be an ARRAY reference');
         }
     }
     foreach my $filter (@filters) {
@@ -383,6 +386,7 @@ sub _load_filters {
             foreach my $k (keys %$filter) {
                 if ($k eq '-external') {
                     Data::Printer::Common::_warn(
+                        $self,
                         'please update your code: '
                       . 'filters => { -external => [qw(Foo Bar)}'
                       . ' is now filters => [qw(Foo Bar)]'
@@ -395,13 +399,14 @@ sub _load_filters {
                 }
                 else {
                     Data::Printer::Common::_warn(
+                        $self,
                         'hash filters must point to a CODE reference'
                     );
                 }
             }
         }
         else {
-            Data::Printer::Common::_warn('filters must be a name or { type => sub {...} }');
+            Data::Printer::Common::_warn($self, 'filters must be a name or { type => sub {...} }');
         }
     }
     return;
@@ -412,7 +417,7 @@ sub _load_external_filter {
     my $module = "Data::Printer::Filter::$class";
     my $error = Data::Printer::Common::_tryme("use $module; 1;");
     if ($error) {
-        Data::Printer::Common::_warn("error loading filter '$class': $error");
+        Data::Printer::Common::_warn($self, "error loading filter '$class': $error");
         return;
     }
     my $from_module = $module->_filter_list;
@@ -488,6 +493,7 @@ sub _load_colors {
         name            => $theme_name,
         color_overrides => $props->{colors},
         color_level     => $self->color_level,
+        ddp             => $self,
     );
     if (!$theme_object) {
         if ($theme_name ne $default_theme) {
@@ -495,6 +501,7 @@ sub _load_colors {
                 name            => $default_theme,
                 color_overrides => $props->{colors},
                 color_level     => $self->color_level,
+                ddp             => $self,
             );
         }
         Data::Printer::Common::_die("Unable to load default theme. This should never happen - please contact the author") unless $theme_object;
@@ -709,11 +716,11 @@ sub _check_memsize {
     });
     if ($error) {
         if ($error =~ m{locate Devel/Size.pm}) {
-            Data::Printer::Common::_warn("Devel::Size not found, show_memsize will be ignored")
+            Data::Printer::Common::_warn($self, "Devel::Size not found, show_memsize will be ignored")
                 if $self->{_position} == 1;
         }
         else {
-            Data::Printer::Common::_warn("error fetching memory usage: $error");
+            Data::Printer::Common::_warn($self, "error fetching memory usage: $error");
         }
         return '';
     }

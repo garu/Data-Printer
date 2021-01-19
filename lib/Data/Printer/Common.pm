@@ -216,7 +216,10 @@ sub _fetch_arrayref_of_scalars {
     my @valid;
     foreach my $option (@{$props->{$name}}) {
         if (ref $option) {
-            _warn("'$name' option requires scalar values only. Ignoring $option.");
+            # FIXME: because there is no object at this point, we need to check
+            # the 'warnings' option ourselves.
+            _warn(undef, "'$name' option requires scalar values only. Ignoring $option.")
+                if !exists $props->{warnings} || !$props->{warnings};
             next;
         }
         push @valid, $option;
@@ -249,25 +252,27 @@ sub _fetch_scalar_or_default {
 
 sub _die {
     my ($message) = @_;
-    my $frame = 2;
-    while (my @caller = caller($frame++)) {
-        if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
-            die '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
-            return;
-        }
-    }
+    my ($file, $line) = _get_proper_caller();
+    die '[Data::Printer] ' . $message . " at $file line $line.\n";
 }
 
 sub _warn {
-    my ($message) = @_;
-    my $frame = 2;
+    my ($ddp, $message) = @_;
+    return if $ddp && !$ddp->warnings;
+    my ($file, $line) = _get_proper_caller();
+    warn '[Data::Printer] ' . $message . " at $file line $line.\n";
+}
+
+sub _get_proper_caller {
+    my $frame = 1;
     while (my @caller = caller($frame++)) {
         if ($caller[0] !~ /\AD(?:DP|ata::Printer)/) {
-            warn '[Data::Printer] ' . $message . " at $caller[1] line $caller[2].\n";
-            return;
+            return ($caller[1], $caller[2]);
         }
     }
+    return ('n/d', 'n/d');
 }
+
 
 # simple eval++ adapted from Try::Tiny.
 # returns a (true) error message if failed.
@@ -359,7 +364,7 @@ sub _fetch_indexes_for {
 # helpers below strongly inspired by the excellent Package::Stash:
 sub _linear_ISA_for {
     my ($class, $ddp) = @_;
-    _initialize_mro() unless $mro_initialized;
+    _initialize_mro($ddp) unless $mro_initialized;
     my $isa;
     if ($mro_initialized > 0) {
         $isa = mro::get_linear_isa($class);
@@ -373,6 +378,7 @@ sub _linear_ISA_for {
 }
 
 sub _initialize_mro {
+    my ($ddp) = @_;
     my $error = _tryme(sub {
         if ($] < 5.009_005) { require MRO::Compat }
         else { require mro }
@@ -380,6 +386,7 @@ sub _initialize_mro {
     });
     if ($error && index($error, 'in @INC') != -1 && $mro_initialized == 0) {
         _warn(
+            $ddp,
             ($] < 5.009_005 ? 'MRO::Compat' : 'mro') . ' not found in @INC.'
           . ' Objects may display inaccurate/incomplete ISA and method list'
         );

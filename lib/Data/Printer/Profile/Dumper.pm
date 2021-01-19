@@ -2,6 +2,7 @@ package Data::Printer::Profile::Dumper;
 use strict;
 use warnings;
 
+#TODO botar tudo com ->maybe_colorize(), só pra tirar onda :D
 sub profile {
     return {
         show_tainted => 0,
@@ -78,7 +79,7 @@ sub _data_dumper_glob_filter {
 
 sub _data_dumper_lvalue_filter {
     my (undef, $ddp) = @_;
-    Data::Printer::Common::_warn('cannot handle ref type 10');
+    Data::Printer::Common::_warn($ddp, 'cannot handle ref type 10');
     return _output_wrapper($ddp, '');
 }
 
@@ -104,7 +105,7 @@ sub _data_dumper_vstring_filter {
 
 sub _data_dumper_format_filter {
     my (undef, $ddp) = @_;
-    Data::Printer::Common::_warn('cannot handle ref type 14');
+    Data::Printer::Common::_warn($ddp, 'cannot handle ref type 14');
     return _output_wrapper($ddp, '');
 }
 
@@ -153,6 +154,7 @@ sub _output_wrapper {
 
 1;
 __END__
+
 
 =head1 NAME
 

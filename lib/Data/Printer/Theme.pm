@@ -43,13 +43,13 @@ sub new {
         colors      => {},
         sgr_colors  => {},
     }, $class;
-    $theme->_load_theme or delete $theme->{name};
-    $theme->_maybe_override_theme_colors($colors_to_override);
+    $theme->_load_theme($params{ddp}) or delete $theme->{name};
+    $theme->_maybe_override_theme_colors($colors_to_override, $params{ddp});
     return $theme;
 }
 
 sub _maybe_override_theme_colors {
-    my ($self, $colors_to_override) = @_;
+    my ($self, $colors_to_override, $ddp) = @_;
 
     return unless $colors_to_override
                && ref $colors_to_override eq 'HASH'
@@ -59,7 +59,7 @@ sub _maybe_override_theme_colors {
         foreach my $kind (keys %$colors_to_override ) {
             my $override = $colors_to_override->{$kind};
             die "invalid color for '$kind': must be scalar not ref" if ref $override;
-            my $parsed = $self->_parse_color($override);
+            my $parsed = $self->_parse_color($override, $ddp);
             if (defined $parsed) {
                 $self->{colors}{$kind}     = $override;
                 $self->{sgr_colors}{$kind} = $parsed;
@@ -68,19 +68,19 @@ sub _maybe_override_theme_colors {
         }
     });
     if ($error) {
-        Data::Printer::Common::_warn("error overriding color: $error. Skipping!");
+        Data::Printer::Common::_warn($ddp, "error overriding color: $error. Skipping!");
     }
     return;
 }
 
 sub _load_theme {
-    my ($self) = @_;
+    my ($self, $ddp) = @_;
     my $theme_name = $self->{name};
 
     my $class = 'Data::Printer::Theme::' . $theme_name;
     my $error = Data::Printer::Common::_tryme("use $class; 1;");
     if ($error) {
-        Data::Printer::Common::_warn("error loading theme '$theme_name': $error.");
+        Data::Printer::Common::_warn($ddp, "error loading theme '$theme_name': $error.");
         return;
     }
     my $loaded_colors     = {};
@@ -95,7 +95,7 @@ sub _load_theme {
             my $loaded_color = $class_colors->{$kind};
             die "color for '$kind' must be a scalar in theme '$theme_name'"
                 if ref $loaded_color;
-            my $parsed_color = $self->_parse_color($loaded_color);
+            my $parsed_color = $self->_parse_color($loaded_color, $ddp);
             if (defined $parsed_color) {
                 $loaded_colors->{$kind}     = $loaded_color;
                 $loaded_colors_sgr->{$kind} = $parsed_color;
@@ -103,7 +103,7 @@ sub _load_theme {
         }
     });
     if ($error) {
-        Data::Printer::Common::_warn("error loading theme '$theme_name': $error. Output will have no colors");
+        Data::Printer::Common::_warn($ddp, "error loading theme '$theme_name': $error. Output will have no colors");
         return;
     }
     $self->{colors}     = $loaded_colors;
@@ -112,7 +112,7 @@ sub _load_theme {
 }
 
 sub _parse_color {
-    my ($self, $color_label) = @_;
+    my ($self, $color_label, $ddp) = @_;
     return unless defined $color_label;
     return '' unless $color_label;
 
@@ -129,7 +129,7 @@ sub _parse_color {
             }
         }
         else {
-            Data::Printer::Common::_warn("invalid color '$color_label': all colors must be between 0 and 255");
+            Data::Printer::Common::_warn($ddp, "invalid color '$color_label': all colors must be between 0 and 255");
         }
     }
     elsif ($color_label =~ /\A#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\z/i) {
@@ -178,7 +178,7 @@ sub _parse_color {
                     ;
     }
     else {
-        Data::Printer::Common::_warn("invalid color '$color_label'");
+        Data::Printer::Common::_warn($ddp, "invalid color '$color_label'");
     }
     return $color_code;
 }

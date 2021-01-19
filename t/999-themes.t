@@ -28,7 +28,7 @@ sub test_invalid_colors {
     require Data::Printer::Common;
     no warnings 'redefine';
     *Data::Printer::Common::_warn = sub {
-        my $message = shift;
+        my (undef, $message) = @_;
         like $message, qr/invalid color/, "invalid color '$invalids[$i]'";
     };
 
@@ -122,9 +122,7 @@ sub test_invalid_load {
     my $warning;
     require Data::Printer::Common;
     no warnings 'redefine';
-    *Data::Printer::Common::_warn = sub {
-        $warning = shift;
-    };
+    *Data::Printer::Common::_warn = sub { (undef, $warning) = @_ };
     my $theme = Data::Printer::Theme->new(
         name        => 'InvalidTheme',
         color_level => 3,

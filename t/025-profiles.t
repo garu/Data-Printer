@@ -7,7 +7,7 @@ use File::Spec;
 
 my @warnings;
 { no warnings 'redefine';
-    *Data::Printer::Common::_warn = sub { push @warnings, shift };
+    *Data::Printer::Common::_warn = sub { push @warnings, $_[1] };
 }
 
 my $profile = Data::Printer::Config::_expand_profile({ profile => 'Invalid;Name!' });
