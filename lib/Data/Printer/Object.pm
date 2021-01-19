@@ -1031,6 +1031,8 @@ Most of them are described in L<Data::Printer>.
 
 =item * write_label - returns the proper label string, as parsed from caller_message.
 
+=item * warnings - show warning messages if something goes wrong.
+
 =back
 
 =head1 SEE ALSO
