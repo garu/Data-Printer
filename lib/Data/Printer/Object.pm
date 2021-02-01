@@ -941,6 +941,8 @@ Most of them are described in L<Data::Printer>.
 
 =item * array_preserve - which part of the array to preserve after array_max (default: 'begin')
 
+=item * arrows - show ref arrows when displaying circular refs? Can be 'none' (e.g. var{x}[y]), 'first' (e.g. var->{x}[y]) or 'all' (e.g. var->{x}->[y]). Default is 'none'.
+
 =item * caller_info - whether the user wants to prepend dump with caller information or not (default: 0)
 
 =item * caller_message - what to print when caller_info is true.
