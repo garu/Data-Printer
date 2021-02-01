@@ -205,6 +205,15 @@ for the new content.
 Check L<Data::Printer::Object> for extra documentation on the methods used
 above and many others!
 
+=head1 DECORATING EXISTING FILTERS
+
+It may be the case where you want to call this filter and manipulate the
+result. To do so, make sure you make a named subroutine for your filters
+instead of using an anonymous one. For instance, all of Data::Printer's
+filters for core types have a 'parse' public function you can use:
+
+    my $str = Data::Printer::Filter::HASH::parse($ref, $ddp);
+
 =head1 AVAILABLE FILTERS
 
 Data::Printer comes with filters for all Perl data types and several filters
