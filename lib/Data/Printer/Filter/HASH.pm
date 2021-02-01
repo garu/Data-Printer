@@ -76,8 +76,13 @@ sub parse {
         }
         my $key = $processed_keys{$idx};
 
+        my $original_varname = $ddp->current_name;
         # update 'var' to 'var{key}':
-        $ddp->current_name( $ddp->current_name . '{' . $key->{nocolor} . '}');
+        $ddp->current_name(
+            $original_varname
+            . ($ddp->arrows eq 'all' || ($ddp->arrows eq 'first' && $ddp->current_depth == 1) ? '->' : '')
+            . '{' . $key->{nocolor} . '}'
+        );
 
         my $padding = $len - length($key->{nocolor});
         $padding = 0 if $padding < 0;
@@ -103,10 +108,7 @@ sub parse {
             if $total_keys > 0 || $ddp->end_separator;
 
         # restore var name back to "var"
-        my $size = 2 + length($key->{nocolor});
-        my $name = $ddp->current_name;
-        substr $name, -$size, $size, '';
-        $ddp->current_name($name);
+        $ddp->current_name($original_varname);
     }
     $ddp->outdent;
     $string .= $ddp->newline . $ddp->maybe_colorize('}', 'brackets');

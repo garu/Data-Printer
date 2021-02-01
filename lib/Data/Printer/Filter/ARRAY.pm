@@ -58,8 +58,13 @@ sub parse {
             next;
         }
 
+        my $original_varname = $ddp->current_name;
         # if name was "var" it must become "var[0]", "var[1]", etc
-        $ddp->current_name( $ddp->current_name . "[$idx]" );
+        $ddp->current_name(
+            $original_varname
+            . ($ddp->arrows eq 'all' || ($ddp->arrows eq 'first' && $ddp->current_depth == 1) ? '->' : '')
+            . "[$idx]"
+        );
 
         if ($has_index) {
             substr($string, -$local_padding) = ''; # get rid of local padding
@@ -93,10 +98,7 @@ sub parse {
             if $idx < $#{$array_ref} || $ddp->end_separator;
 
         # we're finished with "var[x]", turn it back to "var":
-        my $size = 2 + length($idx); # [10], [100], etc
-        my $name = $ddp->current_name;
-        substr $name, -$size, $size, '';
-        $ddp->current_name( $name );
+        $ddp->current_name( $original_varname );
     }
     $ddp->outdent;
     $ddp->{_array_padding} -= $local_padding if $has_index;

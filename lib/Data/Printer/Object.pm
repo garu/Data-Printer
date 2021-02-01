@@ -68,7 +68,7 @@ my @method_names =qw(
     hash_preserve ignore_keys unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
-    warnings
+    warnings arrows
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -116,6 +116,13 @@ sub _init {
     $self->{'indent'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'indent', 4);
     $self->{'index'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'index', 1);
     $self->{'name'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'name', 'var');
+    $self->{'arrows'} = Data::Printer::Common::_fetch_anyof(
+        $props,
+        'arrows',
+        'none',
+        [qw(none first all)]
+    );
+
     $self->{'show_tainted'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_tainted', 1);
     $self->{'show_tied'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_tied', 1);
     $self->{'show_weak'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'show_weak', 1);
