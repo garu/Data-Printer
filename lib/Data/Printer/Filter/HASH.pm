@@ -96,7 +96,7 @@ sub parse {
         # a '\' in front of them.
         my $ref = ref $hash_ref->{$key->{raw}};
         if ( $ref && $ref eq 'SCALAR' ) {
-            $string .= $ddp->parse(\\$hash_ref->{ $key->{raw} });
+            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} });
         }
         elsif ( $ref && $ref ne 'REF' ) {
             $string .= $ddp->parse( $hash_ref->{ $key->{raw} });

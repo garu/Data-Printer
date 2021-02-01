@@ -23,7 +23,7 @@ sub test_weak_ref {
     my $ref = \$num;
     Scalar::Util::weaken($ref);
     my $ddp = Data::Printer::Object->new( colored => 0 );
-    is $ddp->parse(\$ref), '3.14 (weak)', 'parse() after weaken';
+    is $ddp->parse($ref), '3.14 (weak)', 'parse() after weaken';
 }
 
 sub test_basic_values {

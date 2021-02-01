@@ -590,8 +590,7 @@ sub _filters_for_data {
 sub _see {
     my ($self, $data, %options) = @_;
     return {} unless ref $data;
-
-    my $id = Data::Printer::Common::_object_id($data);
+    my $id = pack 'J', Scalar::Util::refaddr($data);
     if (!exists $self->{_seen}{$id}) {
         $self->{_seen}{$id} = {
             name     => $self->current_name,
@@ -607,7 +606,7 @@ sub unsee {
     my ($self, $data) = @_;
     return unless ref $data && keys %{$self->{_seen}};
 
-    my $id = Data::Printer::Common::_object_id($data);
+    my $id = pack 'J', Scalar::Util::refaddr($data);
     delete $self->{_seen}{$id};
     return;
 }

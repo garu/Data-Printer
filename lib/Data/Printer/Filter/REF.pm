@@ -11,7 +11,7 @@ sub parse {
 
     my $string = '';
     # we only add the '\' if it's not an object
-    if (!Scalar::Util::blessed($$ref) && ref $$ref eq 'REF') {
+    if (!Scalar::Util::blessed($$ref) && (ref $$ref eq 'REF' || ref $$ref eq 'SCALAR' || ref $$ref eq 'VSTRING')) {
         $string .= '\\ ';
     }
     $string .= $ddp->parse($$ref);

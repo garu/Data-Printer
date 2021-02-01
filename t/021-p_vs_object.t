@@ -47,7 +47,7 @@ sub test_weak_ref {
     my $ref = \$num;
     Scalar::Util::weaken($ref);
     my $pretty = p $ref;
-    is $pretty, '3.14 (weak)', 'found weak flag with p()';
+    is $pretty, '\ 3.14 (weak)', 'found weak flag with p()';
     my $pretty_np = np $ref;
     is $pretty_np, $pretty, 'found weak flag with np()';
 }
