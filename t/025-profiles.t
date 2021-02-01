@@ -34,13 +34,13 @@ like $warnings[0], qr/unable to load profile/, 'right message on invalid profile
 @warnings = ();
 $profile = Data::Printer::Config::_expand_profile({ profile => 'Dumper' });
 is @warnings, 0, 'no warnings after proper profile loaded';
-is $profile->{name}, '$VAR1->', 'profile loaded ok';
+is $profile->{name}, '$VAR1', 'profile loaded ok';
 is $profile->{colored}, 0, 'profile color set';
 
 @warnings = ();
 $profile = Data::Printer::Config::_expand_profile({ colored => 1, profile => 'Dumper' });
 is @warnings, 0, 'no warnings after proper profile loaded with extra options';
-is $profile->{name}, '$VAR1->', 'profile with extra options loaded ok';
+is $profile->{name}, '$VAR1', 'profile with extra options loaded ok';
 is $profile->{colored}, 1, 'profile color properly overriden';
 
 @warnings = ();
@@ -63,28 +63,36 @@ my $vstring = v1.2.3;
 
 my $scalar = 1;
 
+my $regex = qr/^2\s\\\d+$/i;
+
+my $target = {
+    foo => [undef, $scalar, 'two', $regex, $glob, $lvalue, \321, $vstring, $format, sub {}, bless(\$scalar, 'TestClass')]
+};
+push @{$target->{foo}}, \$target->{foo}[0]; # circular ref check #1
+push @{$target->{foo}}, $target->{foo}[6]; # circular ref check #2
+
+
 @warnings = ();
-my $output = $ddp->parse({
-    foo => [undef, $scalar, 'two', qr/123/, $glob, $lvalue, \321, $vstring, $format, sub {}, bless \$scalar, 'TestClass']
-});
+my $output = $ddp->parse($target);
 is @warnings, 2, 'dumper profile is unable to parse 2 types of ref';
 like $warnings[0], qr/cannot handle ref type 10/, 'dumper warning on lvalue';
 like $warnings[1], qr/cannot handle ref type 14/, 'dumper warning on format';
-
 my $expected = <<'EODUMPER';
 $VAR1 = {
           'foo' => [
                     undef,
                     1,
                     'two',
-                    qr/123/,
+                    qr/^2\s\\\d+$/i,
                     \*{'::$glob'},
                     ,
                     \ 321,
                     v1.2.3,
                     ,
                     sub { "DUMMY" },
-                    bless( do{\(my $o = 1)}, 'TestClass' )
+                    bless( do{\(my $o = 1)}, 'TestClass' ),
+                    \ $VAR1->{'foo'}[0],
+                    \ $VAR1->{'foo'}[6]
           ]
 };
 EODUMPER
