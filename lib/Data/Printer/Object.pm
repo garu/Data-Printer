@@ -742,7 +742,7 @@ sub _check_weak {
     my $realtype = Scalar::Util::reftype($_[0]);
     my $isweak;
     if ($realtype && ($realtype eq 'REF' || $realtype eq 'SCALAR')) {
-        $isweak = Scalar::Util::isweak($_[0] );
+        $isweak = Scalar::Util::isweak($_[0]);
     }
     else {
         $isweak = Scalar::Util::isweak($_[0]);

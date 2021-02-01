@@ -259,7 +259,7 @@ Want to see what's inside a variable in a complete, colored and human-friendly w
     &p( [ $one, $two, $three ] );
     &p( { foo => $foo, bar => $bar } );
 
-    # use postderef on perl 5.24 or later:
+    # or use postderef on perl 5.24 or later:
     p [ $one, $two, $three ]->@*;
     p { foo => $foo, bar => $bar }->%*;
 
@@ -277,7 +277,7 @@ The C<np()> function is the same as C<p()> but will return the string
 containing the dump. By default it has no colors, but you can change that
 easily too.
 
-That's it :)
+That's pretty much it :)
 
 Data::Printer is fully customizable. If you want to change how things are
 displayed, or even its standard behavior, just take a look at the
@@ -343,7 +343,7 @@ or anywhere else.
 
 =over 4
 
-=item * keep your customized settings on a `.dataprinter` file that allows
+=item * keep your custom settings on a `.dataprinter` file that allows
 B<< different options per module >> being analyzed!
 
 =back
@@ -467,14 +467,14 @@ overriden by passing arguments like shown above):
 =head2 The .dataprinter configuration file
 
 The most powerful way to customize Data::Printer is to have a C<.dataprinter>
-file in your home directory, which is a simple I<key = value> text file. It
-lets you set global options to Data::Printer and custom options that will be
-active only on C<p()>/C<np()> calls made inside a given module:
+file in your home directory or your project's root directory. The format
+is super simple and can be understood in the example below:
 
     # global settings (note that only full line comments are accepted)
     max_depth       = 1
     theme           = Monokai
     class.stringify = 0
+
     # use quotes if you want spaces to be significant:
     hash_separator  = " => "
 
