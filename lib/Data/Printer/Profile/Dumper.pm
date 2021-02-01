@@ -20,7 +20,8 @@ sub profile {
         align_hash => 0,
         sort_keys => 0,
         quote_keys => 1,
-        name => '$VAR1->',
+        name => '$VAR1',
+        arrows => 'first',
         return_value => 'dump',
         output => 'stderr',
         indent => 10,
@@ -49,7 +50,7 @@ sub profile {
                 'GLOB'    => \&_data_dumper_glob_filter,
                 'REF'     => \&_data_dumper_ref_filter,,
                 'Regexp'  => \&_data_dumper_regexp_filter,
-                'VSTRING' => \&_data_dumper_vstring_filter,,
+                'VSTRING' => \&_data_dumper_vstring_filter,
             },
         ],
     };
