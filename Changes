@@ -1,5 +1,27 @@
 Revision history for Data-Printer
 
+0.99_023 2021-02-01
+    NEW FEATURES:
+        - profiles! Now you make complex settings using Perl code.
+        - allow .dataprinter files on the project home and subdirs.
+        - new option 'warnings', when set to 0 will make DDP silence
+          (almost) all warnings such as theme/profile not found. Default is 1.
+        - filter for the 'Date' module (the evolution of Panda::Date)
+    BUG FIXES:
+        - properly show roles' attributes from Role::Tiny, Moo and Moose;
+        - 'quote_keys' also quotes the path of circular references and found elements.
+        - when 'quote_keys' is set, hash keys are quoted with whatever 'scalar_quotes'
+          is set to.
+        - escape quote characters in quoted strings and hash keys
+        - blessed regexps (in objects different than the native 'Regexp') are now
+          properly displayed as objects of their class.
+    OTHER:
+        - new string_max default: 4096
+        - new array_max default: 100
+        - new hash_max default: 100
+        - dropped filter support for the deprecated Panda::Date dist
+        - dropped filter support for the Date::Pcalc dist (buggy in recent perls)
+        - lowercased all words in class dump for output consistency
 
 0.99_022 2020-09-26
     BUG FIXES:

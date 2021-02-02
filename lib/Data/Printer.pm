@@ -5,7 +5,7 @@ use Data::Printer::Object;
 use Data::Printer::Common;
 use Data::Printer::Config;
 
-our $VERSION = '0.99_022';
+our $VERSION = '0.99_023';
 
 my $rc_arguments;
 my %arguments_for;
@@ -547,6 +547,7 @@ information on each of them:
     max_depth      => 0,
     deparse        => 0,
     alias          => 'p',  # what to call p() when importing
+    warnings       => 1,    # show warnings if something goes wrong
 
     # colorization (see Colors & Themes below)
     colored => 'auto', # 0, 1
@@ -648,7 +649,17 @@ theme, and for a complete list of all natively used color labels.
 
 =head2 Profiles
 
-TBD.
+You may bundle your settings and filters into a profile module.
+It works like a configuration file but gives you the power and flexibility
+to use Perl code to find out what to print and how to print. It also lets
+you use CPAN to store your preferred settings and install them into your
+projects just like a regular dependency.
+
+    use DDP profile => 'ProfileName';
+
+See L<Data::Printer::Profile> for all the ways to load a profile, a list
+of available profiles and how to make one yourself.
+
 
 =head2 Filters
 
