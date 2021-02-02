@@ -602,6 +602,12 @@ sub _see {
     return $self->{_seen}{$id};
 }
 
+sub seen {
+    my ($self, $data) = @_;
+    my $id = pack 'J', Scalar::Util::refaddr($data);
+    return exists $self->{_seen}{$id};
+}
+
 sub unsee {
     my ($self, $data) = @_;
     return unless ref $data && keys %{$self->{_seen}};
