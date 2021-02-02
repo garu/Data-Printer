@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 34;
 use Data::Printer::Config;
 use Data::Printer::Object;
 use File::Spec;
@@ -99,3 +99,43 @@ EODUMPER
 chop $expected; # remove last newline
 
 is $output, $expected, 'proper result in dumper profile';
+
+@warnings = ();
+$profile = Data::Printer::Config::_expand_profile({ profile => 'JSON' });
+is @warnings, 0, 'json profile loaded';
+
+$ddp = Data::Printer::Object->new($profile);
+
+$output = $ddp->parse($target);
+is @warnings, 10, 'json profile is unable to parse 2 types of ref';
+like $warnings[0], qr/regular expression cast to string \(flags removed\)/, 'json warning on regexes';
+like $warnings[1], qr/json cannot express globs/, 'json warnings on globs';
+like $warnings[2], qr/json cannot express references to scalars. Cast to non-reference/, 'json warning on refs';
+like $warnings[3], qr/json cannot express vstrings/, 'json warnings on vstring';
+like $warnings[4], qr/json cannot express subroutines. Cast to string/, 'json warning on functions';
+like $warnings[5], qr/json cannot express blessed objects/, 'json warning on objects';
+
+like $warnings[6], qr/json cannot express references to scalars. /, 'json warning on refs';
+like $warnings[7], qr/json cannot express circular references./, 'json warning on circular refs';
+
+$expected = <<'EOJSON';
+{
+  "foo": [
+    null,
+    1,
+    "two",
+    "/^2\s\\\d+$/i",
+    ,
+    "c",
+    321,
+    "v1.2.3",
+    "FORMAT",
+    "sub { ... }",
+    1,
+    "var{"foo"}[0]",
+    "var{"foo"}[6]"
+  ]
+}
+EOJSON
+chop $expected; # remove last newline
+is $output, $expected, 'proper result in json profile';
