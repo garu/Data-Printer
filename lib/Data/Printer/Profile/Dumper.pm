@@ -94,6 +94,7 @@ sub _data_dumper_ref_filter {
     my ($scalar, $ddp) = @_;
     $ddp->indent;
     my $ret = Data::Printer::Filter::REF::parse(@_);
+    $ret =~ s{\A[\\]+\s+}{\\}; # DDP's REF filter adds a space after refs.
     $ddp->outdent;
     return _output_wrapper($ddp, $ret);
 }

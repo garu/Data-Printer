@@ -86,13 +86,13 @@ $VAR1 = {
                     qr/^2\s\\\d+$/i,
                     \*{'::$glob'},
                     ,
-                    \ 321,
+                    \321,
                     v1.2.3,
                     ,
                     sub { "DUMMY" },
                     bless( do{\(my $o = 1)}, 'TestClass' ),
-                    \ $VAR1->{'foo'}[0],
-                    \ $VAR1->{'foo'}[6]
+                    \$VAR1->{'foo'}[0],
+                    \$VAR1->{'foo'}[6]
           ]
 };
 EODUMPER
