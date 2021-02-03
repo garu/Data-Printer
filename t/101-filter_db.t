@@ -187,7 +187,7 @@ EOPACKAGES
             $schema = MyDDPTest::Schema->connect(
                 'dbi:SQLite(RaiseError=1):dbname=:memory:'
             );
-            $schema->deploy({ add_drop_table => 1 });
+            $schema->deploy({ add_drop_table => 0, add_fk_index => 0 });
             $schema->load_classes({ 'MyDDPTest::Schema::Result' => ['BadSize'] });
             1;
         };
@@ -196,6 +196,7 @@ EOPACKAGES
             filters => ['DB'],
         );
         $schema->storage->dbh; # <-- force connection;
+
         is(
             $ddp->parse($schema),
 'MyDDPTest::Schema {
