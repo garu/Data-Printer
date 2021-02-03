@@ -151,6 +151,18 @@ This profile outputs your variables in JSON format. It's not nearly as efficient
 as a regular JSON module, but it may be useful, specially if you're changing
 the format directly in your .dataprinter.
 
+=head1 CAVEATS
+
+JSON is a super simple format that allows scalar, hashes and arrays. It doesn't
+support many types that could be present on Perl data structures, such as
+functions, globs and circular references. When printing those types, whenever
+possible, this module will stringify the result.
+
+Objects are also not shown, but their internal data structure is exposed.
+
+This module also attempts to render Regular expressions as plain JS regexes.
+While not directly supported in JSON, it should be parseable.
+
 =head1 SEE ALSO
 
 L<Data::Printer>
