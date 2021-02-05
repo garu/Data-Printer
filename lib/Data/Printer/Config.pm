@@ -302,6 +302,7 @@ sub convert {
 sub _convert {
     my ($key_str, $value) = @_;
     if (ref $value eq 'HASH') {
+        $key_str = 'colors' if $key_str eq 'color';
         my $str = '';
         foreach my $k (sort keys %$value) {
             $str .= _convert(($key_str ? "$key_str.$k" : $k), $value->{$k});

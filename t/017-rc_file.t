@@ -249,6 +249,7 @@ SKIP: {
      greeting => 'hej hej',
      other    => sub { return 1 },
    },
+   color => { number => 'cyan' },
    filters => {
      -external => ['Something'],
      SCALAR => sub { 1 },
@@ -280,6 +281,7 @@ EOCONTENT
 
     my $expected_conversion = <<'EOCONFIG';
 bar = bla
+colors.number = cyan
 filters = Something
 foo = 1
 outer.greeting = 'hej hej'
