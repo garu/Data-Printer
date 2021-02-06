@@ -2,7 +2,6 @@ package Data::Printer::Profile::Dumper;
 use strict;
 use warnings;
 
-#TODO botar tudo com ->maybe_colorize(), só pra tirar onda :D
 sub profile {
     return {
         show_tainted => 0,
@@ -66,7 +65,7 @@ sub _data_dumper_regexp_filter {
       $mod =~ s/-.*//;
     }
     $v =~ s{/}{\\/}g;
-    return _output_wrapper($ddp, "qr/$v/$mod");
+    return _output_wrapper($ddp, $ddp->maybe_colorize("qr/$v/$mod", 'regex'));
 }
 
 sub _data_dumper_glob_filter {
@@ -75,7 +74,7 @@ sub _data_dumper_glob_filter {
     $ret =~ s|\A\*main:|\*:|;
     $ret =~ s|\A\*|\\*{'|;
     $ret .= '\'}';
-    return _output_wrapper($ddp, $ret);
+    return _output_wrapper($ddp, $ddp->maybe_colorize($ret, 'glob'));
 }
 
 sub _data_dumper_lvalue_filter {
@@ -113,7 +112,7 @@ sub _data_dumper_format_filter {
 
 sub _data_dumper_code_filter {
     my (undef, $ddp) = @_;
-    return _output_wrapper($ddp, 'sub { "DUMMY" }');
+    return _output_wrapper($ddp, $ddp->maybe_colorize('sub { "DUMMY" }', 'code'));
 }
 
 sub _data_dumper_array_filter {
@@ -140,7 +139,12 @@ sub _data_dumper_class_filter {
         $parse_suffix = ')}';
     }
     $ddp->indent;
-    my $ret = 'bless( ' . $parse_prefix . $ddp->parse_as($reftype, $obj) . $parse_suffix . q|, '| . ref($obj) . q|' )|;
+    my $ret = $ddp->maybe_colorize('bless( ' . $parse_prefix, 'method')
+            . $ddp->parse_as($reftype, $obj)
+            . $ddp->maybe_colorize($parse_suffix, 'method')
+            . q|, '| . $ddp->maybe_colorize(ref($obj), 'class') . q|'|
+            . $ddp->maybe_colorize(')', 'method')
+            ;
     $ddp->outdent;
 
     return _output_wrapper($ddp, $ret);
