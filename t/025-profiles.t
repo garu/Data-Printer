@@ -77,22 +77,30 @@ my $output = $ddp->parse($target);
 is @warnings, 2, 'dumper profile is unable to parse 2 types of ref';
 like $warnings[0], qr/cannot handle ref type 10/, 'dumper warning on lvalue';
 like $warnings[1], qr/cannot handle ref type 14/, 'dumper warning on format';
-my $expected = <<'EODUMPER';
-$VAR1 = {
+
+my $vstring_parsed;
+my $error = Data::Printer::Common::_tryme(sub {
+    require version;
+    $vstring_parsed = version->parse($vstring)->normal;
+});
+$vstring_parsed = 'VSTRING object (unable to parse)' if $error;
+
+my $expected = <<"EODUMPER";
+\$VAR1 = {
           'foo' => [
                     undef,
                     1,
                     'two',
-                    qr/^2\s\\\d+$/i,
-                    \*{'::$glob'},
+                    qr/^2\\s\\\\\\d+\$/i,
+                    \\*{'::\$glob'},
                     ,
-                    \321,
-                    v1.2.3,
+                    \\321,
+                    $vstring_parsed,
                     ,
                     sub { "DUMMY" },
-                    bless( do{\(my $o = 1)}, 'TestClass' ),
-                    \$VAR1->{'foo'}[0],
-                    \$VAR1->{'foo'}[6]
+                    bless( do{\\(my \$o = 1)}, 'TestClass' ),
+                    \\\$VAR1->{'foo'}[0],
+                    \\\$VAR1->{'foo'}[6]
           ]
 };
 EODUMPER
@@ -118,17 +126,17 @@ like $warnings[5], qr/json cannot express blessed objects/, 'json warning on obj
 like $warnings[6], qr/json cannot express references to scalars. /, 'json warning on refs';
 like $warnings[7], qr/json cannot express circular references./, 'json warning on circular refs';
 
-$expected = <<'EOJSON';
+$expected = <<"EOJSON";
 {
   "foo": [
     null,
     1,
     "two",
-    "/^2\s\\\d+$/i",
+    "/^2\\s\\\\\\d+\$/i",
     ,
     "c",
     321,
-    "v1.2.3",
+    "$vstring_parsed",
     "FORMAT",
     "sub { ... }",
     1,
