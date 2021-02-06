@@ -441,7 +441,7 @@ sub _detect_color_level {
     my $colored = $self->colored;
     my $color_level;
 
-    # first we honour ANSI_COLORS_DISABLED, colored and tty piping
+    # first we honour ANSI_COLORS_DISABLED, colored and writing to files
     if (   !$colored
         || ($colored eq 'auto'
             && (exists $ENV{ANSI_COLORS_DISABLED}
@@ -449,7 +449,6 @@ sub _detect_color_level {
                 || $self->output eq 'file'
             )
         )
-#        || ! -t $self->{_output} # <-- FIXME TODO
     ) {
         $color_level = 0;
     }

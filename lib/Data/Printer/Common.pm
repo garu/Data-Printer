@@ -408,7 +408,6 @@ sub _get_namespace {
     return $namespace;
 }
 
-# TODO: test on XS objects
 sub _get_superclasses_for {
     my ($class_name) = @_;
     my $namespace = _get_namespace($class_name);
