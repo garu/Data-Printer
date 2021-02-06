@@ -143,7 +143,7 @@ sub _data_dumper_class_filter {
             . $ddp->parse_as($reftype, $obj)
             . $ddp->maybe_colorize($parse_suffix, 'method')
             . q|, '| . $ddp->maybe_colorize(ref($obj), 'class') . q|'|
-            . $ddp->maybe_colorize(')', 'method')
+            . $ddp->maybe_colorize(' )', 'method')
             ;
     $ddp->outdent;
 
