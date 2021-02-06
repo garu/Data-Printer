@@ -26,6 +26,8 @@ sub import {
             undef,
             'Data::Printer can receive either a hash or a hash reference'
         ) unless ref $args eq 'HASH';
+        $args = Data::Printer::Config::_expand_profile($args)
+            if exists $args->{profile};
     }
     $arguments_for{$caller} = $args;
 
