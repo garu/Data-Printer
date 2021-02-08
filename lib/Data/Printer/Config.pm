@@ -33,8 +33,8 @@ sub _get_first_rc_file_available {
         my $file = File::Spec->catfile($dir, '.dataprinter');
         return $file if -f $file;
         my @path = File::Spec->splitdir($dir);
+        last unless @path;
         my $updir = File::Spec->catdir(@path[0..$#path-1]);
-
         last if !defined $updir || $updir eq $dir;
         $dir = $updir;
     }
