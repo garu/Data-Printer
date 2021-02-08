@@ -220,7 +220,7 @@ Data::Printer::Theme - create your own color themes for DDP!
             regex       => '#aabbcc', # regular expressions
             code        => '#aabbcc', # code references
             glob        => '#aabbcc', # globs (usually file handles)
-            vstring     => '#aabbcc', # version strings (v5.16.0, etc)
+            vstring     => '#aabbcc', # version strings (v5.30.1, etc)
             lvalue      => '#aabbcc', # lvalue label
             format      => '#aabbcc', # format type
             repeated    => '#aabbcc', # references to seen values
@@ -252,7 +252,7 @@ Data::Printer colorizes your output by default. Originally, the only way to
 customize colors was to override the default ones. Data::Printer 1.0 introduced
 themes, and now you can pick a theme or create your own.
 
-Data::Printer comes with 4 themes for you to choose from:
+Data::Printer comes with several themes for you to choose from:
 
 =over 4
 
@@ -266,7 +266,7 @@ Data::Printer comes with 4 themes for you to choose from:
 
 =back
 
-Run C<< examples/color_themes.pl >> to see them in action on your own terminal!
+Run C<< examples/try_me.pl >> to see them in action on your own terminal!
 
 =head1 CREATING YOUR THEMES
 
