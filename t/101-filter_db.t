@@ -195,7 +195,8 @@ EOPACKAGES
             colored => 0,
             filters => ['DB'],
         );
-        $schema->storage->dbh; # <-- force connection;
+        my $dbh = $schema->storage->dbh; # <-- force connection;
+        my $last_statement = $dbh->{Statement} || '-';
 
         is(
             $ddp->parse($schema),
@@ -219,7 +220,7 @@ EOPACKAGES
         dbname: :memory:
         Auto Commit: 1
         Statement Handles: 0
-        Last Statement: -
+        Last Statement: ' . $last_statement . '
     }
     loaded sources: BadSize, BigPet, Pet, User
 }',
