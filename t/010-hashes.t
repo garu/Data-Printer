@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 17;
+use Test::More tests => 16;
 use Data::Printer::Object;
 
 my $ddp = Data::Printer::Object->new( colored => 0 );
