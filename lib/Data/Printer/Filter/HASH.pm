@@ -20,9 +20,7 @@ sub parse {
          . $tied
          if $ddp->max_depth && $ddp->current_depth >= $ddp->max_depth;
 
-    my %ignore = map { $_ => 1 } @{$ddp->ignore_keys};
-
-    my @src_keys = grep !exists $ignore{$_}, keys %$hash_ref;
+    my @src_keys = keys %$hash_ref;
     return $ddp->maybe_colorize('{}', 'brackets') . $tied unless @src_keys;
     @src_keys = Data::Printer::Common::_nsort(@src_keys) if $ddp->sort_keys;
 

@@ -117,13 +117,6 @@ is( $ddp->parse(\%hash),
     zed     26
 }', 'hash with undefs' );
 
-$ddp = Data::Printer::Object->new( colored => 0, ignore_keys => [qw(foo meep)] );
-is($ddp->parse({ foo => 1, bar => 2, baz => 3, meep => 4 }),
-'{
-    bar   2,
-    baz   3
-}', 'hash with ignored keys');
-
 $ddp = Data::Printer::Object->new( colored => 0, hash_max => 6 );
 my $i = 10;
 %hash = map { $_ => $i++ } split //, 'abcdefghijklmnopqrstuvwxyz';

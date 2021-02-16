@@ -530,7 +530,6 @@ each of them:
     hash_max       = 100
     hash_preserve  = begin
     hash_overflow  = '(...skipping __SKIPPED__ keys...)'
-    ignore_keys    = []
     hash_separator = '   '
     align_hash     = 1
     sort_keys      = 1

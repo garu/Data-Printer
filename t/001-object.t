@@ -40,7 +40,6 @@ sub test_defaults {
     is $ddp->hash_max, 100, 'hash_max default 100';
     is $ddp->hash_preserve, 'begin', 'hash_preserve defaults to "begin"';
     is $ddp->hash_overflow, '(...skipping __SKIPPED__ keys...)', 'hash_overflow';
-    is_deeply $ddp->ignore_keys, [], 'ignore_keys';
     is $ddp->unicode_charnames, 0, 'unicode_charnames defaults OFF';
     is $ddp->colored, 'auto', 'colored defaults to "auto"';
     my $theme = $ddp->theme;
@@ -86,7 +85,6 @@ sub test_customization {
         hash_max => 7,
         hash_preserve => 'extremes',
         hash_overflow => 'YAY!',
-        ignore_keys => [3,2,1],
         unicode_charnames => 1,
         colored => 0,
         theme => 'Monokai',
@@ -134,7 +132,6 @@ sub run_customization_tests {
     is $ddp->hash_max, 7, "custom hash_max (pass: $pass)";
     is $ddp->hash_preserve, 'extremes', "custom hash_preserve (pass: $pass)";
     is $ddp->hash_overflow, 'YAY!', "custom hash_overflow (pass: $pass)";
-    is_deeply $ddp->ignore_keys, [3,2,1], "custom ignore_keys (pass: $pass)";
     is $ddp->unicode_charnames, 1, "custom unicode_charnames (pass: $pass)";
     is $ddp->colored, 0, "custom colored (pass: $pass)";
     my $theme = $ddp->theme;

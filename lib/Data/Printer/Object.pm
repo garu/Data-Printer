@@ -65,7 +65,7 @@ my @method_names =qw(
     caller_info caller_message caller_message_newline caller_message_position
     string_max string_overflow string_preserve resolve_scalar_refs
     array_max array_overflow array_preserve hash_max hash_overflow
-    hash_preserve ignore_keys unicode_charnames colored theme show_weak
+    hash_preserve unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
     warnings arrows
@@ -190,7 +190,6 @@ sub _init {
                                 'hash_overflow',
                                 '(...skipping __SKIPPED__ keys...)'
                        );
-    $self->{'ignore_keys'} = Data::Printer::Common::_fetch_arrayref_of_scalars($props, 'ignore_keys');
     $self->{'unicode_charnames'} = Data::Printer::Common::_fetch_scalar_or_default(
                                $props,
                                'unicode_charnames',
