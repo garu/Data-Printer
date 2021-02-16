@@ -20,11 +20,11 @@ my $ddp = Data::Printer::Object->new(
     show_refcount => 1,
 );
 
-if ($ddp->color_level == 3) {
+if ($ddp->{_output_color_level} == 3) {
     plan tests => 1;
 }
 else {
-    plan skip_all => 'color level ' . $ddp->color_level . ' < 3';
+    plan skip_all => 'color level ' . $ddp->{_output_color_level} . ' < 3';
 }
 
 sub testsub {}

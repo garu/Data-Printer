@@ -173,7 +173,7 @@ sub test_colorization {
         fail 'fallback to default color:'
            . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
            . ' theme name: ' . $ddp->theme->name
-           . ' color level: ' . $ddp->color_level
+           . ' color level: ' . $ddp->{_output_color_level}
            . ' sgr_color_for "invalid tag": '
            . (defined $sgr ? $sgr : 'undef')
            . ' parsed default: ' . (defined $parsed ? $parsed : 'undef')
@@ -197,7 +197,7 @@ sub test_colorization {
         fail 'fallback to default color:'
            . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
            . ' theme name: ' . $ddp->theme->name
-           . ' color level: ' . $ddp->color_level
+           . ' color level: ' . $ddp->{_output_color_level}
            . ' sgr_color_for "invalid tag": '
            . (defined $sgr ? $sgr : 'undef')
            . ' parsed default: ' . (defined $parsed ? $parsed : 'undef')

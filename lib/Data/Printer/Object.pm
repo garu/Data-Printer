@@ -484,8 +484,6 @@ sub _detect_color_level {
     return $color_level;
 }
 
-sub color_level { $_[0]->{_output_color_level} }
-
 sub _load_colors {
     my ($self, $props) = @_;
 
@@ -497,7 +495,7 @@ sub _load_colors {
     $theme_object = Data::Printer::Theme->new(
         name            => $theme_name,
         color_overrides => $props->{colors},
-        color_level     => $self->color_level,
+        color_level     => $self->{_output_color_level},
         ddp             => $self,
     );
     if (!$theme_object) {
@@ -505,7 +503,7 @@ sub _load_colors {
             $theme_object = Data::Printer::Theme->new(
                 name            => $default_theme,
                 color_overrides => $props->{colors},
-                color_level     => $self->color_level,
+                color_level     => $self->{_output_color_level},
                 ddp             => $self,
             );
         }
@@ -772,7 +770,7 @@ sub write_label {
 sub maybe_colorize {
     my ($self, $output, $color_type, $default_color, $end_color) = @_;
 
-    if ($self->color_level && defined $color_type) {
+    if ($self->{_output_color_level} && defined $color_type) {
         my $theme = $self->theme;
         my $sgr_color = $theme->sgr_color_for($color_type);
         if (!defined $sgr_color && defined $default_color) {
