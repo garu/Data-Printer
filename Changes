@@ -1,5 +1,13 @@
 Revision history for Data-Printer
 
+0.99_024 2021-02-17
+    NEW FEATURES:
+        - fix rc file conversor to change 'color' to 'colors'
+          (thanks Buddy Burden for reporting the issue!)
+    OTHER:
+        - massive documentation rewrite.
+        - drop support for "ignore_keys" for now.
+
 0.99_023 2021-02-01
     NEW FEATURES:
         - profiles! Now you make complex settings using Perl code.

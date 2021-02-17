@@ -91,7 +91,7 @@ bugs and wishlists :)
 LICENSE AND COPYRIGHT
 ---------------------
 
-Copyright (C) 2011-2018 Breno G. de Oliveira
+Copyright (C) 2011-2021 Breno G. de Oliveira
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
