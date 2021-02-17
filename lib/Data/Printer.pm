@@ -150,7 +150,7 @@ sub _handle_output {
     my ($printer, $output, $wantarray, $data) = @_;
 
     if ($printer->return_value eq 'pass') {
-        print { $printer->output_handle } $output . "\n";
+        print { $printer->{output_handle} } $output . "\n";
         require Scalar::Util;
         my $ref = Scalar::Util::blessed($data);
         return $data if defined $ref;
@@ -172,7 +172,7 @@ sub _handle_output {
         }
     }
     elsif ($printer->return_value eq 'void' || !$wantarray) {
-        print { $printer->output_handle } $output . "\n";
+        print { $printer->{output_handle} } $output . "\n";
         return;
     }
     else {

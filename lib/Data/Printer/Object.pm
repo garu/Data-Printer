@@ -256,9 +256,6 @@ sub output {
     return $self->{output};
 }
 
-# output_handle() is handle only
-sub output_handle { $_[0]->{output_handle} }
-
 sub _load_output_handle {
     my ($self, $output) = @_;
     my %targets = ( stdout => *STDOUT, stderr => *STDERR );
