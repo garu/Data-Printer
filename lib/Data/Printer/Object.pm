@@ -1062,8 +1062,14 @@ By default, Data::Printer will print to the standard error (stderr).
 This setting controls how far inside the data structure we should go
 (default: 0 for no depth limit)
 
-#TODO
-=head3 return_value - whether the user wants the return value to be a pass-through of the source data ('pass'), the dump content itself ('dump') or nothing at all ('void'). Defaults to 'pass' since version 0.36. B<NOTE>: if you set it to 'dump', make sure it's not the last statement of a subroutine or that, if it is, the sub is only called in void context.
+=head3 return_value
+
+Whether the user wants the return value to be a pass-through of the source
+data ('pass'), the dump content itself ('dump') or nothing at all ('void').
+
+Defaults to C<'pass'> since version 0.36. B<NOTE>: if you set it to 'dump',
+make sure it's not the last statement of a subroutine or that, if it is, the
+sub is only called in void context.
 
 =head3 separator
 
