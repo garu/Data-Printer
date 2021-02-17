@@ -68,10 +68,10 @@ sub np (\[@$%&];%) {
     }
     my $output = $printer->parse($_[0]);
     if ($printer->caller_message_position eq 'after') {
-        $output .= $printer->write_label;
+        $output .= $printer->_write_label;
     }
     else {
-        $output = $printer->write_label . $output;
+        $output = $printer->_write_label . $output;
     }
     return $output;
 }
@@ -96,10 +96,10 @@ sub p (\[@$%&];%) {
     }
     my $output = $printer->parse($_[0]);
     if ($printer->caller_message_position eq 'after') {
-        $output .= $printer->write_label;
+        $output .= $printer->_write_label;
     }
     else {
-        $output = $printer->write_label . $output;
+        $output = $printer->_write_label . $output;
     }
 
     return _handle_output($printer, $output, $want_value, $_[0]);
@@ -136,10 +136,10 @@ sub _p_without_prototypes  {
     }
     my $output = $printer->parse((defined $item ? $item : $_[0]));
     if ($printer->caller_message_position eq 'after') {
-        $output .= $printer->write_label;
+        $output .= $printer->_write_label;
     }
     else {
-        $output = $printer->write_label . $output;
+        $output = $printer->_write_label . $output;
     }
 
     return _handle_output($printer, $output, $want_value, $_[0]);

@@ -753,7 +753,7 @@ sub _check_weak {
     return ' ' . $self->maybe_colorize('(weak)', 'weak');
 }
 
-sub write_label {
+sub _write_label {
     my ($self) = @_;
     return '' unless $self->caller_info;
     my @caller = caller 2;
