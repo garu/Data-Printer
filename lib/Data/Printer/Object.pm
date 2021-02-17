@@ -1055,6 +1055,8 @@ for you. So you can do this in your C<.dataprinter>:
 
 By default, Data::Printer will print to the standard error (stderr).
 
+=back
+
 =head3 max_depth
 
 This setting controls how far inside the data structure we should go
