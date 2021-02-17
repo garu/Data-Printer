@@ -800,20 +800,9 @@ Data::Printer::Object - underlying object for Data::Printer
 
 =head1 SYNOPSIS
 
-Unless you're writing a plugin, you're probably looking for L<Data::Printer>.
-Seriously!
-
-    use Data::Printer::Object;
-
-    my $ddp = Data::Printer::Object->new(
-        colorized     => 1,
-        show_refcount => 0,
-        ...
-    );
-
-    my $data = 123;
-
-    say $ddp->parse( \$data );
+Unless you're writing a plugin, or looking for some
+L<< configuration property details|/Attributes >>
+the documentation you want is probably on L<Data::Printer>. Seriously!
 
 
 =head1 DESCRIPTION
@@ -824,26 +813,573 @@ format and print Perl data structures.
 It is passed to plugins so they can rely on contextual information from the
 caller like colors, spacing and other options.
 
-=head1 INSTANTIATION
+=head1 COMMON PROPERTIES / ATTRIBUTES
 
-=head2 new( %options )
+=head2 Scalar Options
 
-Creates a new Data::Printer::Object instance. It may (optionally) receive a
-hash or hash reference with custom settings for any of its properties.
+=head3 show_tainted
 
-=head1 PARSING
+When set, will detect and let you know of any tainted data (default: 1)
+Note that this is a no-op unless your script is in taint mode, meaning
+it's running with different real and effective user/group IDs, or with the
+-T flag. See L<perlsec> for extra information.
 
-=head2 parse( $data_ref )
+=head3 show_unicode
 
-=head2 parse( $data_ref, %options )
+Whether to label data that has the L<unicode flag|perlunifaq> set. (default: 1)
+
+=head3 show_dualvar
+
+Perl can interpret strings as numbers and vice-versa, but that doesn't mean
+it always gets it right. When this option is set to "lax", Data::Printer will
+show both values if they differ. If set to "strict", it will always show both
+values, and when set to "off" it will never show the second value. (default: lax)
+
+=head3 show_lvalue
+
+Let's you know whenever a value is an lvalue (default: 1)
+
+=head3 string_max
+
+The maximum number of characters to display in a string. If the string is
+bigger than that, Data::Printer will trim a part of the string (set by
+L<string_preserve|/string_preserve>) and replace it with the message set on
+L<string_overflow|/string_overflow>. Set C<string_max> to 0 to show all
+characters (default: 4096)
+
+=head3 string_overflow
+
+Message to display once L<string_max|/string_max> is reached. Defaults to
+I<< "(...skipping __SKIPPED__ chars...)" >>.
+
+=head3 string_preserve
+
+When the string has more characters than L<string_max|/string_max>, this
+option defines which part of the string to preserve. Can be set to 'begin',
+'middle' or 'end'. (default: 'begin')
+
+=head3 scalar_quotes
+
+Which quotation character to use when printing strings (default: ")
+
+=head3 escape_chars
+
+Use this to escape certain characters from strings, which could be useful if
+your terminal is in a different encoding than the data being printed. Can be
+set to 'nonascii', 'nonlatin1', 'all' or 'none' (default: none).
+
+=head3 unicode_charnames
+
+whether to use the character's names when escaping unicode (e.g. SNOWMAN instead of \x{2603}) (default: 0)
+
+=head3 print_escapes
+
+Wether to print invisible characters in strings, like \b, \n and \t (default: 0)
+
+=head3 resolve_scalar_refs
+
+If a reference to a scalar value is found more than once, print the resolved
+value. For example, you may have an object that you reuse to represent 'true'
+or 'false'. If you have more than one of those in your data, Data::Printer
+will by default print the second one as a circular reference. When this option
+is set to true, it will instead resolve the scalar value and keep going. (default: false)
+
+
+=head2 Array Options
+
+=head3 array_max
+
+The maximum number of array elements to show. If the array is bigger than
+that, Data::Printer will trim the offending slice (set by
+L<array_preserve|/array_preserve>) and replace it with the message set on
+L<array_overflow|/array_overflow>. Set C<array_max> to 0 to show all elements
+in the array, regardless of array size (default: 100)
+
+=head3 array_overflow
+
+Message to display once L<array_max|/array_max> is reached. Defaults to
+C<< "(...skipping __SKIPPED__ items...)" >>.
+
+=head3 array_preserve
+
+When an array has more elements than L<array_max|/array_max>, this option
+defines which part of the array to preserve. Can be set to 'begin', 'middle'
+or 'end'. (default: 'begin')
+
+=head3 index
+
+When set, shows the index number before each array element. (default: 1)
+
+
+=head4 Hash Options
+
+=head3 align_hash
+
+If this option is set, hash keys  will be vertically aligned by the length
+of the longest key.
+
+This is better explained with an example, so consider the hash
+C<< my %h = ( a => 123, aaaaaa => 456 ) >>. This would be an unaligned output:
+
+    a => 123,
+    aaaaaa => 456
+
+and this is what it looks like with C<< align_hash = 1 >>:
+
+    a      => 123,
+    aaaaaa => 456
+
+(default: 1)
+
+=head3 hash_max
+
+The maximum number of hash key/value pairs to show. If the hash is bigger than
+that, Data::Printer will trim the offending slice (set by
+L<hash_preserve|/hash_preserve>) and replace it with the message set on
+L<hash_overflow|/hash_overflow>. Set C<hash_max> to 0 to show all elements
+in the hash, regardless of the total keys. (default: 100)
+
+=head3 hash_overflow
+
+Message to display once L<hash_max|/hash_max> is reached. Defaults to
+C<< "(...skipping __SKIPPED__ keys...)" >>.
+
+=head3 hash_preserve
+
+When a hash has more elements than L<hash_max|/hash_max>, this option
+defines which part of the hash to preserve. Can be set to 'begin', 'middle'
+or 'end'. Note that Perl makes no promises regarding key order, so this
+option only makes sense if keys are sorted. In other words, if
+you have disabled L<sort_keys|/sort_keys>, expect random keys to be
+shown regardless of which part was preserved. (default: 'begin')
+
+=head3 hash_separator
+
+What to use to separate keys from values. Default is '   ' (three spaces)
+
+=head3 sort_keys
+
+Whether to sort keys when printing the contents of a hash (default: 1)
+
+=head3 quote_keys
+
+Whether to quote hash keys or not. Can be set to 1 (always quote), 0
+(never quote) or 'auto' to quote only when a key contains spaces or
+linebreaks. (default: 'auto')
+
+
+=head2 General Options
+
+=head3 arrows
+
+Data::Printer shows circular references as a data path, indicating where in
+the data that reference points to. You may use this option to control if/when
+should it print reference arrows. Possible values are 'all' (e.g
+C<< var->{x}->[y]->[z] >>), 'first' (C<< var->{x}[y][z] >>) or 'none'
+(C<< var{x}[y][z] >>). Default is 'none'.
+
+=head3 caller_info
+
+Set this option to a true value to display a L<message|/caller_message> next
+to the data being printed. (default: 0)
+
+=head3 caller_message
+
+What message to print when L<caller_info|/caller_info> is true. Defaults to
+"C<< Printing in line __LINE__ of __FILENAME__ >>".
+
+=head3 caller_message_newline
+
+When true, skips a line when printing L<caller_message|/caller_message> (default: 1)
+
+=head3 caller_message_position
+
+This option controls where the L<caller_message|/caller_message> will appear
+in relation to the code being printed. Can be set to 'before' or 'after'. A
+line is always skipped between the message and the data (either before or
+after), unless you set L<caller_message_newline|/caller_message_newline> to 0.
+(default: 'before')
+
+=head3 colored
+
+Whether to colorize the output or not. Can be set to 1 (always colorize), 0
+(never colorize) or 'auto'. Default is 'auto', meaning it will colorize only
+when printing to STDOUT or STDERR, never to a file or to a variable. The 'auto'
+setting also respects the C<ANSI_COLORS_DISABLED> environment variable.
+
+=head3 deparse
+
+If the data structure contains a subroutine reference, this options can be
+set to deparse it and print the underlying code, which hopefully resembles
+the original source code. (default: 0)
+
+=head3 end_separator
+
+When set, the last item on an array or hash will always contain a
+trailing L<separator|/separator>. (default: 0)
+
+=head3 show_memsize
+
+Set to true and Data::Printer will show the estimate memory size of the data
+structure being printed. Requires Devel::Size. (default: 0)
+
+=head3 memsize_unit
+
+If L<show_memsize|/show_memsize> is on, this option lets you specify the
+unit in which to show the memory size. Can be set to "b" to show size in
+bytes, "k" for kilobytes, "m" for megabytes or "auto", which will use the
+biggest unit that makes sense. (default: auto)
+
+=head3 output
+
+Where you want the output to be printed. Can be set to the following values:
+
+=over 4
+
+=item * C<'stderr'> - outputs to the standard error handle.
+
+=item * C<'stdout'> - outputs to the standard output handle.
+
+=item * reference to a scalar (e.g. C<\$string>) - outputs to the scalar reference.
+
+=item * file handle - any open file handle:
+
+    open my $fh, '>>', '/path/to/some/file.log' or die $!;
+    p @{[ 1,2,3 ]}, output => $fh;
+
+=item * file path - if you pass a non-empty string that is not 'stderr' nor 'stdout',
+Data::Printer will consider it to be a file path and create/append to it automatically
+for you. So you can do this in your C<.dataprinter>:
+
+    output = /path/to/some/file.log
+
+By default, Data::Printer will print to the standard error (stderr).
+
+=head3 max_depth
+
+This setting controls how far inside the data structure we should go
+(default: 0 for no depth limit)
+
+#TODO
+=head3 return_value - whether the user wants the return value to be a pass-through of the source data ('pass'), the dump content itself ('dump') or nothing at all ('void'). Defaults to 'pass' since version 0.36. B<NOTE>: if you set it to 'dump', make sure it's not the last statement of a subroutine or that, if it is, the sub is only called in void context.
+
+=head3 separator
+
+The separator character(s) to use for arrays and hashes. The default is the
+comma ",".
+
+=head3 show_readonly
+
+When this option is set, Data::Printer will let you know whenever a value is
+read-only. (default: 1)
+
+=head3 show_refcount
+
+Whether to show data refcount it's above 1 (default: 0)
+
+=head3 show_weak
+
+When this option is set, Data::Printer will let you know whenever it finds a
+weak reference (default: 1)
+
+=head3 show_tied
+
+When set to true, this option will let you know whenever a tied variable
+is detected, including what is tied to it (default: 1)
+
+=head3 theme
+
+    theme = Monokai
+
+This setting gets/sets the current color theme module. The default theme
+is L<Material|Data::Printer::Theme::Material>. Data::Printer ships with
+several themes for you to choose, and you can create your own theme or use
+any other from CPAN.
+
+=head3 warnings
+
+If something goes wrong when parsing your data or printing it to the selected
+output, Data::Printer by default shows you a warning from the standpoint of
+the actual call to C<p()> or C<np()>. To silence those warnings, set this
+option to 0.
+
+
+=head2 Class / Object Options
+
+=head3 class_method
+
+When Data::Printer is printing an object, it first looks for a method
+named "C<_dataprinter>" and, if one is found, we call it instead of actually
+parsing the structure.
+
+This way, module authors can control how Data::Printer outputs their objects
+the best possible way by simply adding a private method instead of having
+to write a full filter or even adding Data::Printer as a dependency.
+
+To disable this behavior, simply set this option to false or an empty string.
+You can also change it to a different name and Data::Printer will look for
+that instead.
+
+=head3 class - class properties to override.
+
+This "namespace" gets/sets all class properties that are used by the
+L<standard class filter|Data::Printer::Filter::GenericClass> that ships
+with Data::Printer. Note that, if you are using a specific filter for that
+object, most (if not all) of the settings below will not apply.
+
+In your C<.dataprinter> file, the defaults would look like this:
+
+    class.parents            = 1
+    class.linear_isa         = auto
+    class.universal          = 0
+    class.expand             = 1
+    class.stringify          = 1
+    class.show_reftype       = 0
+    class.show_overloads     = 1
+    class.show_methods       = all
+    class.sort_methods       = 1
+    class.inherited          = public
+    class.format_inheritance = lines
+    class.parent_filters     = 1
+    class.internals          = 1
+
+In code, you should use the "class" namespace as a key to a hash reference:
+
+    use Data::Printer class => {
+        parents            => 1,
+        linear_isa         => 'auto',
+        universal          => 0,
+        expand             => 1,
+        stringify          => 1,
+        show_reftype       => 0,
+        show_overloads     => 1,
+        show_methods       => 'all',
+        sort_methods       => 1,
+        inherited          => 'public',
+        format_inheritance => 'lines',
+        parent_filters     => 1,
+        internals          => 1,
+    };
+
+Or inline:
+
+    p $some_object, class => { internals => 1,  ... };
+
+
+=head4 parents
+
+When set, shows all superclasses of the object being printed. (default: 1)
+
+=head4 linear_isa
+
+This setting controls whether to show the linearized @ISA, which is the
+order of preference in which the object's methods and attributes are resolved
+according to its inheritance. Can be set to 1 (always show), 0 (never show)
+or 'auto', which shows only when the object has more than one superclass.
+(default: 'auto')
+
+=head4 universal
+
+Set this option to 1 to include UNIVERSAL methods to the list of public
+methods (like C<can> and C<isa>). (default: 0)
+
+=head4 expand
+
+Sets how many levels to descend when printing classes, in case their internals
+point to other classes. Set this to 0 to never expand any objects, just show
+their name. Set to any integer number and when Data::Printer reaches that
+depth, only the class name will be printed. Set to 'all' to always expand
+objects found inside your object. (default: 1)
+
+=head4 stringify
+
+When this option is set, Data::Printer will check if the object being printed
+contains any methods named C<as_string>, C<to_string> or C<stringify>. If it
+does, Data::Printer will use it as the object's output instead of the
+generic class plugin. (default: 1)
+
+=head4 show_reftype
+
+If set to a true value, Data::Printer will show the internal reference type
+of the object. (default: 0)
+
+=head4 show_overloads
+
+This option includes a list of all overloads implemented by the object.
+(default: 1)
+
+=head4 show_methods
+
+Controls which of the object's direct methods to show. Can be set to 'none',
+'all', 'private' or 'public'. (default: 'all')
+
+=head4 sort_methods
+
+When listing methods, this option will order them alphabetically, rather than
+on whatever order the list of methods returned. (default: 1)
+
+=head4 inherited
+
+Controls which of the object's parent methods to show. Can be set to 'none',
+'all', 'private' or 'public'. (default: 'public')
+
+=head4 format_inheritance
+
+This option controls how to format the list of methods set by a parent class
+(and not the class itself). Setting it to C<'lines'> it will print one line
+for each parent, like so:
+
+    public methods (5):
+        foo, bar
+        Parent::Class:
+            baz, meep
+        Other::Parent:
+            moop
+
+
+Setting it to C<'string'>, it will put all methods on the same line:
+
+    public methods (5): foo, bar, baz (Parent::Class), meep (Parent::CLass), moop (Other::Parent)
+
+Default is: 'lines'.
+
+
+=head4 parent_filters
+
+If there is no filter for the given object's class, there may still be a
+filter for one of its parent classes. When this option is set, Data::Printer
+will traverse the object's superclass and use the first filter it finds,
+if one is present. (default: 1)
+
+=head4 internals
+
+Shows the object's internal data structure. (default: 1)
+
+
+=head2 "Shortcuts"
+
+Some options are so often used together we have created shortcuts for them.
+
+=head3 as
+
+    p $somevar, as => 'is this right?';
+
+The "C<as>" shortcut activates L<caller_info|/caller_info> and sets
+L<caller_message|/caller_message> to whatever you set it to. It's really
+useful to quickly differentiate between sequential uses of C<p()>.
+
+=head3 multiline
+
+    p $somevar, multiline => 0;
+
+When set to 0, disables array index and linebreaks, uses ':' as hash separator
+and '(...)' as overflow for hashes, arrays and strings, and also disables
+'caller_message_newline' so any caller message is shown on the same line as
+the variable being printed. If this is set on a global configuration or on the
+C<.dataprinter> file, Can be "undone" by setting it to "1".
+
+=head3 fulldump
+
+    p $somevar, fulldump => 1;
+
+By default, Data::Printer limits the size of string/array/hash dumps to a
+(hopefully) reasonable size. Still, sometimes you really need to see
+everything. To completely disable such limits, just set this option to true.
+
+
+=head2 Methods and Accessors for Filter Writers
+
+The following attributes could be useful if you're writing your own custom
+filters or maybe even a non-obvious profile. Otherwise, no need to worry about
+any of them ;)
+
+And make sure to check out the current filter list for real usage examples!
+
+=head3 indent
+
+=head3 outdent
+
+=head3 newline
+
+These methods are used to control the indentation level of the string being
+created to represent your data. While C<indent> and C<outdent> respectively
+increase and decrease the indentation level, C<newline> will add a linebreak
+and position the "cursor" where you are expected to continue your dump string:
+
+    my $output = $ddp->newline . 'this is a new line';
+    $ddp->indent;
+    $output .= $ddp->newline . 'this is indented';
+    $ddp->outdent;
+    $output .= $ddp->newline . 'back to our previous indentation!';
+
+Unless multiline was set to 0, the code above should print something like:
+
+    this is a new line
+        this is indented
+    back to our previous indentation
+
+=head3 extra_config
+
+Data::Printer will read and pass-through any unrecognized settings in either
+your C<.dataprinter> file or your inline arguments inside this structure.
+This is useful to create custom settings for your filters.
+
+While any and all unknown settings will be readable here, we recommend you
+prepend them with a namespace like C<filter_xxx> as those are reserved for
+filters and thus guaranteed not to colide with any core Data::Printer
+settings now or in the future.
+
+For example, on the L<Web filter|Data::Printer::Filter::Web> we have the
+C<expand_headers> option, and even though Data::Printer itself doesn't have
+this option, we prepend everything with the C<filter_web> namespace, either
+in the config file:
+
+    filter_web.expand_headers = 1
+
+or inline:
+
+    p $http_response, filters => ['Web'], filter_web => { expand_headers => 1 };
+
+
+=head3 maybe_colorize( $string, $label )
+
+=head3 maybe_colorize( $string, $label, $default_color )
+
+    my $output = $ddp->maybe_colorize( 12.3, 'number');
+
+Instead of simply adding raw content to your dump string, you should wrap it
+with this method, as it will look up colors on the current theme and print
+them (or not, depending on whether the terminal supports color or the user
+has explicitly turned them off).
+
+If you are writing a custom filter and don't want to use the core labels to
+colorize your content, you may want to set your own label and pass a default
+color. For example:
+
+    my $output = $ddp->maybe_colorize( $data, 'filter_myclass', '#ffccb3' );
+
+In the code above, if the user has C<colors.filter_myclass> set either on the
+C<.dataprinter> file or the runtime hashref, that one will be used. Otherwise,
+Data::Printer will use C<'#ffccb3'>.
+
+=head3 current_depth
+
+Shows the current depth level, from 0 onwards.
+
+=head3 current_name
+
+Gets/sets the name for the current posistion, to be printed when the parser
+visits that data again. E.g. C<var[0]{abc}[2]>.
+
+=head3 parse( $data_ref )
+
+=head3 parse( $data_ref, %options )
 
 This method receives a reference to a data structure to parse, and returns the
 parsed string. It will call each filter and colorize the output accordingly.
 
 Use this inside filters whenever you want to use the result of a parsed data
 strucure.
-
-    my $ddp = Data::Printer::Object->new;
 
     my $output = $ddp->parse( [3,2,1] );
 
@@ -868,56 +1404,12 @@ for another way to achieve this.
 
 =back
 
-=head2 parse_as( $type, $data_ref )
+=head3 parse_as( $type, $data_ref )
 
 This is a convenience method to force some data to be interpreted as a
 particular type. It is the same as:
 
     $ddp->parse( $data, force_type => $type, seen_override => 1 );
-
-=head2 indent
-
-=head2 outdent
-
-=head2 newline
-
-These methods are used to control the indentation level of the string being
-created to represent your data. While C<indent> and C<outdent> respectively
-increase and decrease the indentation level, C<newline> will add a linebreak
-and position the "cursor" where you are expected to continue your dump string:
-
-    my $output = $ddp->newline . 'this is a new line';
-    $ddp->indent;
-    $output .= $ddp->newline . 'this is indented';
-    $ddp->outdent;
-    $output .= $ddp->newline . 'back to our previous indentation!';
-
-Unless multiline was set to 0, the code above should print something like:
-
-    this is a new line
-        this is indented
-    back to our previous indentation
-
-=head2 maybe_colorize( $string, $label )
-
-=head2 maybe_colorize( $string, $label, $default_color )
-
-    my $output = $ddp->maybe_colorize( 12.3, 'number');
-
-Instead of simply adding raw content to your dump string, you should wrap it
-with this method, as it will look up colors on the current theme and print
-them (or not, depending on whether the terminal supports color or the user
-has explicitly turned them off).
-
-If you are writing a custom filter and don't want to use the core labels to
-colorize your content, you may want to set your own label and pass a default
-color. For example:
-
-    my $output = $ddp->maybe_colorize( $data, 'filter_myclass', '#ffccb3' );
-
-In the code above, if the user has C<colors.filter_myclass> set either on the
-C<.dataprinter> file or the runtime hashref, that one will be used. Otherwise,
-Data::Printer will use C<'#ffccb3'>.
 
 =head2 unsee( $data )
 
@@ -926,121 +1418,17 @@ several times, like JSON Boolean objects. To prevent Data::Printer from
 showing this content as repeated, you can use the C<unsee> method to make
 the current object forget about having ever visited this data.
 
-=head1 OTHER METHODS / PROPERTIES
 
-Most of them are described in L<Data::Printer>.
+=head1 OBJECT CONSTRUCTION
 
-=over 4
+You'll most like never need this unless you're planning on extending
+Data::Printer itself.
 
-=item * align_hash - vertically align hash keys (default: 1)
+=head2 new( %options )
 
-=item * array_max - maximum array elements to show. Set to 0 to show all (default: 100)
+Creates a new Data::Printer::Object instance. It may (optionally) receive a
+hash or hash reference with custom settings for any of its properties.
 
-=item * array_overflow - message to display once array_max is reached
-
-=item * array_preserve - which part of the array to preserve after array_max (default: 'begin')
-
-=item * arrows - show ref arrows when displaying circular refs? Can be 'none' (e.g. var{x}[y]), 'first' (e.g. var->{x}[y]) or 'all' (e.g. var->{x}->[y]). Default is 'none'.
-
-=item * caller_info - whether the user wants to prepend dump with caller information or not (default: 0)
-
-=item * caller_message - what to print when caller_info is true.
-
-=item * caller_message_newline - skip line after printing caller_message (default: 1)
-
-=item * caller_message_position - do you want the message displayed 'before' or 'after' the data? (default: 'before')
-
-=item * class - class properties to override.
-
-=item * class_method - function name to look for custom dump of external classes (default: '_dataprinter')
-
-=item * color_level - what the current color level is. Used by themes to approximate (or disable) colors.
-
-=item * colored - whether to colorize the output or not. Default is 'auto', meaning it will colorize only when printing to STDOUT or STDERR, never to a file or to a string (like when using np(). 'auto' also respects the ANSI_COLORS_DISABLED environment variable.
-
-=item * current_depth - shows the current depth level.
-
-=item * current_name - gets/sets the name for the current posistion, to be printed when the parser visits that data again. E.g. C<var[0]{abc}[2]>.
-
-=item * deparse - whether the user wants to see deparsed content or not (default: 0)
-
-=item * end_separator - should we print the trailing comma? (default: 0)
-
-=item * escape_chars - which characters to escape when parsing strings ('nonascii', 'nonlatin1', 'all' or 'none' (the default))
-
-=item * extra_config - all given options that were not recognized by Data::Printer::Object are kept here. Useful to create custom options in filters. See L<Data::Printer::Filter>.
-
-=item * hash_max - maximum hash pairs to show. Set to 0 to show all (default: 100)
-
-=item * hash_overflow - message to display once hash_max is reached
-
-=item * hash_preserve - which part of the (sorted) hash to preserve after hash_max (default: 'begin')
-
-=item * hash_separator - what to use to separate keys from values (default: '   ')
-
-=item * ignore_keys - arrayref of keys to ignore (default: [])
-
-=item * index - whether to show array index numbers or not (default: 1)
-
-=item * max_depth - how far inside the data strucuture should we go (default: 0 for infinite)
-
-=item * memsize_unit - show memory size as bytes (b), kbytes (k) or megabytes (m). Default is 'auto'
-
-=item * multiline - defaults to 1. When set to 0, disables array index and linebreaks, uses ':' as hash separator and '(...)' as overflow for hashes, arrays and strings, and also disables 'caller_message_newline'.
-
-=item * fulldump - set to 1 to disable string_max, array_max and hash_max at the same time.
-
-=item * output - where the user wants the output to be printed. Defaults to 'stderr', could be 'stdout', \$string or $filehandle.
-
-=item * output_handle - stores the proper handle for the given output so you can print to it.
-
-=item * print_escapes - whether to print invisible characters in strings, like \b, \n and \t (default: 0)
-
-=item * quote_keys - whether to quote hash keys or not (default: 'auto')
-
-=item * resolve_scalar_refs - if a reference to a scalar value is found more than once, print the resolved value. Defaults to false.
-
-=item * return_value - whether the user wants the return value to be a pass-through of the source data ('pass'), the dump content itself ('dump') or nothing at all ('void'). Defaults to 'pass'.
-
-=item * scalar_quotes - which quotation character to use when printing strings (default: ")
-
-=item * separator - what separator character to use for arrays/hashes (default: ,)
-
-=item * show_dualvar - whether to label dual-variables (default: 1)
-
-=item * show_lvalue - whether to label lvalues (default: 1)
-
-=item * show_memsize - whether to show memory size of data structure. Requires Devel::Size (default: 0)
-
-=item * show_readonly - whether to label readonly data (default: 1)
-
-=item * show_refcount - whether to show data refcount it's above 1 (default: 0)
-
-=item * show_tainted - whether to label tainted data (default: 1)
-
-=item * show_unicode - whether to label data with the unicode flag set (default: 1)
-
-=item * show_weak - whether to label weak references (default: 1)
-
-=item * show_tied - whether to label tied variables (default: 1)
-
-=item * sort_keys - whether to sort hash keys (default: 1)
-
-=item * string_max - maximum number of characters in a string. Set to 0 to show all (default: 4096)
-
-=item * string_overflow - message to display once string_max is reached
-
-=item * string_preserve - which part of the string to preserve after string_max (default: 'begin')
-
-=item * theme - points to the current theme object
-
-=item * unicode_charnames - whether to use the character's names when escaping unicode (e.g. SNOWMAN instead of \x{2603}) (default: 0)
-
-=item * write_label - returns the proper label string, as parsed from caller_message.
-
-=item * warnings - show warning messages if something goes wrong.
-
-=back
 
 =head1 SEE ALSO
 
