@@ -101,6 +101,9 @@ sub _data_dumper_ref_filter {
 sub _data_dumper_vstring_filter {
     my ($scalar, $ddp) = @_;
     my $ret = Data::Printer::Filter::VSTRING::parse(@_);
+    if ($] < 5.009 && substr($ret, 0, 7) eq 'VSTRING') {
+        $ret = $ddp->maybe_colorize('', 'vstring');
+    }
     return _output_wrapper($ddp, $ret);
 }
 

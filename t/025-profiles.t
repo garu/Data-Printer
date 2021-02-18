@@ -1,9 +1,11 @@
 use strict;
 use warnings;
-use Test::More tests => 34;
+use Test::More;
 use Data::Printer::Config;
 use Data::Printer::Object;
 use File::Spec;
+
+plan tests => $] >= 5.009 ? 34 : 33;
 
 my @warnings;
 { no warnings 'redefine';
@@ -74,6 +76,10 @@ push @{$target->{foo}}, $target->{foo}[6]; # circular ref check #2
 
 @warnings = ();
 my $output = $ddp->parse($target);
+
+if (@warnings == 3 && $warnings[2] =~ /Objects may display/) {
+    pop @warnings;
+}
 is @warnings, 2, 'dumper profile is unable to parse 2 types of ref';
 like $warnings[0], qr/cannot handle ref type 10/, 'dumper warning on lvalue';
 like $warnings[1], qr/cannot handle ref type 14/, 'dumper warning on format';
@@ -83,7 +89,10 @@ my $error = Data::Printer::Common::_tryme(sub {
     require version;
     $vstring_parsed = version->parse($vstring)->normal;
 });
-$vstring_parsed = 'VSTRING object (unable to parse)' if $error;
+
+if ($error) {
+    $vstring_parsed = $] < 5.009 ? qq('\x01\x02\x03') : 'VSTRING object (unable to parse)';
+}
 
 my $expected = <<"EODUMPER";
 \$VAR1 = {
@@ -115,16 +124,26 @@ is @warnings, 0, 'json profile loaded';
 $ddp = Data::Printer::Object->new($profile);
 
 $output = $ddp->parse($target);
-is @warnings, 10, 'json profile is unable to parse 2 types of ref';
-like $warnings[0], qr/regular expression cast to string \(flags removed\)/, 'json warning on regexes';
-like $warnings[1], qr/json cannot express globs/, 'json warnings on globs';
-like $warnings[2], qr/json cannot express references to scalars. Cast to non-reference/, 'json warning on refs';
-like $warnings[3], qr/json cannot express vstrings/, 'json warnings on vstring';
-like $warnings[4], qr/json cannot express subroutines. Cast to string/, 'json warning on functions';
-like $warnings[5], qr/json cannot express blessed objects/, 'json warning on objects';
 
-like $warnings[6], qr/json cannot express references to scalars. /, 'json warning on refs';
-like $warnings[7], qr/json cannot express circular references./, 'json warning on circular refs';
+my $total_warnings = 10;
+if ($] < 5.009) {
+    $total_warnings = 9;
+    $vstring_parsed = "\x01\x02\x03" if $vstring_parsed !~ /v/i;
+}
+my $i = 0;
+is @warnings, $total_warnings, 'json profile is unable to parse some types of ref';
+like $warnings[$i++], qr/regular expression cast to string \(flags removed\)/, 'json warning on regexes';
+like $warnings[$i++], qr/json cannot express globs/, 'json warnings on globs';
+like $warnings[$i++], qr/json cannot express references to scalars. Cast to non-reference/, 'json warning on refs';
+
+if ($] >= 5.009) {
+    like $warnings[$i++], qr/json cannot express vstrings/, 'json warnings on vstring';
+}
+like $warnings[$i++], qr/json cannot express subroutines. Cast to string/, 'json warning on functions';
+like $warnings[$i++], qr/json cannot express blessed objects/, 'json warning on objects';
+
+like $warnings[$i++], qr/json cannot express references to scalars. /, 'json warning on refs';
+like $warnings[$i++], qr/json cannot express circular references./, 'json warning on circular refs';
 
 $expected = <<"EOJSON";
 {
