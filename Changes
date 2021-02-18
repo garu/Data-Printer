@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+0.99_025 2021-02-18
+    BUG FIXES:
+        - improved support for perl 5.8.9 (thank you cpantesters!)
+
 0.99_024 2021-02-17
     NEW FEATURES:
         - fix rc file conversor to change 'color' to 'colors'
