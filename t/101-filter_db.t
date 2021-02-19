@@ -14,6 +14,7 @@ sub test_dbi {
             $dbh = DBI->connect('dbi:Mem(RaiseError=1):');
             1;
         };
+        diag('filter tests for DBI ' . $DBI::VERSION);
         my $ddp = Data::Printer::Object->new(
             colored => 0,
             filters => ['DB'],
@@ -178,6 +179,7 @@ EOPACKAGES
     SKIP: {
         skip 'DBD::SQLite not available', 15 unless eval "use DBD::SQLite; 1";
         skip 'DBIx::Class not available', 15 unless eval "$packages";
+        diag('filter tests for DBIC ' . $DBIx::Class::VERSION . ' and DBD::SQLite ' . $DBD::SQLite::VERSION);
         package main;
         my $schema;
         skip 'could not connect with DBIx::Class + SQLite: '. $@, 15, unless eval {
