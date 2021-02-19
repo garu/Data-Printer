@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+0.99_026 2021-02-19
+    BUG FIXES:
+        - test fixes/updates
+        - improved support for Cpanel::JSON::XS::Boolean
+
 0.99_025 2021-02-18
     BUG FIXES:
         - improved support for perl 5.8.9 (thank you cpantesters!)
