@@ -85,13 +85,15 @@ like $warnings[0], qr/cannot handle ref type 10/, 'dumper warning on lvalue';
 like $warnings[1], qr/cannot handle ref type 14/, 'dumper warning on format';
 
 my $vstring_parsed;
-my $error = Data::Printer::Common::_tryme(sub {
-    require version;
-    $vstring_parsed = version->parse($vstring)->normal;
-});
-
-if ($error) {
-    $vstring_parsed = $] < 5.009 ? qq('\x01\x02\x03') : 'VSTRING object (unable to parse)';
+if ($] < 5.009) {
+    $vstring_parsed = qq('\x01\x02\x03');
+}
+else {
+    my $error = Data::Printer::Common::_tryme(sub {
+        require version;
+        $vstring_parsed = version->parse($vstring)->normal;
+    });
+    $vstring_parsed = 'VSTRING object (unable to parse)' if $error;
 }
 
 my $expected = <<"EODUMPER";
