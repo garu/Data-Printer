@@ -451,7 +451,7 @@ q|User ResultSource {
         colored => 0,
         filters => ['DB'],
     );
-    is ($ddp->parse($rs), 'User ResultSet {
+    like ($ddp->parse($rs), qr|\A\QUser ResultSet {
     current search parameters: {
         email       {
             like   "foo%"
@@ -468,13 +468,13 @@ q|User ResultSource {
         ]
     }
     as query:
-        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created, pets.name FROM user me LEFT JOIN pet pets ON pets.user = me.user_id WHERE ( ( email LIKE ? AND pets.name IN ( ?, ? ) AND ( state = ? OR state = ? ) ) ) ORDER BY city DESC)
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created, pets.name FROM user me LEFT JOIN pet pets ON pets.user = me.user_id WHERE ( ( email LIKE ? AND pets.name IN ( ?, ? ) AND ( state = ? OR state = ? ) ) )\E\s+\QORDER BY city DESC)
         foo% (varchar)
         Rex (varchar(10))
         Mewmew (varchar(10))
         CA (varchar)
         NY (varchar)
-}', 'resultset with search');
+}\E\z|, 'resultset with search');
 
     my $from_db = $schema->resultset('User')->search(
         { user_id => 1 },
