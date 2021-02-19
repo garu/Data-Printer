@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 67;
+use Test::More tests => ($^O eq 'Win32' ? 65 : 67);
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -222,12 +222,14 @@ sub test_dualvar_lax {
     }
 
     # one very specific Perl dualvar
-    $! = 2;
-    like(
-        Data::Printer::Object->new( colored => 0 )->parse( \$! ),
-        qr/".+" \(dualvar: 2\)/,
-        '$! is a dualvar'
-    );
+    if ($^O ne 'Win32') {
+        $! = 2;
+        like(
+            Data::Printer::Object->new( colored => 0 )->parse( \$! ),
+            qr/".+" \(dualvar: 2\)/,
+            '$! is a dualvar'
+        );
+    }
 }
 
 sub test_dualvar_strict {
@@ -265,12 +267,14 @@ sub test_dualvar_strict {
     }
 
     # one very specific Perl dualvar
-    $! = 2;
-    like(
-        Data::Printer::Object->new( colored => 0, show_dualvar => 'strict' )->parse( \$! ),
-        qr/".+" \(dualvar: 2\)/,
-        '$! is a dualvar'
-    );
+    if ($^O ne 'Win32') {
+        $! = 2;
+        like(
+            Data::Printer::Object->new( colored => 0, show_dualvar => 'strict' )->parse( \$! ),
+            qr/".+" \(dualvar: 2\)/,
+            '$! is a dualvar'
+        );
+    }
 }
 
 sub test_dualvar_off {
