@@ -193,6 +193,7 @@ sub test_json_typist {
     SKIP: {
         my $error = !eval { require JSON::Typist; require JSON; 1 };
         skip 'JSON::Typist (or JSON, or both) not available', 1 if $error;
+        diag('filter for JSON::Typist ' . $JSON::Typist::VERSION);
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
@@ -224,6 +225,7 @@ sub test_json_pp {
     SKIP: {
         my $error = !eval { require JSON::PP; 1 };
         skip 'JSON::PP not available', 1 if $error;
+        diag('filter tests for ' . $JSON::PP::VERSION);
 
         my $ddp = Data::Printer::Object->new(
             colored   => 0,
@@ -241,6 +243,7 @@ sub test_json_xs {
     SKIP: {
         my $error = !eval { require JSON::XS; 1 };
         skip 'JSON::XS not available', 1 if $error;
+        diag('filter tests for JSON::XS ' . $JSON::XS::VERSION);
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
@@ -259,7 +262,7 @@ sub test_json_json {
     SKIP: {
         my $error = !eval { require JSON; 1 };
         skip 'JSON not available', 1 if $error;
-        diag('loaded JSON ' . $JSON::VERSION);
+        diag('filter tests for JSON ' . $JSON::VERSION);
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
@@ -288,6 +291,9 @@ sub test_json_any {
     SKIP: {
         my $error = !eval { require JSON::Any; JSON::Any->import(); 1 };
         skip 'JSON::Any not available', 1 if $error;
+        {no strict 'refs';
+        diag('filter tests for JSON::Any ' . $JSON::Any::VERSION . ' with ' . JSON::Any->handlerType . ' ' . ${ JSON::Any->handlerType . '::VERSION' });
+        }
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
@@ -306,6 +312,9 @@ sub test_json_maybexs {
     SKIP: {
         my $error = !eval { require JSON::MaybeXS; 1 };
         skip 'JSON::MaybeXS not available', 1 if $error;
+
+        {no strict 'refs'; diag('filter tests for JSON::MaybeXS ' . $JSON::MaybeXS::VERSION . ' with ' . JSON::MaybeXS::JSON() . ' ' . ${ JSON::MaybeXS::JSON() . '::VERSION' });
+        }
 
         my $ddp = Data::Printer::Object->new(
             colored       => 0,
@@ -331,6 +340,7 @@ sub test_json_dwiw {
     SKIP: {
         my $error = !eval { require JSON::DWIW; 1 };
         skip 'JSON::DWIW not available', 1 if $error;
+        diag('filter for JSON::DWIW ' . $JSON::DWIW::VERSION);
 
         my $data = JSON::DWIW::from_json($json, { convert_bool => 1 });
         is( $ddp->parse($data), $expected, 'JSON::DWIW live booleans' );
@@ -356,6 +366,7 @@ sub test_json_parser {
     SKIP: {
         my $error = !eval { require JSON::Parser; 1 };
         skip 'JSON::Parser not available', 1 if $error;
+        diag('filter for JSON::Parser ' . $JSON::Parser::VERSION);
 
         my $data = JSON::Parser->new->jsonToObj($json);
         is( $ddp->parse($data), $expected, 'JSON::Parser live booleans' );
@@ -382,6 +393,8 @@ sub test_json_sl {
         my $error = !eval { require JSON::SL; 1 };
         skip 'JSON::SL not available', 1 if $error;
 
+        diag('filter for JSON::SL ' . $JSON::SL::VERSION);
+
         my $data = JSON::SL::decode_json($json);
         is( $ddp->parse($data), $expected, 'JSON::SL live booleans' );
     };
@@ -405,8 +418,10 @@ sub test_json_mojo {
     );
 
     SKIP: {
-        my $error = !eval { require Mojo::JSON; 1 };
+        my $error = !eval { require Mojo::JSON; require Mojolicious; 1 };
         skip 'Mojo::JSON not available', 1 if $error;
+
+        diag('filter for Mojo::JSON ' . $Mojolicious::VERSION);
 
         my $data = Mojo::JSON->can('new')
                  ? Mojo::JSON->new->decode($json)
@@ -428,6 +443,7 @@ sub test_json_pegex {
     SKIP: {
         my $error = !eval { require Pegex::JSON; 1 };
         skip 'Pegex::JSON not available', 1 if $error;
+        diag('filter for Pegex::JSON ' . $Pegex::JSON::VERSION);
 
         my $data = Pegex::JSON->can('parse')
                  ? Pegex::JSON->parse($json)
@@ -450,6 +466,7 @@ sub test_json_cpanel {
     SKIP: {
         my $error = !eval { require Cpanel::JSON::XS; 1 };
         skip 'Cpanel::JSON::XS not available', 1 if $error;
+        diag('filter for Cpanel::JSON::XS ' . $Cpanel::JSON::XS::VERSION);
 
         my $data = Cpanel::JSON::XS::decode_json($json);
         is( $ddp->parse($data), $expected, 'Cpanel::JSON::XS live booleans' );
@@ -468,6 +485,7 @@ sub test_json_tiny {
     SKIP: {
         my $error = !eval { require JSON::Tiny; 1 };
         skip 'JSON::Tiny not available', 1 if $error;
+        diag('filter for JSON::Tiny ' . $JSON::Tiny::VERSION);
 
         my $data = JSON::Tiny::decode_json($json);
         is( $ddp->parse($data), $expected, 'JSON::Tiny live booleans' );
