@@ -165,7 +165,7 @@ sub test_mojo_cookie {
 
         like(
             $ddp->parse($c),
-            qr{ddp=test; expires=\d+; domain=localhost; path=/test; secure; http-only; max-age=60 \(Mojo::Cookie\)},
+            qr{ddp=test; expires=.+?; domain=localhost; path=/test; secure; http-only; max-age=60 \(Mojo::Cookie\)},
             'Mojo::Cookie parsed correctly'
         );
     };
