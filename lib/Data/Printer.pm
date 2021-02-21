@@ -240,7 +240,7 @@ __END__
 
 =head1 NAME
 
-Data::Printer - colored & full-featured pretty-print of Perl data structures and objects
+Data::Printer - colored & full-featured pretty print of Perl data structures and objects
 
 =head1 SYNOPSIS
 
@@ -258,6 +258,10 @@ Want to see what's inside a variable in a complete, colored and human-friendly w
     # for anonymous array/hash references, use postderef (on perl 5.24 or later):
     p [ $one, $two, $three ]->@*;
     p { foo => $foo, bar => $bar }->%*;
+
+    # or deref the anonymous ref:
+    p @{[ $one, $two, $three ]};
+    p %{{ foo => $foo, bar => $bar }};
 
     # or put '&' in front of the call:
     &p( [ $one, $two, $three ] );
@@ -318,7 +322,7 @@ and dark terminal backgrounds, and you can create your own as well.
 
 =item * B<< L<Filters|/Filters> for specific data structures and objects >> to make
 debugging much, much easier. Includes filters for many popular classes
-from CPAN like JSON::\*, URI, HTTP::\*, LWP, Digest::\*, DBI and DBIx::Class.
+from CPAN like JSON::*, URI, HTTP::*, LWP, Digest::*, DBI and DBIx::Class.
 printing what really matters to developers debugging code. It also lets you
 create your own custom filters easily.
 
@@ -407,10 +411,16 @@ This function pretty-prints the contents of whatever variable to STDERR
     p %some_hash;
     p $scalar_or_ref;
 
-Note that anonymous structures will only work if you either use postderef
+Note that anonymous structures will only work if you postderef them:
+
+    p [$foo, $bar, $baz]->@*;
+
+you may also deref it manually:
+
+    p %{{ foo => $foo }};
+
 or prefix C<p()> with C<&>:
 
-    p [$foo, $bar, $baz]->@*;    # postderef
     &p( [$foo, $bar, $baz] );    # & (note mandatory parenthesis)
 
 You can pass custom options that will work only on that particular call:
@@ -418,7 +428,7 @@ You can pass custom options that will work only on that particular call:
     p @var, as => "some label", colorized => 0;
     p %var, show_memsize => 1;
 
-By default C<p()> will print to STDERR and return the same variable being
+By default, C<p()> prints to STDERR and returns the same variable being
 dumped. This lets you quickly wrap variables with C<p()> without worrying
 about changing return values. It means that if you change this:
 
@@ -457,12 +467,12 @@ a log message).
 
 There are 3 possible ways to customize Data::Printer:
 
-1. Creating a C<.dataprinter> file on your home directory, on your
-project's base directory or wherever you set the C<DATAPRINTERRC>
-environment variable to.
+1. B<[RECOMMENDED]> Creating a C<.dataprinter> file either on your home
+directory or your project's base directory, or both,  or wherever you set
+the C<DATAPRINTERRC> environment variable to.
 
 2. Setting custom properties on module load. This will override any
-setting from (1) on the namespace (package/module) it was called:
+setting from your config file on the namespace (package/module) it was called:
 
     use DDP max_depth => 2, deparse => 1;
 
@@ -578,7 +588,7 @@ each of them:
     class.internals          = 1
 
 
-=head3 Settings shortcuts
+=head3 Settings' shortcuts
 
 =over 4
 
@@ -642,12 +652,13 @@ overwritable), including a generic object filter that pretty-prints regular
 and Moo(se) objects and is even aware of Role::Tiny.
 
 Data::Printer also comes with filter bundles that can be quickly activated
-to make it easier to debug L<Data::Printer::Filter::ContentType|binary data>
+to make it easier to debug L<binary data|Data::Printer::Filter::ContentType>
 and many popular CPAN modules that handle
-L<Data::Printer::Filter::DateTime|date and time>,
-L<Data::Printer::Filter::DB|databases> (yes, even DBIx::Class),
-L<Data::Printer::Filter::Digest|message digests> like MD5 and SHA1, and
-L<Data::Printer::Filter::Web|JSON and Web> content like HTTP requests and responses.
+L<date and time|Data::Printer::Filter::DateTime>,
+L<databases|Data::Printer::Filter::DB> (yes, even DBIx::Class),
+L<message digests|Data::Printer::Filter::Digest> like MD5 and SHA1, and
+L<JSON and Web|Data::Printer::Filter::Web> content like HTTP requests and
+responses.
 
 So much so we recommend everyone to activate all bundled filters by putting
 the following line on your C<.dataprinter> file:
@@ -676,8 +687,9 @@ This means you could have the following in one of your classes:
 
 Notice that B<< you can do this without adding Data::Printer as a dependency >>
 to your project! Just write your sub and it will be called with the object to
-be printed and a C<$ddp> object ready for you. See L<Data::Printer::Object> for
-how to use it to pretty-print your data.
+be printed and a C<$ddp> object ready for you. See
+L<< Data::Printer::Object|/Data::Printer::Object/"Methods and Accessors for Filter Writers" >>
+for how to use it to pretty-print your data.
 
 Finally, if your object implements string overload or provides a method called
 "to_string", "as_string" or "stringify", Data::Printer will use it. To disable
@@ -700,18 +712,6 @@ you want):
     p my @array = qw(a b c d);          # wrong
     my @array = qw(a b c d); p @array;  # right
 
-On the default mode of C<< use_prototypes = 1 >>, you cannot pass anonymous
-data:
-
-    p { foo => 1 };       # wrong!
-    p %{{ foo => 1 }};    # right
-    p { foo => 1 }->%*;   # right on perl 5.24+
-    &p( { foo => 1 } );   # right, but requires the parenthesis
-    sub pp { p @_ };      # wrapping it also lets you use anonymous data.
-
-    use DDP use_prototypes => 0;
-    p { foo => 1 };   # works, but now you must always pass a reference to p()
-
 If you pass a nonexistant key/index to DDP using prototypes, they
 will trigger autovivification:
 
@@ -721,6 +721,19 @@ will trigger autovivification:
 
     my @x;
     p $x[5]; # undef, but will initialize the array with 5 elements (all undef)
+
+Finally, as mentioned before, you cannot pass anonymous references on the
+default mode of C<< use_prototypes = 1 >>:
+
+    p { foo => 1 };       # wrong!
+    p %{{ foo => 1 }};    # right
+    p { foo => 1 }->%*;   # right on perl 5.24+
+    &p( { foo => 1 } );   # right, but requires the parenthesis
+    sub pp { p @_ };      # wrapping it also lets you use anonymous data.
+
+    use DDP use_prototypes => 0;
+    p { foo => 1 };   # works, but now p(@foo) will fail, you must always pass a ref,
+                      # e.g. p(\@foo)
 
 =head1 BACKWARDS INCOMPATIBLE CHANGES
 
@@ -738,7 +751,7 @@ for the best.
 =item * 1.00 - new C<.dataprinter> file format.
 I<< This should only affect you if you have a C<.dataprinter> file. >>
 The change was required to avoid calling C<eval> on potentially tainted/unknown
-code. It also provided a much clearer interface.
+code. It also provided a much cleaner interface.
 
 =item * 1.00 - new way of creating external filters.
 I<< This only affects you if you write or use external filters. >>
@@ -755,7 +768,7 @@ to do it. Basically, C<< filters => { ... } >> became
 C<< filters => [{ ... }] >> and you must replace C<< -external => [1,2] >>
 with C<< filters => [1, 2] >>, or C<< filters => [1, 2, {...}] >> if you
 also have inline filters. This allowed us much more power and flexibility
-with filters, and hopefully also makes things cleaner.
+with filters, and hopefully also makes things clearer.
 
 =item * 0.36 - C<p()>'s default return value changed from 'dump' to 'pass'.
 This was a very important change to ensure chained calls and to prevent
