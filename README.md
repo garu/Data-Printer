@@ -18,6 +18,8 @@ Basic Usage:
     use DDP; p $data;  # <-- pretty-prints $data's content to STDERR
 ```
 
+![See Data::Printer in action](https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif)
+
 Main features:
 --------------
 
