@@ -13,6 +13,9 @@ if ($success) {
         elsif ($m =~ /\AData::Printer::Profile::/) {
             $params = { also_private => [qr/\Aprofile\z/] };
         }
+        elsif ($m eq 'Data::Printer::Theme') {
+            $params = { also_private => [qw(new name customized color_for sgr_color_for color_reset)] };
+        }
         pod_coverage_ok($m, $params, "$m is covered");
     }
 }

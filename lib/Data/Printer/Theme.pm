@@ -3,27 +3,32 @@ use strict;
 use warnings;
 use Data::Printer::Common;
 
+# the theme name
 sub name {
     my ($self) = @_;
     return $self->{name};
 }
 
+# true if the theme has at least one color override
 sub customized {
     my ($self) = @_;
     return exists $self->{is_custom} ? 1 : 0;
 }
 
+# displays the color as-is
 sub color_for {
     my ($self, $color_type) = @_;
     return $self->{colors}{$color_type} || '';
 }
 
+# prints the SGR (terminal) color modifier
 sub sgr_color_for {
     my ($self, $color_type) = @_;
     return unless exists $self->{sgr_colors}{$color_type};
     return $self->{sgr_colors}{$color_type} || ''
 }
 
+# prints the SGR (terminal) color reset modifier
 sub color_reset { return "\e[0m" }
 
 sub new {
@@ -309,33 +314,6 @@ that some terminals may not support them.
 B<NOTE:> There may not be a real 1:1 conversion between RGB and
 terminal colors. In those cases we use approximation to achieve the
 closest option.
-
-=head1 PUBLIC INTERFACE
-
-This module is not meant for public use. The following documentation is
-mostly for developers of Data::Printer itself.
-
-=over 4
-
-=item * C<< new( %params ) >> - creates a new theme object
-
-    my $theme = Data::Printer::Theme->new(
-        name            => 'Material',
-        color_level     => 1,
-        color_overrides => { ... },
-    );
-
-=item * C<< name >> - displays the theme name.
-
-=item * C<< customized >> - true if theme has at least one color override.
-
-=item * C<< color_for( $label ) >> - displays the color as-is.
-
-=item * C<< sgr_color_for( $label ) >> - prints the SGR (terminal) color modifier.
-
-=item * C<< color_reset >> - prints the SGR (terminal) color reset modifier.
-
-=back
 
 =head1 SEE ALSO
 
