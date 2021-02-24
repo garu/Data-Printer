@@ -11,7 +11,7 @@ filter 'Regexp' => sub {
 
     # a regex to parse a regex. Talk about full circle :)
     # note: we are not validating anything, just grabbing modifiers
-    if ($val =~ m/\(\?\^?([uladxismpogce]*)(?:\-[uladxismpogce]+)?:(.*)\)/s) {
+    if ($val =~ m/\(\?\^?([uladxismnpogce]*)(?:\-[uladxismnpogce]+)?:(.*)\)/s) {
         my ($modifiers, $parsed_val) = ($1, $2);
         $string = $ddp->maybe_colorize($parsed_val, 'regex');
         if ($modifiers) {
