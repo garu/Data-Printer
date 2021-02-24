@@ -689,7 +689,7 @@ This means you could have the following in one of your classes:
 Notice that B<< you can do this without adding Data::Printer as a dependency >>
 to your project! Just write your sub and it will be called with the object to
 be printed and a C<$ddp> object ready for you. See
-L<< Data::Printer::Object|/Data::Printer::Object/"Methods and Accessors for Filter Writers" >>
+L<< Data::Printer::Object|Data::Printer::Object/"Methods and Accessors for Filter Writers" >>
 for how to use it to pretty-print your data.
 
 Finally, if your object implements string overload or provides a method called
