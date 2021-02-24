@@ -263,15 +263,24 @@ Data::Printer comes with several themes for you to choose from:
 
 =item * L<Material|Data::Printer::Theme::Material> I<(the default)>
 
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Material"><img style="height:50%" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-material.png" alt="Material Theme" /></a>
+
 =item * L<Monokai|Data::Printer::Theme::Monokai>
+
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Monokai"><img style="height:50%" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-monokai.png" alt="Monokai Theme" /></a>
 
 =item * L<Solarized|Data::Printer::Theme::Solarized>
 
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Solarized"><img style="height:50%" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-solarized.png" alt="Solarized Theme" /></a>
+
 =item * L<Classic|Data::Printer::Theme::Classic> I<(original pre-1.0 colors)>
+
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Classic"><img style="height:50%" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-classic.png" alt="Classic Theme" /></a>
 
 =back
 
 Run C<< examples/try_me.pl >> to see them in action on your own terminal!
+
 
 =head1 CREATING YOUR THEMES
 

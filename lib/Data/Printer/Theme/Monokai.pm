@@ -63,6 +63,9 @@ Or during runtime:
 This module implements the Monokai theme for Data::Printer, inspired by
 L<Wimer Hazenberg's original work|https://monokai.nl>.
 
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Monokai"><img src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-monokai.png" alt="Monokai Theme" /></a>
+
+
 =head1 SEE ALSO
 
 L<Data::Printer>

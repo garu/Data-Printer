@@ -52,3 +52,4 @@ use DDP show_memsize  => 1,
 p $sample, theme => 'Material' , as => 'Material theme:';
 p $sample, theme => 'Solarized', as => 'Solarized theme:';
 p $sample, theme => 'Monokai', as => 'Monokai theme:';
+p $sample, theme => 'Classic', as => 'Classic pre-1.0 theme:';

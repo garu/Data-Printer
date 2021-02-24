@@ -74,6 +74,9 @@ Or during runtime:
 This module implements the Solarized theme for Data::Printer, inspired by
 L<Ethan Schoonover's original work|http://ethanschoonover.com/solarized>
 
+
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Solarized"><img src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-solarized.png" alt="Solarized Theme" /></a>
+
 =head1 SEE ALSO
 
 L<Data::Printer>

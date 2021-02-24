@@ -75,6 +75,8 @@ Or during runtime:
 This module implements the Material theme for Data::Printer, inspired by
 L<Mattia Astorino's original work|https://github.com/equinusocio/vsc-material-theme>.
 
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Material"><img src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-material.png" alt="Material Theme" /></a>
+
 =head1 SEE ALSO
 
 L<Data::Printer>

@@ -53,6 +53,8 @@ Or during runtime:
 This module implements the Classic theme for Data::Printer, which was
 the default theme before Data::Printer 1.0.
 
+=for html <a href="https://metacpan.org/pod/Data::Printer::Theme::Classic"><img src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/theme-classic.png" alt="Classic Theme" /></a>
+
 =head1 SEE ALSO
 
 L<Data::Printer>
