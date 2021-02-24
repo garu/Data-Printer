@@ -15,10 +15,6 @@ sub import {
 
     _initialize();
 
-    # export to the caller's namespace:
-    my $caller = caller;
-
-    # every time you load it, we override the version from *your* caller
     my $args;
     if (@_ > 0) {
         $args = @_ == 1 ? shift : {@_};
@@ -29,6 +25,9 @@ sub import {
         $args = Data::Printer::Config::_expand_profile($args)
             if exists $args->{profile};
     }
+
+    # every time you load it, we override the version from *your* caller
+    my $caller = caller;
     $arguments_for{$caller} = $args;
 
     my $use_prototypes = _find_option('use_prototypes', $args, $caller, 1);
