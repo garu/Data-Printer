@@ -5,7 +5,8 @@ use Data::Printer::Object;
 use Data::Printer::Common;
 use Data::Printer::Config;
 
-our $VERSION = '0.99_026';
+our $VERSION = '1.000000';
+$VERSION = eval $VERSION;
 
 my $rc_arguments;
 my %arguments_for;
@@ -978,6 +979,12 @@ I<< (contributed by Yanick Champoux (yanick)) >>
 The "examples/try_me.pl" file included in this distribution has a sample
 dump with a complex data structure to let you quickly test color schemes.
 
+=head1 VERSIONING AND UPDATES
+
+As of 1.0.0 this module complies with C<Major.Minor.Revision> versioning
+scheme (SemVer), meaning backwards incompatible changes will trigger a new
+major number, new features without any breaking changes trigger a new minor
+number, and simple patches trigger a revision number.
 
 =head1 CONTRIBUTORS
 

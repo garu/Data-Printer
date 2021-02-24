@@ -1,5 +1,10 @@
 Revision history for Data-Printer
 
+1.0.0   2021-02-24
+    We are really excited to finally bring to you Data::Printer 1.0.0 \o/
+    This release includes all modifications from the 0.99_* series as
+    described below.
+
 0.99_026 2021-02-19
     BUG FIXES:
         - test fixes/updates
