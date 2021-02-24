@@ -283,6 +283,7 @@ easily too.
 
 That's pretty much it :)
 
+=for html <img alt="Data::Printer in action" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif" />
 
 Data::Printer is L<fully customizable|/Properties Quick Reference>, even
 on a per-module basis! Once you figure out your own preferences, create a
