@@ -8,11 +8,14 @@
 ~$
 \.bak$
 cover_db
+^nytprof
 \..*\.sw.?$
 ^Makefile$
 ^pm_to_blib$
 ^blibdirs$
 \.old
+\.png
+\.gif
 ^#.*#$
 ^\.#
 ^TODO$
