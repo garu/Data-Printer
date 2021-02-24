@@ -29,12 +29,13 @@ Main features:
 You can even rename the exported p() function!
 
 * Beautiful (and customizable) colors to highlight variable dumps and make
-issues stand-out quickly on your console. Comes bundled with 4 themes for you
-to pick.
+issues stand-out quickly on your console. Comes bundled with several themes
+for you to pick.
 
 * Filters for specific data structures and objects to make debugging much,
 much easier. Includes filters for several popular classes from CPAN like
-JSON::\*, URI, HTTP::\*, LWP, Digest::\*, DBI and DBIx::Class. Also lets you
+JSON::\*, URI, HTTP::\*, LWP, Digest::\*, DBI and DBIx::Class, printing what
+really matters to developers debugging code. It also lets you
 create your own custom filters easily.
 
 * Lets you inspect information that's otherwise difficult to find/debug
@@ -43,11 +44,21 @@ weak/read-only information, even estimated data size - all to help you
 spot issues with your data like leaks without having to know a lot about
 internal data structures or install heavy-weight tools like Devel::Gladiator.
 
-* output to many different targets like files, variables or open handles
-(defaults to STDERR)
+* keep your custom settings on a `.dataprinter` file that allows
+_different options per module_ being analyzed! You may also create a custom
+profile class with your preferences and filters and upload it to CPAN.
 
-* keep your customized settings on a `.dataprinter` file that allows
-_different options per module_ being analyzed!
+* output to many different targets like files, variables or open handles
+(defaults to STDERR). You can send your dumps to the screen or anywhere
+else, and customize this setting on a per-project or even per-module basis,
+like print everything from Some::Module to a debug.log file with extra info,
+and everything else to STDERR.
+
+* *Easy to learn, easy to master*. Seriously, what you already know cover
+about 90% of all use cases.
+
+* Works on *Perl 5.8 and later* Because you can't control where
+you debug, we try our best to be compatible with all versions of Perl 5.
 
 * Best of all? *No non-core dependencies*, Zero. Nada. so don't worry about
 adding extra weight to your project, as Data::Printer can be easily
