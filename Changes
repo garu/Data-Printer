@@ -2,6 +2,7 @@ Revision history for Data-Printer
 
 1.0.1   2021-02-25
     BUG FIXES:
+        - properly parse the "n" option in regexes
         - fix unwrap of __PACKAGE__, __FILENAME__ and __LINE__
           on caller_message (GH#156)
         - add a single space between caller message and data when
