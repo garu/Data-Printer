@@ -753,7 +753,7 @@ sub _check_weak {
 sub _write_label {
     my ($self) = @_;
     return '' unless $self->caller_info;
-    my @caller = caller 2;
+    my @caller = caller 1;
 
     my $message = $self->caller_message;
 
@@ -761,7 +761,13 @@ sub _write_label {
     $message =~ s/\b__FILENAME__\b/$caller[1]/g;
     $message =~ s/\b__LINE__\b/$caller[2]/g;
 
-    return $message . ($self->caller_message_newline ? "\n" : '');
+    my $separator = $self->caller_message_newline ? "\n" : ' ';
+    $message = $self->maybe_colorize($message, 'caller_info');
+    $message = $self->caller_message_position eq 'before'
+        ? $message . $separator
+        : $separator . $message
+        ;
+    return $message;
 }
 
 sub maybe_colorize {
@@ -968,6 +974,54 @@ Whether to quote hash keys or not. Can be set to 1 (always quote), 0
 linebreaks. (default: 'auto')
 
 
+=head2 Caller Information
+
+Data::Printer can add an informational message to every call to C<p()> or
+C<np()> if you enable C<caller_info>. So for example if you write:
+
+    my $var = "meep!";
+    p $var, caller_info => 1;
+
+this will output something like:
+
+    Printing in line 2 of myapp.pl:
+    "meep!"
+
+The following options let you customize the message and how it is displayed.
+
+=head3 caller_info
+
+Set this option to a true value to display a L<message|/caller_message> next
+to the data being printed. (default: 0)
+
+=head3 caller_message
+
+What message to print when L<caller_info|/caller_info> is true.
+
+Defaults to
+"C<< Printing in line __LINE__ of __FILENAME__ >>".
+
+If the special strings C<__LINE__>, C<__FILENAME__> or C<__PACKAGE__> are
+present in the message, they'll be interpolated into their according value
+so you can customize the message at will:
+
+    caller_message = "[__PACKAGE__:__LINE__]"
+
+=head3 caller_message_newline
+
+When true, skips a line when printing L<caller_message|/caller_message>.
+When false, only a single space is added between the message and the data.
+(default: 1)
+
+=head3 caller_message_position
+
+This option controls where the L<caller_message|/caller_message> will appear
+in relation to the code being printed. Can be set to 'before' or 'after'. A
+line is always skipped between the message and the data (either before or
+after), unless you set L<caller_message_newline|/caller_message_newline> to 0.
+(default: 'before')
+
+
 =head2 General Options
 
 =head3 arrows
@@ -977,28 +1031,6 @@ the data that reference points to. You may use this option to control if/when
 should it print reference arrows. Possible values are 'all' (e.g
 C<< var->{x}->[y]->[z] >>), 'first' (C<< var->{x}[y][z] >>) or 'none'
 (C<< var{x}[y][z] >>). Default is 'none'.
-
-=head3 caller_info
-
-Set this option to a true value to display a L<message|/caller_message> next
-to the data being printed. (default: 0)
-
-=head3 caller_message
-
-What message to print when L<caller_info|/caller_info> is true. Defaults to
-"C<< Printing in line __LINE__ of __FILENAME__ >>".
-
-=head3 caller_message_newline
-
-When true, skips a line when printing L<caller_message|/caller_message> (default: 1)
-
-=head3 caller_message_position
-
-This option controls where the L<caller_message|/caller_message> will appear
-in relation to the code being printed. Can be set to 'before' or 'after'. A
-line is always skipped between the message and the data (either before or
-after), unless you set L<caller_message_newline|/caller_message_newline> to 0.
-(default: 'before')
 
 =head3 colored
 
