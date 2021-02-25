@@ -723,6 +723,18 @@ will trigger autovivification:
     my @x;
     p $x[5]; # undef, but will initialize the array with 5 elements (all undef)
 
+Slices (both array and hash) must be coerced into actual arrays (or hashes)
+to properly shown. So if you want to print a slice, instead of doing something
+like this:
+
+    p @somevar[1..10]; # WRONG! DON'T DO THIS!
+
+try one of those:
+
+    my @x = @somevar[1..10]; p @x;   # works!
+    p [ @somevar[1..0] ]->@*;        # also works!
+    p @{[@somevar[1..0]]};           # this works too!!
+
 Finally, as mentioned before, you cannot pass anonymous references on the
 default mode of C<< use_prototypes = 1 >>:
 
