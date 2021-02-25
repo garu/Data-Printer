@@ -930,24 +930,26 @@ The module allows several customization options, even letting you load it as a
 complete drop-in replacement for Template::Plugin::Dumper so you don't even have
 to change your previous templates!
 
+=head2 Migrating from Data::Dumper to Data::Printer
+
+If you are porting your code to use Data::Printer instead of
+Data::Dumper, you could replace:
+
+  use Data::Dumper;
+
+with something like:
+
+  use Data::Printer;
+  sub Dumper { np @_, colored => 1 }
+
+this sub will accept multiple variables just like Data::Dumper.
+
 =head2 Unified interface for Data::Printer and other debug formatters
 
 I<< (contributed by Kevin McGrath (catlgrep)) >>
 
-If you are porting your code to use Data::Printer instead of
-Data::Dumper or similar, you can just replace:
-
-  use Data::Dumper;
-
-with:
-
-  use Data::Printer alias => 'Dumper';
-
-making sure to provide Data::Printer with the proper alias for the
-previous dumping function.
-
-If, however, you want a really unified approach where you can easily
-flip between debugging outputs, use L<Any::Renderer> and its plugins,
+If you want a really unified approach to easily flip between debugging
+outputs, use L<Any::Renderer> and its plugins,
 like L<Any::Renderer::Data::Printer>.
 
 =head2 Printing stack traces with arguments expanded using Data::Printer
