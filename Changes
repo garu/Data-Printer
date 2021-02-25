@@ -1,5 +1,19 @@
 Revision history for Data-Printer
 
+1.0.1   2021-02-25
+    BUG FIXES:
+        - fix unwrap of __PACKAGE__, __FILENAME__ and __LINE__
+          on caller_message (GH#156)
+        - add a single space between caller message and data when
+          caller_message_newline is false
+        - proper colorization on caller message.
+    OTHER:
+        - improve documentation on caller message behavior
+        - document caveat of printing array/hash slices (GH#152)
+        - fix broken link in documentation (GH#155)
+        - improve tip on how to make a drop-in replacement
+          to Data::Dumper (GH#154)
+
 1.0.0   2021-02-24
     We are really excited to finally bring to you Data::Printer 1.0.0 \o/
     This release includes all modifications from the 0.99_* series as
