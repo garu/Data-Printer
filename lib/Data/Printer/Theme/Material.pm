@@ -8,10 +8,7 @@ sub colors {
     my %code_for = (
         'very_light_gray' =>  '#EEFFFF',
         'light_gray'      =>  '#A1BBC5',
-        'middle_gray'     =>  '#808080',
-        'gray'            =>  '#373b41',
-        'dark_gray'       =>  '#282a2e',
-        'very_dark_gray'  =>  '#263238',
+        'gray'            =>  '#4f5a61',
         'green'           =>  '#90B55A', #'#C3E88D',
         'teal'            =>  '#009688',
         'light_teal'      =>  '#73d1c8',
@@ -41,7 +38,7 @@ sub colors {
         lvalue      => $code_for{strong_orange},  # lvalue label
         format      => $code_for{strong_orange},  # format type
         repeated    => $code_for{red},  # references to seen values
-        caller_info => $code_for{very_dark_gray},  # details on what's being printed
+        caller_info => $code_for{gray},  # details on what's being printed
         weak        => $code_for{green},  # weak references flag
         tainted     => $code_for{light_orange},  # tainted flag
         unicode     => $code_for{light_orange},  # utf8 flag
