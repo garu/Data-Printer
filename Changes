@@ -1,5 +1,12 @@
 Revision history for Data-Printer
 
+1.0.2   2021-02-28
+    OTHER:
+        * Material's color for caller_info and code is now a bit brighter
+          to improve readability on terminals with dark background.
+        * improve MS Windows support
+        * increase test coverage
+
 1.0.1   2021-02-25
     BUG FIXES:
         - properly parse the "n" option in regexes
