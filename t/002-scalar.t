@@ -223,8 +223,9 @@ sub test_dualvar_lax {
 
     # one very specific Perl dualvar
     TODO: {
+        local $TODO;
         if ($^O eq 'MSWin32') {
-            local $TODO = q(Windows sometimes doesn't respect $! as a dualvar);
+            $TODO = q(Windows sometimes doesn't respect $! as a dualvar [lax]);
         }
         local $! = 2;
         like(
@@ -271,8 +272,9 @@ sub test_dualvar_strict {
 
     # one very specific Perl dualvar
     TODO: {
-        if ($^O ne 'MSWin32') {
-            local $TODO = q(Windows somestimes doesn't respect $! as a dualvar);
+        local $TODO;
+        if ($^O eq 'MSWin32') {
+            $TODO = q(Windows sometimes doesn't respect $! as a dualvar [strict]);
         }
         local $! = 2;
         like(
