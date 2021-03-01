@@ -17,7 +17,7 @@ if (!eval { require Capture::Tiny; 1; }) {
     plan skip_all => 'Capture::Tiny not found';
 }
 else {
-    plan tests => 10;
+    plan tests => 13;
 }
 
 #=====================
@@ -66,7 +66,6 @@ is $stderr, '',              'redirecting to scalar ref leaves STDERR empty';
 #=====================
 $item++;
 
-
 my $fh = tempfile;
 ($stdout, $stderr) = Capture::Tiny::capture( sub {
      p $item, output => $fh;
@@ -78,3 +77,22 @@ my $buffer = do { local $/; <$fh> };
 is $buffer, $item . $/, 'redirected output to a file handle';
 is $stdout, '',         'redirecting to file handle leaves STDOUT empty';
 is $stderr, '',         'redirecting to file handle leaves STDERR empty';
+
+
+#====================
+# testing file name
+#====================
+$item++;
+
+my $filename;
+($fh, $filename) = tempfile;
+($stdout, $stderr) = Capture::Tiny::capture( sub {
+     p $item, output => $filename;
+});
+
+seek( $fh, 0, SEEK_SET );
+$buffer = do { local $/; <$fh> };
+
+is $buffer, $item . $/, 'redirected output to a filename';
+is $stdout, '',         'redirecting to filename leaves STDOUT empty';
+is $stderr, '',         'redirecting to filename leaves STDERR empty';
