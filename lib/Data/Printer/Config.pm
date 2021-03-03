@@ -200,9 +200,9 @@ sub _str2data {
             if ($counter == 1 && /\A\s*\{/s) {
                 Data::Printer::Common::_warn(
                     undef,
-                    "RC file format changed in 1.00. Usually all it takes is:\n"
-                  . "cp $filename $filename.old && perl -MData::Printer::Config -E 'say Data::Printer::Config::convert(q($filename))' > $filename\n"
-                  . "Please visit https://metacpan.org/pod/Data::Printer::Config for details."
+                    "\nRC file format changed in 1.00. Usually all it takes is:\n"
+                  . "  cp $filename $filename.old && perl -MData::Printer::Config -E 'say Data::Printer::Config::convert(q($filename.old))' > $filename\n"
+                  . "Please visit https://metacpan.org/pod/Data::Printer::Config for details.\n"
                 );
             }
             return {};
