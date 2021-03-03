@@ -87,12 +87,12 @@ $item++;
 my $filename;
 ($fh, $filename) = tempfile;
 ($stdout, $stderr) = Capture::Tiny::capture( sub {
-     p $item, output => $filename;
+     p $item, output => $filename, multiline => 0;
 });
 
 seek( $fh, 0, SEEK_SET );
 $buffer = do { local $/; <$fh> };
 
-is $buffer, $item . $/, 'redirected output to a filename';
-is $stdout, '',         'redirecting to filename leaves STDOUT empty';
-is $stderr, '',         'redirecting to filename leaves STDERR empty';
+like $buffer, qr{\A$item\s*\z}, 'redirected output to a filename';
+is $stdout  , ''              , 'redirecting to filename leaves STDOUT empty';
+is $stderr  , ''              , 'redirecting to filename leaves STDERR empty';
