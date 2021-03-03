@@ -1,5 +1,9 @@
 Revision history for Data-Printer
 
+1.0.4   2021-03-03
+    BUG FIXES:
+        - fix DBIx::Class print when literal SQL is present (Veesh Goldman)
+
 1.0.3   2021-03-02
     OTHER:
         - fixup documentation on how to convert from the old .dataprinter
