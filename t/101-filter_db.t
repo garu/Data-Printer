@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 24;
 use Data::Printer::Object;
 
 test_dbi();
@@ -499,5 +499,16 @@ q|User ResultSource {
     user_id:     1
 }), 'db entry with extra col');
     # TODO: test some ->all() with prefetch
+    #
+    my $arrayrefref = $schema->resultset('User')->search(\[ 'email REGEXP ?' => 'gmail']);
+    is ($ddp->parse($arrayrefref), 'User ResultSet {
+    current search parameters: [
+        [0] "email REGEXP ?",
+        [1] "gmail"
+    ]
+    as query:
+        (SELECT me.user_id, me.identity, me.email, me.city, me.state, me.code1, me.created FROM user me WHERE ( email REGEXP ? ))
+        gmail
+}', 'literal sql with bind params');
     };
 }

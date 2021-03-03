@@ -201,8 +201,8 @@ filter 'DBIx::Class::ResultSet' => sub {
             $attrs = { %{ $rs->_resolved_attrs } }; 1;
         } && ref $attrs eq 'HASH'
     ) {
-        if (exists $attrs->{where} && keys %{$attrs->{where}}) {
-            $output .= $ddp->parse($attrs->{where});
+        if (exists $attrs->{where}) {
+            $output .= $ddp->parse($attrs->{where})
         }
         else {
             $output .= '-';
@@ -224,8 +224,12 @@ filter 'DBIx::Class::ResultSet' => sub {
                 ;
         if (@query_data) {
             $output .= $ddp->newline . join( $ddp->newline, map {
-                    $_->[1] . ' ' . $ddp->maybe_colorize('(', 'brackets')
-                    . $_->[0]{sqlt_datatype} . $ddp->maybe_colorize(')', 'brackets')
+                    my $bound = $_->[1];
+                    if ($_->[0]{sqlt_datatype}) {
+                      $bound .= ' ' . $ddp->maybe_colorize('(', 'brackets')
+                        . $_->[0]{sqlt_datatype} . $ddp->maybe_colorize(')', 'brackets');
+                    }
+                    $bound
                   } @query_data
                 );
         }
