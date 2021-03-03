@@ -1,11 +1,17 @@
 Revision history for Data-Printer
 
+1.0.3   2021-03-02
+    OTHER:
+        - fixup documentation on how to convert from the old .dataprinter
+          format to the new one (GH#157)
+        - test fixes
+
 1.0.2   2021-02-28
     OTHER:
-        * Material's color for caller_info and code is now a bit brighter
+        - Material's color for caller_info and code is now a bit brighter
           to improve readability on terminals with dark background.
-        * improve MS Windows support
-        * increase test coverage
+        - improve MS Windows support
+        - increase test coverage
 
 1.0.1   2021-02-25
     BUG FIXES:
