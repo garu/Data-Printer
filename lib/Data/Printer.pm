@@ -1033,8 +1033,9 @@ Sébastien Feugère (smonff), Sergey Aleynikov (randir), Slaven Rezić,
 Stanislaw Pusep (syp), Stephen Thirlwall (sdt), sugyan, Tai Paul,
 Tatsuhiko Miyagawa (miyagawa), Thomas Sibley (tsibley),
 Tim Heaney (oylenshpeegul), Toby Inkster (tobyink), Torsten Raudssus (Getty),
-Tokuhiro Matsuno (tokuhirom), trapd00r, Tsai Chung-Kuan, vividsnow,
-Wesley Dal`Col (blabos), y, Yanick Champoux (yanick).
+Tokuhiro Matsuno (tokuhirom), trapd00r, Tsai Chung-Kuan,
+Veesh Goldman (rabbiveesh), vividsnow, Wesley Dal`Col (blabos), y,
+Yanick Champoux (yanick).
 
 If I missed your name, please drop me a line!
 
