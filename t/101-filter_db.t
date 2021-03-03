@@ -177,12 +177,12 @@ use base 'DBIx::Class::Schema';
 EOPACKAGES
 
     SKIP: {
-        skip 'DBD::SQLite not available', 15 unless eval "use DBD::SQLite; 1";
-        skip 'DBIx::Class not available', 15 unless eval "$packages";
+        skip 'DBD::SQLite not available', 16 unless eval "use DBD::SQLite; 1";
+        skip 'DBIx::Class not available', 16 unless eval "$packages";
         diag('filter tests for DBIC ' . $DBIx::Class::VERSION . ' and DBD::SQLite ' . $DBD::SQLite::VERSION);
         package main;
         my $schema;
-        skip 'could not connect with DBIx::Class + SQLite: '. $@, 15, unless eval {
+        skip 'could not connect with DBIx::Class + SQLite: '. $@, 16, unless eval {
             MyDDPTest::Schema->load_classes({
                 'MyDDPTest::Schema::Result' => [qw(Pet BigPet User)]
             });
