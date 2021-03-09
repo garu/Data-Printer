@@ -37,6 +37,7 @@ sub import {
     my $imported = _find_option('alias', $args, $caller, 'p');
 
     { no strict 'refs';
+      no warnings 'redefine';
         *{"$caller\::$imported"} = $exported;
         *{"$caller\::np"}        = \&np;
     }
@@ -563,6 +564,7 @@ each of them:
     end_separator  = 0
     caller_info    = 0
     caller_message = 'Printing in line __LINE__ of __FILENAME__'
+    caller_plugin  = none
     max_depth      = 0
     deparse        = 0
     alias          = p
