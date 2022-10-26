@@ -890,7 +890,6 @@ or 'false'. If you have more than one of those in your data, Data::Printer
 will by default print the second one as a circular reference. When this option
 is set to true, it will instead resolve the scalar value and keep going. (default: false)
 
-
 =head2 Array Options
 
 =head3 array_max
@@ -916,8 +915,7 @@ or 'end'. (default: 'begin')
 
 When set, shows the index number before each array element. (default: 1)
 
-
-=head4 Hash Options
+=head2 Hash Options
 
 =head3 align_hash
 
