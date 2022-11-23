@@ -176,8 +176,8 @@ sub _print_escapes {
 sub _initialize_nsort {
     return 'Sort::Key::Natural'  if $INC{'Sort/Key/Natural.pm'};
     return 'Sort::Naturally'     if $INC{'Sort/Naturally.pm'};
-    return 'Sort::Key::Natural'  if eval { require Sort::Key::Natural;  1; };
-    return 'Sort::Naturally'     if eval { require Sort::Naturally;     1; };
+    return 'Sort::Key::Natural'  if !_tryme('use Sort::Key::Natural; 1;');
+    return 'Sort::Naturally'     if !_tryme('use Sort::Naturally; 1;');
     return 'core';
 }
 
