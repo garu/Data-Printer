@@ -68,7 +68,7 @@ my @method_names =qw(
     hash_preserve unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
-    warnings arrows
+    warnings arrows coderef_stub coderef_undefined
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -206,6 +206,8 @@ sub _init {
     $self->{'sort_keys'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'sort_keys', 1);
     $self->{'quote_keys'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'quote_keys', 'auto');
     $self->{'deparse'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'deparse', 0);
+    $self->{'coderef_stub'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'coderef_stub', 'sub { ... }');
+    $self->{'coderef_undefined'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'coderef_undefined', '<undefined coderef>');
     $self->{'return_value'} = Data::Printer::Common::_fetch_anyof(
                              $props,
                              'return_value',
@@ -1041,9 +1043,23 @@ setting also respects the C<ANSI_COLORS_DISABLED> environment variable.
 
 =head3 deparse
 
-If the data structure contains a subroutine reference, this options can be
-set to deparse it and print the underlying code, which hopefully resembles
-the original source code. (default: 0)
+If the data structure contains a subroutine reference (coderef), this option
+can be set to deparse it and print the underlying code, which hopefully
+resembles the original source code. (default: 0)
+
+=head3 coderef_stub
+
+If the data structure contains a subroutine reference (coderef) and the
+'L<deparse|/deparse>' option above is set to false, Data::Printer will print this
+instead. (default: 'C<< sub { ... } >>')
+
+=head3 coderef_undefined
+
+If the data structure contains a subroutine reference (coderef) that has
+not actually been defined at the time of inspection, Data::Printer will
+print this instead. Set it to '0' to disable this check, in which case
+Data::Printer will use whatever value you set on
+L<coderef_stub|/coderef_stub> above. (default: '<undefined coderef>').
 
 =head3 end_separator
 
