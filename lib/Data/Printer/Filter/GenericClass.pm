@@ -232,7 +232,7 @@ sub _show_methods {
         if ($ddp->class->format_inheritance eq 'string') {
             my @method_list = keys %{$methods{$type}};
             @method_list = Data::Printer::Common::_nsort(@method_list)
-                if $ddp->class->sort_methods && @method_list;
+                if @method_list && $ddp->class->sort_methods;
 
             $string .= $ddp->newline . "$type methods (" . scalar(@method_list) . ')';
             if (@method_list) {
@@ -264,7 +264,7 @@ sub _show_methods {
 
             # then we print them, starting with our own methods:
             @base_methods = Data::Printer::Common::_nsort(@base_methods)
-                if $ddp->class->sort_methods && @base_methods;
+                if @base_methods && $ddp->class->sort_methods;
 
             $string .= $ddp->newline . "$type methods ($total_methods)"
                     . ($total_methods ? ':' : '')
