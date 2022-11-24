@@ -1271,8 +1271,9 @@ Controls which of the object's direct methods to show. Can be set to 'none',
 
 =head4 sort_methods
 
-When listing methods, this option will order them alphabetically, rather than
-on whatever order the list of methods returned. (default: 1)
+When listing methods, attributes and roles, this option will order them
+alphabetically, rather than on whatever order the list of methods returned.
+(default: 1)
 
 =head4 inherited
 

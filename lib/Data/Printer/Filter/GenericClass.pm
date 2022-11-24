@@ -91,14 +91,20 @@ filter '-class' => sub {
             }
         }
         if (keys %roles) {
-            $string .= $ddp->newline . 'roles (' . scalar(keys %roles) . '): '
-                    . join(', ' => map $ddp->maybe_colorize($_, 'class'), keys %roles)
+            my @role_list = keys %roles;
+            @role_list = Data::Printer::Common::_nsort(@role_list)
+                if @role_list && $ddp->class->sort_methods;
+            $string .= $ddp->newline . 'roles (' . scalar(@role_list) . '): '
+                    . join(', ' => map $ddp->maybe_colorize($_, 'class'), @role_list)
                     ;
         }
 
         if (keys %attributes) {
-            $string .= $ddp->newline . 'attributes (' . scalar(keys %attributes) . '): '
-                    . join(', ' => map $ddp->maybe_colorize($_, 'method'), keys %attributes)
+            my @attr_list = keys %attributes;
+            @attr_list = Data::Printer::Common::_nsort(@attr_list)
+                if @attr_list && $ddp->class->sort_methods;
+            $string .= $ddp->newline . 'attributes (' . scalar(@attr_list) . '): '
+                    . join(', ' => map $ddp->maybe_colorize($_, 'method'), @attr_list)
                     ;
         }
 
