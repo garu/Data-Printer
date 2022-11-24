@@ -61,7 +61,7 @@ filter '-class' => sub {
             %roles = %{ $Role::Tiny::APPLIED_TO{$class_name} };
         }
 
-        foreach my $parent (@superclasses) {
+        foreach my $parent (@$linear_ISA) {
             if ($parent eq 'Moo::Object') {
                 Data::Printer::Common::_tryme(sub {
                     my $moo_maker = 'Moo'->_constructor_maker_for($class_name);
