@@ -258,17 +258,16 @@ Want to see what's inside a variable in a complete, colored and human-friendly w
     p @array;
     p %hash;
 
-    # for anonymous array/hash references, use postderef (on perl 5.24 or later):
-    p [ $one, $two, $three ]->@*;
-    p { foo => $foo, bar => $bar }->%*;
+    # printing anonymous array references:
+    p [ $one, $two, $three ]->@*;    # perl 5.24 or later!
+    p @{[ $one, $two, $three ]};     # same, older perls
+    &p( [ $one, $two, $three ] );    # same, older perls
 
-    # or deref the anonymous ref:
-    p @{[ $one, $two, $three ]};
-    p %{{ foo => $foo, bar => $bar }};
+    # printing anonymous hash references:
+    p { foo => $foo, bar => $bar }->%*;   # perl 5.24 or later!
+    p %{{ foo => $foo, bar => $bar }};    # same, older perls
+    &p( { foo => $foo, bar => $bar } );   # same, older perls
 
-    # or put '&' in front of the call:
-    &p( [ $one, $two, $three ] );
-    &p( { foo => $foo, bar => $bar } );
 
 The snippets above will print the contents of the chosen variables to STDERR
 on your terminal, with colors and a few extra features to help you debug
@@ -287,7 +286,7 @@ easily too.
 
 That's pretty much it :)
 
-=for html <img alt="Data::Printer in action" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif" />
+=for html <img alt="samples of Data::Printer output for several kinds of data and objects" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif" />
 
 Data::Printer is L<fully customizable|/Properties Quick Reference>, even
 on a per-module basis! Once you figure out your own preferences, create a
