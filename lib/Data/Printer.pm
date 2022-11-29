@@ -55,6 +55,7 @@ sub np (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    return '' if $args_to_use->{quiet};
     my $printer = Data::Printer::Object->new($args_to_use);
 
     # force color level 0 on 'auto' colors:
@@ -84,6 +85,7 @@ sub p (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    return if $args_to_use->{quiet};
     my $printer = Data::Printer::Object->new($args_to_use);
     my $want_value = defined wantarray;
     if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
@@ -122,6 +124,7 @@ sub _p_without_prototypes  {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    return if $args_to_use->{quiet};
     my $printer = Data::Printer::Object->new($args_to_use);
 
     my $want_value = defined wantarray;
@@ -508,6 +511,11 @@ is super simple and can be understood in the example below:
     multiline = 0
     output    = /var/log/myapp/debug.data
 
+    # use 'quiet' to silence all output from p() and np()
+    # called from the specified package.
+    [MyApp::Yet::Another]
+    quiet = 1
+
 Note that if you set custom properties as arguments to C<p()> or C<np()>, you
 should group suboptions as a hashref. So while the C<.dataprinter> file has
 "C<< class.expand = 0 >>" and "C<< class.inherited = none >>", the equivalent
@@ -609,6 +617,10 @@ array index you had originally.
 =item * B<fulldump> - when set to 1, disables all max string/hash/array
 values. Use this to generate complete (full) dumps of all your content,
 which is trimmed by default.
+
+=item * B<quiet> - when set to 1, disables all data parsing and returns as
+quickly as possible. Use this to disable all output from C<p()> and C<np()>
+inside a particular package, either from the 'use' call or from .dataprinter.
 
 =back
 
