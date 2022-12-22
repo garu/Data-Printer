@@ -12,19 +12,22 @@ filter 'CODE' => \&parse;
 sub parse {
     my ($subref, $ddp) = @_;
     my $string;
+    my $color = 'code';
     if ($ddp->deparse) {
         $string = _deparse($subref, $ddp);
         if ($ddp->coderef_undefined && $string =~ /\A\s*sub\s*;\s*\z/) {
             $string = $ddp->coderef_undefined;
+            $color = 'undef';
         }
     }
     elsif ($ddp->coderef_undefined && !_subref_is_reachable($subref)) {
         $string = $ddp->coderef_undefined;
+        $color = 'undef';
     }
     else {
         $string = $ddp->coderef_stub;
     }
-    return $ddp->maybe_colorize($string, 'code');
+    return $ddp->maybe_colorize($string, $color);
 };
 
 #######################################
