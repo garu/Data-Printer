@@ -162,7 +162,7 @@ sub test_colorization {
     is $ddp->maybe_colorize('x'), 'x', 'no color unless tag is provided';
     is $ddp->maybe_colorize('x', 'invalid tag'), 'x', 'no color unless valid tag';
     my $colored = $ddp->maybe_colorize('x', 'invalid tag', "\e[0;38;2m");
-    if ($colored eq "\e[0;38;2mx\e[0m") {
+    if ($colored eq "\e[0;38;2mx\e[m") {
         pass 'fallback to default color';
     }
     else {
@@ -171,7 +171,7 @@ sub test_colorization {
         my $parsed = $ddp->theme->_parse_color("\e[0;38;2m");
         $parsed =~ s{\e}{\\e}gsm if defined $parsed;
         fail 'fallback to default color:'
-           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
+           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[m"'
            . ' theme name: ' . $ddp->theme->name
            . ' color level: ' . $ddp->{_output_color_level}
            . ' sgr_color_for "invalid tag": '
@@ -195,7 +195,7 @@ sub test_colorization {
         my $parsed = $ddp->theme->_parse_color("\e[0;38;2m");
         $parsed =~ s{\e}{\\e}gsm if defined $parsed;
         fail 'fallback to default color:'
-           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[0m"'
+           . ' got "' . $colored . '" expected "\e[0;38;2mx\e[m"'
            . ' theme name: ' . $ddp->theme->name
            . ' color level: ' . $ddp->{_output_color_level}
            . ' sgr_color_for "invalid tag": '

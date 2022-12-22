@@ -29,7 +29,7 @@ sub sgr_color_for {
 }
 
 # prints the SGR (terminal) color reset modifier
-sub color_reset { return "\e[0m" }
+sub color_reset { return "\e[m" }
 
 sub new {
     my ($class, %params) = @_;
