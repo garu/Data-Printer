@@ -574,7 +574,7 @@ sub _filters_for_data {
 # this funcionallity separated, but refcounts increase as we find
 # them again and because of that we were seeing weird refcounting.
 # So now instead we store the refcount of the variable when we
-# first saw it.
+# first see it.
 # Finally, if we have already seen the data, we return its stringified
 # position, like "var", "var{foo}[7]", etc. UNLESS $options{seen_override}
 # is set. Why seen_override? Sometimes we want to print the same data
@@ -681,10 +681,13 @@ sub parse {
         }
     }
 
+    # FIXME: because of prototypes, p(@data) becomes a ref (that we don't care about)
+    # to the data (that we do care about). So we should not show refcounts, memsize
+    # or readonly status for something guaranteed to be ephemeral.
     $parsed_string .= $self->_check_readonly($data);
     $parsed_string .= $str_weak if ref($data) ne 'REF';
-
     $parsed_string .= $self->_check_memsize($data);
+
     if ($self->show_refcount && ref($data) ne 'SCALAR' && $seen->{refcount} > 1 ) {
         $parsed_string .= ' (refcount: ' . $seen->{refcount} .')';
     }
@@ -1267,7 +1270,8 @@ This option includes a list of all overloads implemented by the object.
 =head4 show_methods
 
 Controls which of the object's direct methods to show. Can be set to 'none',
-'all', 'private' or 'public'. (default: 'all')
+'all', 'private' or 'public'. When applicable (Moo, Moose) it will also
+show attributes and roles. (default: 'all')
 
 =head4 sort_methods
 

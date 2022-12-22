@@ -656,6 +656,7 @@ which is trimmed by default.
 =item * B<quiet> - when set to 1, disables all data parsing and returns as
 quickly as possible. Use this to disable all output from C<p()> and C<np()>
 inside a particular package, either from the 'use' call or from .dataprinter.
+(introduced in version 1.1)
 
 =back
 
