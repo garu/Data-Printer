@@ -13,6 +13,7 @@ package # hide from pause
     sub show_overloads     { $_[0]->{'show_overloads'}     }
     sub show_methods       { $_[0]->{'show_methods'}       }
     sub sort_methods       { $_[0]->{'sort_methods'}       }
+    sub show_wrapped       { $_[0]->{'show_wrapped'}       }
     sub inherited          { $_[0]->{'inherited'}          }
     sub format_inheritance { $_[0]->{'format_inheritance'} }
     sub parent_filters     { $_[0]->{'parent_filters'}     }
@@ -37,6 +38,7 @@ package # hide from pause
             'parent_filters' => Data::Printer::Common::_fetch_scalar_or_default($params, 'parent_filters', 1),
             'universal'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'universal', 0),
             'sort_methods' => Data::Printer::Common::_fetch_scalar_or_default($params, 'sort_methods', 1),
+            'show_wrapped' => Data::Printer::Common::_fetch_scalar_or_default($params, 'show_wrapped', 1),
             'internals'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'internals', 1),
             'parents'      => Data::Printer::Common::_fetch_scalar_or_default($params, 'parents', 1),
         };
