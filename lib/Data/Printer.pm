@@ -45,7 +45,34 @@ sub import {
 sub _initialize {
     # potential race but worst case is we read it twice :)
     { no warnings 'redefine'; *_initialize = sub {} }
-    $rc_arguments = Data::Printer::Config::load_rc_file();
+
+    my $rc_filename = Data::Printer::Config::_get_first_rc_file_available();
+    $rc_arguments = Data::Printer::Config::load_rc_file($rc_filename);
+
+    if (
+           exists $rc_arguments->{'_'}{live_update}
+        && defined $rc_arguments->{'_'}{live_update}
+        && $rc_arguments->{'_'}{live_update} =~ /\A\d+\z/
+        && $rc_arguments->{'_'}{live_update} > 0) {
+        my $now = time;
+        my $last_mod = (stat $rc_filename)[9];
+        {
+            no warnings 'redefine';
+            *_initialize = sub {
+                if (time - $now > $rc_arguments->{'_'}{live_update}) {
+                    my $new_last_mod = (stat $rc_filename)[9];
+                    if (defined $new_last_mod && $new_last_mod > $last_mod) {
+                        $now = time;
+                        $last_mod = $new_last_mod;
+                        $rc_arguments = Data::Printer::Config::load_rc_file($rc_filename);
+                        if (!exists $rc_arguments->{'_'}{live_update} || !$rc_arguments->{'_'}{live_update}) {
+                            *_initialize = sub {};
+                        }
+                    }
+                }
+            };
+        }
+    }
 }
 
 sub np (\[@$%&];%) {
@@ -519,6 +546,15 @@ Note that if you set custom properties as arguments to C<p()> or C<np()>, you
 should group suboptions as a hashref. So while the C<.dataprinter> file has
 "C<< class.expand = 0 >>" and "C<< class.inherited = none >>", the equivalent
 code is "C<< class => { expand => 0, inherited => 'none' } >>".
+
+=head3 live updating your .dataprinter without restarts
+
+Data::Printer 1.1 introduces a new 'live_update' flag that can be set to a
+positive integer to enable live updates. When this mode is on, Data::Printer
+will check if the C<.dataprinter> file has been updated and, if so, it will
+reload it. This way you can toggle features on and off and control output
+verbosity directly from your C<.dataprinter> file without needing to change
+or restart running code.
 
 =head2 Properties Quick Reference
 
