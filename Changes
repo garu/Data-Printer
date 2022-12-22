@@ -1,5 +1,28 @@
 Revision history for Data-Printer
 
+1.1.0   2022-12-22
+    NEW FEATURES:
+        - new option 'coderef_stub' letting you customize what to show on
+          non-deparsed coderefs (default: 'sub { ... }')
+        - new option 'coderef_undefined' that checks if a given coderef points
+          to an existing reference at the time of inspection. Defaults to
+          '<undefined coderef>'. Set to 0 to disable this check.
+        - basic Object::Pad support.
+        - new option class.show_wrapped to expose methods modified with before,
+          after, around (Moose only for now)
+        - new option 'quiet' to avoid traversal and silence all output
+          from p() and np().
+        - new option 'live_update' to reload .dataprinter whenever
+          you make changes to it, applying them without needing to
+          restart your code.
+    BUG FIXES:
+        - properly shows inherited Moo(se) attributes.
+        - fix $@ clobbering when checking available modules.
+        - class.sort_methods also sorts attributes and roles.
+        - improved color reset.
+        - $DDP::VERSION is now hardcoded to avoid issues with PAUSE.
+
+
 1.0.4   2021-03-03
     BUG FIXES:
         - fix DBIx::Class print when literal SQL is present (Veesh Goldman)
