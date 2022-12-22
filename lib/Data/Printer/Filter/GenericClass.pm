@@ -92,12 +92,14 @@ filter '-class' => sub {
                 last;
             }
             elsif ($parent eq 'Object::Pad::UNIVERSAL') {
-                my $meta = Object::Pad::MOP::Class->for_class( $class_name );
-                %attributes = map {
-                    $_->name . $_->value($class_name) => {
-                    }
-                } $meta->slots;
-                %roles = map { $_->name => 1 } $meta->direct_roles;
+                Data::Printer::Common::_tryme(sub {
+                    my $meta = Object::Pad::MOP::Class->for_class( $class_name );
+                    %attributes = map {
+                        $_->name . $_->value($class_name) => {
+                        }
+                    } $meta->fields;
+                    %roles = map { $_->name => 1 } $meta->direct_roles;
+                });
             }
         }
         if ($ddp->class->show_methods ne 'none') {
