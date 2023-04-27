@@ -27,7 +27,7 @@ sub parse {
     elsif ( $ddp->show_dualvar ne 'off' ) {
         my $numified;
         $numified = do { no warnings 'numeric'; 0+ $value } if defined $value;
-        if ( $numified && $ddp->show_numbers_strict eq 'on' && ! _is_number_strict( $value ) ) {
+        if ( ( $numified || $numified == 0 ) && $ddp->show_numbers_strict eq 'on' && ! _is_number_strict( $value ) ) {
             $ret = Data::Printer::Common::_process_string( $ddp, "$value", 'string' );
             $ret = _quoteme($ddp, $ret);
             $ret .= ' (dualvar: ' . $ddp->maybe_colorize( $numified, 'number' ) . ')';
