@@ -70,7 +70,7 @@ my @method_names =qw(
     hash_preserve unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
-    warnings arrows coderef_stub coderef_undefined
+    warnings arrows coderef_stub coderef_undefined show_numbers_strict
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -228,6 +228,13 @@ sub _init {
         $self->{caller_info} = 1;
         $self->{caller_message} = $msg;
     }
+
+    $self->{'show_numbers_strict'} = Data::Printer::Common::_fetch_anyof(
+        $props,
+        'show_numbers_strict',
+        'off',
+        [qw(on off)]
+    );
 
     $self->multiline(
         Data::Printer::Common::_fetch_scalar_or_default($props, 'multiline', 1)
@@ -897,7 +904,6 @@ or 'false'. If you have more than one of those in your data, Data::Printer
 will by default print the second one as a circular reference. When this option
 is set to true, it will instead resolve the scalar value and keep going. (default: false)
 
-
 =head2 Array Options
 
 =head3 array_max
@@ -923,8 +929,7 @@ or 'end'. (default: 'begin')
 
 When set, shows the index number before each array element. (default: 1)
 
-
-=head4 Hash Options
+=head2 Hash Options
 
 =head3 align_hash
 
