@@ -94,12 +94,12 @@ sub parse {
         # a '\' in front of them.
         my $ref = ref $hash_ref->{$key->{raw}};
         if ( $ref && $ref eq 'SCALAR' ) {
-            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} });
+            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} }, tied_parent => !!$tied);
         }
         elsif ( $ref && $ref ne 'REF' ) {
-            $string .= $ddp->parse( $hash_ref->{ $key->{raw} });
+            $string .= $ddp->parse( $hash_ref->{ $key->{raw} }, tied_parent => !!$tied);
         } else {
-            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} });
+            $string .= $ddp->parse(\$hash_ref->{ $key->{raw} }, tied_parent => !!$tied);
         }
 
         $string .= $ddp->maybe_colorize($ddp->separator, 'separator')

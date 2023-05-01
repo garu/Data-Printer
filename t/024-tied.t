@@ -83,9 +83,40 @@ sub READ { return 'foo' }
 
 sub READLINE { return 'foo' }
 
+package Tie::Me::Up;
+
+sub TIEHASH  {
+    my ($class, $generator) = @_;
+    return bless {
+        generator => $generator,
+        hash      => {},
+    }, $class;
+}
+
+sub FETCH  {
+    my ($self, $key) = @_;
+    return $self->{hash}{$key};
+}
+
+sub STORE {
+    my ($self, $key, $value) = @_;
+    $self->{hash}{$key} = $self->{generator}->($value);
+}
+
+sub FIRSTKEY {
+    my ($self) = @_;
+    keys %{ $self->{hash} };    # reset each() iterator
+    each %{ $self->{hash} };
+}
+
+# lastkey is here for documentation, but we don't use it
+sub NEXTKEY  {
+    my ($self, $lastkey) = @_;
+    return each %{ $self->{hash} };
+}
 package main;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 use Data::Printer::Object;
 
 my $ddp = Data::Printer::Object->new( colored => 0, seen_override => 1 );
@@ -169,6 +200,14 @@ $ddp->show_tied(1);
 
 untie *$var;
 unlike $ddp->parse(\$var), qr/tied to/, 'cleared (untied) handle again shows no tie information';
+
+tie my %hash, 'Tie::Me::Up', sub { return scalar reverse $_[0] };
+$hash{first}  = '1234';
+$hash{second} = 'ABCD';
+$hash{third}  = 'wtf?';
+
+my $output = $ddp->parse(\%hash);
+unlike $output, qr/var\{\w+\}/, 'No false deduplication';
 
 __DATA__
 test file!

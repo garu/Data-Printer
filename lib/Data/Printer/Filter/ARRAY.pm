@@ -79,13 +79,13 @@ sub parse {
         my $ref = ref $array_ref->[$idx];
         if ($ref) {
             if ($ref eq 'SCALAR') {
-                $string .= $ddp->parse(\$array_ref->[$idx]);
+                $string .= $ddp->parse(\$array_ref->[$idx], tied_parent => !!$tied);
             }
             elsif ($ref eq 'REF') {
-                $string .= $ddp->parse(\$array_ref->[$idx]);
+                $string .= $ddp->parse(\$array_ref->[$idx], tied_parent => !!$tied);
             }
             else {
-                $string .= $ddp->parse($array_ref->[$idx]);
+                $string .= $ddp->parse($array_ref->[$idx], tied_parent => !!$tied);
             }
         }
         else {
