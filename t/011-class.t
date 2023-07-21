@@ -251,25 +251,37 @@ is( $ddp->parse($object), 'Foo  {
     }
 }', 'testing objects (inherited => "none")' );
 
-my $universal_DOES = $ddp->can('DOES');
 my $sort_class = Data::Printer::Common::_initialize_nsort();
 my $has_uc_sort = $sort_class eq 'Sort::Key::Natural';
 
-my ($n, $public_method_list);
-if ($universal_DOES) {
-    $n = 9;
-    $public_method_list = $has_uc_sort
-        ? 'DOES (UNIVERSAL), VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new'
-        : 'bar (Bar), baz, borg, can (UNIVERSAL), DOES (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)'
-    ;
-}
-else {
-    $n = 8;
-    $public_method_list = $has_uc_sort
-        ? 'VERSION (UNIVERSAL), bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new'
-        : 'bar (Bar), baz, borg, can (UNIVERSAL), foo, isa (UNIVERSAL), new, VERSION (UNIVERSAL)'
-    ;
-}
+my @methods = $has_uc_sort ? (
+    (defined &UNIVERSAL::DOES ? 'DOES (UNIVERSAL)' : ()),
+    'VERSION (UNIVERSAL)',
+    'bar (Bar)',
+    'baz',
+    'borg',
+    'can (UNIVERSAL)',
+    'foo',
+    (defined &UNIVERSAL::import ? 'import (UNIVERSAL)' : ()),
+    'isa (UNIVERSAL)',
+    'new',
+    (defined &UNIVERSAL::unimport ? 'unimport (UNIVERSAL)' : ()),
+) : (
+    'bar (Bar)',
+    'baz',
+    'borg',
+    'can (UNIVERSAL)',
+    (defined &UNIVERSAL::DOES ? 'DOES (UNIVERSAL)' : ()),
+    'foo',
+    (defined &UNIVERSAL::import ? 'import (UNIVERSAL)' : ()),
+    'isa (UNIVERSAL)',
+    'new',
+    (defined &UNIVERSAL::unimport ? 'unimport (UNIVERSAL)' : ()),
+    'VERSION (UNIVERSAL)',
+);
+
+my $n = @methods;
+my $public_method_list = join ', ', @methods;
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'string' } );
 is( $ddp->parse($object), "Foo  {
@@ -283,10 +295,21 @@ is( $ddp->parse($object), "Foo  {
 
 $ddp = Data::Printer::Object->new( colored => 0, class => { inherited => 'all', universal => 1, format_inheritance => 'lines' } );
 
-my $universal_methods = $has_uc_sort
-    ? $universal_DOES ? 'DOES, VERSION, can, isa' : 'VERSION, can, isa'
-    : $universal_DOES ? 'can, DOES, isa, VERSION' : 'can, isa, VERSION'
-    ;
+my $universal_methods = join ', ', $has_uc_sort ? (
+    (defined &UNIVERSAL::DOES ? 'DOES' : ()),
+    'VERSION',
+    'can',
+    (defined &UNIVERSAL::import ? 'import' : ()),
+    'isa',
+    (defined &UNIVERSAL::unimport ? 'unimport' : ()),
+) : (
+    'can',
+    (defined &UNIVERSAL::DOES ? 'DOES' : ()),
+    (defined &UNIVERSAL::import ? 'import' : ()),
+    'isa',
+    (defined &UNIVERSAL::import ? 'unimport' : ()),
+    'VERSION',
+);
 
 is( $ddp->parse($object), "Foo  {
     parents: Bar
