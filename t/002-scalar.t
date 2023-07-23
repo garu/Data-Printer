@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 67;
+use Test::More tests => 85;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -17,6 +17,7 @@ test_readonly();
 test_dualvar_lax();
 test_dualvar_strict();
 test_dualvar_off();
+test_numbers_strict();
 
 sub test_weak_ref {
     my $num = 3.14;
@@ -185,6 +186,55 @@ sub test_readonly {
     my $foo = 42;
     &Internals::SvREADONLY( \$foo, 1 );
     is $ddp->parse(\$foo), '42 (read-only)', 'readonly variables';
+}
+
+sub test_numbers_strict {
+    for my $t (
+        [ "0",     'number', '"0" (dualvar: 0)' ],
+        [ 0,   'number' ],
+        [ '0.0', 'number', '"0.0" (dualvar: 0)' ],
+        [ '3',   'number', '"3" (dualvar: 3)' ],
+        [ 3,   'number' ],
+        [ '1.0', 'number', '"1.0" (dualvar: 1)'],
+        [ '1.10', 'number', '"1.10" (dualvar: 1.1)'],
+        [ 1.100, 'number'],
+        [ 1.000, 'number'],
+        [ '123   ', 'number', '"123   " (dualvar: 123)'],
+        [ '123.040   ', 'number', '"123.040   " (dualvar: 123.04)'],
+        [ '   123', 'number', '"   123" (dualvar: 123)'],
+        [ '   123.040', 'number', '"   123.040" (dualvar: 123.04)'],
+        [
+            Scalar::Util::dualvar( 42, "The Answer" ),
+            'dualvar',
+            '"The Answer" (dualvar: 42)'
+        ],
+        [ "Nil",  'string',  '"Nil" (dualvar: 0)' ],
+        [ 0123,   'number' ],
+        [ "0199", 'dualvar', '"0199" (dualvar: 199)' ],
+      )
+    {
+        my ( $var, $type, $expected ) = @$t;
+        my $ddp = Data::Printer::Object->new( colored => 0, show_numbers_strict => 'on' );
+        is(
+            $ddp->parse( \$var ),
+            defined $expected ? $expected : "$var",
+            "$var in lax mode and show_numbers_strict is a $type"
+        );
+    }
+
+    # one very specific Perl dualvar
+    TODO: {
+        local $TODO;
+        if ($^O eq 'MSWin32') {
+            $TODO = q(Windows sometimes doesn't respect $! as a dualvar [lax]);
+        }
+        local $! = 2;
+        like(
+            Data::Printer::Object->new( colored => 0 )->parse( \$! ),
+            qr/".+" \(dualvar: 2\)/,
+            '$! is a dualvar'
+        );
+    };
 }
 
 sub test_dualvar_lax {

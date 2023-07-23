@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
+use B;
 
 filter 'SCALAR' => \&parse;
 filter 'LVALUE' => sub {
@@ -26,7 +27,12 @@ sub parse {
     elsif ( $ddp->show_dualvar ne 'off' ) {
         my $numified;
         $numified = do { no warnings 'numeric'; 0+ $value } if defined $value;
-        if ( $numified ) {
+        if ( ( $numified || $numified == 0 ) && $ddp->show_numbers_strict eq 'on' && ! _is_number_strict( $value ) ) {
+            $ret = Data::Printer::Common::_process_string( $ddp, "$value", 'string' );
+            $ret = _quoteme($ddp, $ret);
+            $ret .= ' (dualvar: ' . $ddp->maybe_colorize( $numified, 'number' ) . ')';
+        }
+        elsif ( $numified ) {
             if ( "$numified" eq $value
                 || (
                     # lax mode allows decimal zeroes
@@ -120,6 +126,11 @@ sub _is_number {
     /x;
 
     return $is_number;
+}
+
+sub _is_number_strict {
+    my ($maybe_a_number) = @_;
+    return (0 != (B::svref_2object(\$maybe_a_number)->FLAGS & B::SVf_POK)) ? 0 : 1;
 }
 
 1;
