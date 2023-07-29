@@ -1169,7 +1169,7 @@ option to 0.
 =head3 class_method
 
 When Data::Printer is printing an object, it first looks for a method
-named "C<_dataprinter>" and, if one is found, we call it instead of actually
+named "C<_data_printer>" and, if one is found, we call it instead of actually
 parsing the structure.
 
 This way, module authors can control how Data::Printer outputs their objects
