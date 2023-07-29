@@ -327,7 +327,7 @@ Here's what Data::Printer offers Perl developers, out of the box:
 
 =over 4
 
-=item * Variable dumps designed for I<< easy parsing by the human brain >>,
+=item * Variable dumps designed for B<< easy parsing by the human brain >>,
 not a machine.
 
 =back
@@ -371,11 +371,18 @@ or install hardcore tools like Devel::Peek and Devel::Gladiator.
 
 =over 4
 
+=item * B<< Full support for dumping perl 5.38 native classes >>.
+
+=back
+
+=over 4
+
 =item * keep your custom settings on a
 L<< .dataprinter|/The .dataprinter configuration file >> file that allows
-B<< different options per module >> being analyzed! You may also create a
-custom L<profile|Data::Printer::Profile> class with your preferences and
-filters and upload it to CPAN.
+B<< different options per module >> being analyzed! You can have
+B<< one C<.dataprinter> file per project >>, or default to one in your home
+directory. You may also create a custom L<profile|Data::Printer::Profile> class
+with your preferences and filters and upload it to CPAN.
 
 =back
 
@@ -399,7 +406,8 @@ and the customization section below cover about 90% of all use cases.
 =over 4
 
 =item * Works on B<< Perl 5.8 and later >>. Because you can't control where
-you debug, we try our best to be compatible with all versions of Perl 5.
+you debug, we try our best to be compatible with all versions of Perl 5, from
+the oldest available to the bleeding edge.
 
 =back
 
@@ -932,8 +940,24 @@ to be dumped using Data::Printer.
 =head2 Using Data::Printer in a perl shell (REPL)
 
 Some people really enjoy using a REPL shell to quickly try Perl code. One
-of the most popular ones out there is L<Devel::REPL>. If you use it, now
-you can also see its output with Data::Printer!
+of the most popular ones out there are L<Reply> and L<Devel::REPL>. If you
+use them, now you can also see its output with Data::Printer!
+
+=over 4
+
+=item * B<Reply>
+
+=back
+
+Just install L<Reply::Plugin::DataPrinter> and add a line with
+C<< [DataPrinter] >> to your C<.replyrc> file. That's it! Next time
+you run the 'reply' REPL, Data::Printer will be used to dump variables!
+
+=over 4
+
+=item * B<Devel::REPL>
+
+=back
 
 Just install L<Devel::REPL::Plugin::DataPrinter> and add the following
 line to your re.pl configuration file (usually ".re.pl/repl.rc" in your
