@@ -11,7 +11,7 @@ my $nsort_initialized;
 sub _filter_category_for {
     my ($name) = @_;
     my %core_types = map { $_ => 1 }
-        qw(SCALAR LVALUE ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE);
+        qw(SCALAR LVALUE ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE OBJECT);
     return exists $core_types{$name} ? 'type_filters' : 'class_filters';
 }
 

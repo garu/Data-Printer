@@ -58,6 +58,7 @@ use Data::Printer::Filter::GLOB;
 use Data::Printer::Filter::FORMAT;
 use Data::Printer::Filter::Regexp;
 use Data::Printer::Filter::CODE;
+use Data::Printer::Filter::OBJECT;
 use Data::Printer::Filter::GenericClass;
 
 # create our basic accessors:
@@ -363,7 +364,7 @@ sub _load_filters {
     my ($self, $props) = @_;
 
     # load our core filters (LVALUE is under the 'SCALAR' filter module)
-    my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE GenericClass);
+    my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE OBJECT GenericClass);
     foreach my $class (@core_filters) {
         $self->_load_external_filter($class);
     }
