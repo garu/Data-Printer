@@ -1,5 +1,15 @@
 Revision history for Data-Printer
 
+1.1.1   2023-07-30
+    BUG FIXES:
+        - explicitly mentions that native perl classes (perl 5.38) do not
+           have internals.
+        - 'quiet' now returns the data properly when return_value is 'pass'.
+        - cope with import and unimport in perl 5.39 UNIVERSAL (Graham Knop)
+        - fix tie issue (thank you Curtis 'Ovid' Poe for reporting and
+          Leon Timmermans for providing a patch)
+        - doc fixes and improvements (Matthias Muth, Elvin Aslanov)
+
 1.1.0   2022-12-22
     NEW FEATURES:
         - new option 'coderef_stub' letting you customize what to show on
