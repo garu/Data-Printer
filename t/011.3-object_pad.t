@@ -13,7 +13,7 @@ sub test_object_pad {
             'use Object::Pad 0.60; class TestClass { has $x :param = 42; method one($dX) { } method two { } }'
         );
         skip 'Object::Pad 0.60+ not found', 1 if $error;
-        
+
         my $ddp = Data::Printer::Object->new( colored => 0, class => { show_reftype => 1 } );
         my $obj = TestClass->new( x => 666 );
         my $parsed = $ddp->parse($obj);
@@ -34,5 +34,3 @@ sub test_object_pad {
         );
     };
 }
-
-

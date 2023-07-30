@@ -22,7 +22,7 @@ my $error = Data::Printer::Common::_tryme(<<'EOCODE'
 
     method base_foo { }
   }
-  
+
   class MyClass :isa(MyBaseClass) {
     field $four;
     field $five   :param = 42;
