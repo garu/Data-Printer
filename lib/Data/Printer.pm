@@ -1134,7 +1134,7 @@ If I missed your name, please drop me a line!
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2011-2021 Breno G. de Oliveira
+Copyright (C) 2011-2023 Breno G. de Oliveira
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
