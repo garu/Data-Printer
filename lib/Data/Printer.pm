@@ -112,9 +112,20 @@ sub p (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
-    return if $args_to_use->{quiet};
-    my $printer = Data::Printer::Object->new($args_to_use);
     my $want_value = defined wantarray;
+
+    # return as quickly as possible under 'quiet'.
+    if ($args_to_use->{quiet}) {
+        # we avoid creating a Data::Printer::Object instance
+        # to speed things up, since we don't do anything under 'quiet'.
+        my $return_type = Data::Printer::Common::_fetch_anyof(
+            $args_to_use, 'return_value', 'pass', [qw(pass dump void)]
+        );
+        return _handle_output(undef, undef, $want_value, $_[0], $return_type, 1);
+    }
+
+    my $printer = Data::Printer::Object->new($args_to_use);
+
     if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
         $printer->{_output_color_level} = 0;
     }
@@ -131,7 +142,7 @@ sub p (\[@$%&];%) {
         $output = $printer->_write_label . $output;
     }
 
-    return _handle_output($printer, $output, $want_value, $_[0]);
+    return _handle_output($output, $printer->{output_handle}, $want_value, $_[0], $printer->return_value, undef);
 }
 
 # This is a p() clone without prototypes. Just like regular Data::Dumper,
@@ -151,10 +162,20 @@ sub _p_without_prototypes  {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
-    return if $args_to_use->{quiet};
+    my $want_value = defined wantarray;
+
+    # return as quickly as possible under 'quiet'.
+    if ($args_to_use->{quiet}) {
+        # we avoid creating a Data::Printer::Object instance
+        # to speed things up, since we don't do anything under 'quiet'.
+        my $return_type = Data::Printer::Common::_fetch_anyof(
+            $args_to_use, 'return_value', 'pass', [qw(pass dump void)]
+        );
+        return _handle_output(undef, undef, $want_value, $_[0], $return_type, 1);
+    }
+
     my $printer = Data::Printer::Object->new($args_to_use);
 
-    my $want_value = defined wantarray;
     if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
         $printer->{_output_color_level} = 0;
     }
@@ -172,15 +193,15 @@ sub _p_without_prototypes  {
         $output = $printer->_write_label . $output;
     }
 
-    return _handle_output($printer, $output, $want_value, $_[0]);
+    return _handle_output($output, $printer->{output_handle}, $want_value, $_[0], $printer->return_value, undef);
 }
 
 
 sub _handle_output {
-    my ($printer, $output, $wantarray, $data) = @_;
+    my ($output, $out_handle, $wantarray, $data, $return_type, $quiet) = @_;
 
-    if ($printer->return_value eq 'pass') {
-        print { $printer->{output_handle} } $output . "\n";
+    if ($return_type eq 'pass') {
+        print { $out_handle } $output . "\n" unless $quiet;
         require Scalar::Util;
         my $ref = Scalar::Util::blessed($data);
         return $data if defined $ref;
@@ -201,8 +222,8 @@ sub _handle_output {
             return $data;
         }
     }
-    elsif ($printer->return_value eq 'void' || !$wantarray) {
-        print { $printer->{output_handle} } $output . "\n";
+    elsif ($return_type eq 'void' || !$wantarray) {
+        print { $out_handle} $output . "\n" unless $quiet;
         return;
     }
     else {
