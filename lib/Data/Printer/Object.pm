@@ -48,7 +48,6 @@ package # hide from pause
 
 package Data::Printer::Object;
 use Scalar::Util ();
-use Hash::Util::FieldHash ();
 use Data::Printer::Theme;
 use Data::Printer::Filter::SCALAR; # also implements LVALUE
 use Data::Printer::Filter::ARRAY;
@@ -573,7 +572,7 @@ sub _filters_for_data {
     return @potential_filters;
 }
 
-# _see($data): marks data as seen if it was never seen it before.
+# _see($data): marks data as seen if it was never seen before.
 # if we are showing refcounts, we return those. Initially we had
 # this funcionallity separated, but refcounts increase as we find
 # them again and because of that we were seeing weird refcounting.
@@ -589,14 +588,21 @@ sub _filters_for_data {
 sub _see {
     my ($self, $data, %options) = @_;
     return {} unless ref $data;
-    my $id = Hash::Util::FieldHash::id($data);
+    my $id = pack 'J', Scalar::Util::refaddr($data);
     if (!exists $self->{_seen}{$id}) {
-        $self->{_seen}{$id} = {
+        my $entry = {
             name     => $self->current_name,
             refcount => ($self->show_refcount ? $self->_refcount($data) : 0),
         };
-        Hash::Util::FieldHash::register($data, $self->{_seen}) if $options{tied_parent};
-        return { refcount => $self->{_seen}{$id}->{refcount} };
+        # the values returned by tied hashes are temporaries, so we can't
+        # mark them as 'seen'. Ideally, we'd use something like
+        # Hash::Util::Fieldhash::register() (see PR#179) and remove entries
+        # from $self->{_seen} when $data is destroyed. The problem is this
+        # adds a lot of internal magic to the data we're inspecting (we tried,
+        # see Issue#75), effectively changing it. So we just ignore them, at
+        # the risk of missing some circular reference.
+        $self->{_seen}{$id} = $entry unless $options{tied_parent};
+        return { refcount => $entry->{refcount} };
     }
     return { refcount => $self->{_seen}{$id}->{refcount} } if $options{seen_override};
     return $self->{_seen}{$id};
@@ -604,7 +610,7 @@ sub _see {
 
 sub seen {
     my ($self, $data) = @_;
-    my $id = Hash::Util::FieldHash::id($data);
+    my $id = pack 'J', Scalar::Util::refaddr($data);
     return exists $self->{_seen}{$id};
 }
 
@@ -612,7 +618,7 @@ sub unsee {
     my ($self, $data) = @_;
     return unless ref $data && keys %{$self->{_seen}};
 
-    my $id = Hash::Util::FieldHash::id($data);
+    my $id = pack 'J', Scalar::Util::refaddr($data);
     delete $self->{_seen}{$id};
     return;
 }
