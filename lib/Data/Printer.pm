@@ -484,7 +484,7 @@ or prefix C<p()> with C<&>:
 
 You can pass custom options that will work only on that particular call:
 
-    p @var, as => "some label", colorized => 0;
+    p @var, as => "some label", colored => 0;
     p %var, show_memsize => 1;
 
 By default, C<p()> prints to STDERR and returns the same variable being
