@@ -264,7 +264,7 @@ You may also customize the look and feel with the following options (defaults sh
 =head1 DESCRIPTION
 
 This is a filter plugin for L<Data::Printer>. It filters through several
-web-related objects and display their content in a (hopefully!) more userful
+web-related objects and display their content in a (hopefully!) more useful
 way than a regular dump.
 
 =head1 PARSED MODULES

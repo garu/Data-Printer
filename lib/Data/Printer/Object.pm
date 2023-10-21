@@ -859,7 +859,7 @@ values, and when set to "off" it will never show the second value. (default: lax
 
 =head3 show_lvalue
 
-Let's you know whenever a value is an lvalue (default: 1)
+Lets you know whenever a value is an lvalue (default: 1)
 
 =head3 string_max
 
@@ -896,7 +896,7 @@ whether to use the character's names when escaping unicode (e.g. SNOWMAN instead
 
 =head3 print_escapes
 
-Wether to print invisible characters in strings, like \b, \n and \t (default: 0)
+Whether to print invisible characters in strings, like \b, \n and \t (default: 0)
 
 =head3 resolve_scalar_refs
 

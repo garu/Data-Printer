@@ -790,7 +790,7 @@ you want):
     p my @array = qw(a b c d);          # wrong
     my @array = qw(a b c d); p @array;  # right
 
-If you pass a nonexistant key/index to DDP using prototypes, they
+If you pass a nonexistent key/index to DDP using prototypes, they
 will trigger autovivification:
 
     use DDP;
