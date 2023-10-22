@@ -79,7 +79,7 @@ and the final outcome will be as if your setup said:
 However, that is of course only true when the profile is loaded together with
 the other settings. If you set a profile later, for instance as an argument to
 C<p()> or C<np()>, then the profile will override any previous settings -
-though it will still be overriden by other inline arguments.
+though it will still be overridden by other inline arguments.
 
 
 =head1 SEE ALSO
