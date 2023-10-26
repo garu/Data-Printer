@@ -884,6 +884,8 @@ option defines which part of the string to preserve. Can be set to 'begin',
 
 Which quotation character to use when printing strings (default: ")
 
+Can be set to 0 (never quote).
+
 =head3 escape_chars
 
 Use this to escape certain characters from strings, which could be useful if
