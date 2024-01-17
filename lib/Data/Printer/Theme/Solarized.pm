@@ -38,8 +38,10 @@ sub colors {
         vstring     => $code_for{base1},  # version strings (v5.16.0, etc)
         lvalue      => $code_for{green},  # lvalue label
         format      => $code_for{green},  # format type
-        repeated    => $code_for{red},  # references to seen values
-        caller_info => $code_for{cyan},  # details on what's being printed
+        true        => $code_for{blue},   # boolean type (true)
+        false       => $code_for{blue},   # boolean type (false)
+        repeated    => $code_for{red},    # references to seen values
+        caller_info => $code_for{cyan},   # details on what's being printed
         weak        => $code_for{violet},  # weak references flag
         tainted     => $code_for{violet},  # tainted flag
         unicode     => $code_for{magenta},  # utf8 flag

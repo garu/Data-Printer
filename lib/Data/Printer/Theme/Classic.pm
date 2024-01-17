@@ -18,6 +18,8 @@ sub colors {
         vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
         lvalue      => '',              # lvalue label
         format      => '',              # format type
+        true        => 'bright_cyan',   # boolean type (true)
+        false       => 'bright_cyan',   # boolean type (false)
         repeated    => 'white on_red',  # references to seen values
         caller_info => 'bright_cyan',   # details on what's being printed
         weak        => 'cyan',          # weak references

@@ -1,6 +1,6 @@
 package Data::Printer::Theme::Material;
 # inspired by Mattia Astorino's Material theme:
-# https://github.com/equinusocio/vsc-material-theme
+# https://github.com/material-theme/vsc-material-theme
 use strict;
 use warnings;
 
@@ -37,6 +37,8 @@ sub colors {
         vstring     => $code_for{strong_orange},  # version strings (v5.16.0, etc)
         lvalue      => $code_for{strong_orange},  # lvalue label
         format      => $code_for{strong_orange},  # format type
+        true        => $code_for{blue},           # boolean type (true)
+        false       => $code_for{blue},           # boolean type (false)
         repeated    => $code_for{red},  # references to seen values
         caller_info => $code_for{gray},  # details on what's being printed
         weak        => $code_for{green},  # weak references flag

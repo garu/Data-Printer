@@ -30,11 +30,13 @@ my $sample = {
     baz => 789,
   },
   readonly => \2,
+  boolean => [1 == 1, 1 == 2],
   regexp => qr/foo.*bar/i,
   glob   => \*STDOUT,
   code   => sub { return 42 },
   class  => $obj,
 };
+
 
 $sample->{weakref} = $sample;
 weaken $sample->{weakref};

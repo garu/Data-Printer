@@ -2,11 +2,12 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 67;
+use Test::More tests => 72;
 use Data::Printer::Object;
 use Scalar::Util;
 
 test_basic_values();
+test_boolean_values();
 test_tainted_values();
 test_unicode_string();
 test_escape_chars();
@@ -55,6 +56,23 @@ sub test_basic_values {
     $object = Data::Printer::Object->new( colored => 0 );
     $var = 123;
     is $object->parse(\$var), '123', 'integer 123 in variable';
+}
+
+sub test_boolean_values {
+    SKIP: {
+        skip 'booleans only exist after 5.36', 5 unless $] ge '5.036000';
+        my $object = Data::Printer::Object->new( colored => 0 );
+        my $var = 1 == 1;
+        is $object->parse(\$var), 'true', 'boolean true is "true"';
+        $var = 1 == 2;
+        is $object->parse(\$var), 'false', 'boolean false is "false"';
+        $var = 1;
+        is $object->parse(\$var), '1', '1 is 1, not "true"';
+        $var = '';
+        is $object->parse(\$var), '""', 'empty string is "", not "false"';
+        $var = 0;
+        is $object->parse(\$var), '0', '0 is 0, not "false"';
+    };
 }
 
 sub test_tainted_values {

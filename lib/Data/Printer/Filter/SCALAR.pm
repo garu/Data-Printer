@@ -4,6 +4,8 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
+my $HAS_BOOLEAN = $] ge '5.036000' && eval 'use builtin; 1';
+
 filter 'SCALAR' => \&parse;
 filter 'LVALUE' => sub {
     my ($scalar_ref, $ddp) = @_;
@@ -22,6 +24,13 @@ sub parse {
 
     if (not defined $value) {
         $ret = $ddp->maybe_colorize('undef', 'undef');
+    }
+    elsif ($HAS_BOOLEAN && _is_bool($value)) {
+        if ($value) {
+            $ret = $ddp->maybe_colorize('true', 'true');
+        } else {
+            $ret = $ddp->maybe_colorize('false', 'false');
+        }
     }
     elsif ( $ddp->show_dualvar ne 'off' ) {
         my $numified;
@@ -121,5 +130,11 @@ sub _is_number {
 
     return $is_number;
 }
+
+sub _is_bool {
+    no warnings 'experimental::builtin';
+    return builtin::is_bool($_[0]);
+}
+
 
 1;
