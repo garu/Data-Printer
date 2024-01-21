@@ -5,7 +5,7 @@ use Data::Printer;
 
 BEGIN {
     push our @ISA, 'Data::Printer';
-    our $VERSION = '1.001001';
+    our $VERSION = '1.002000';
     $VERSION = eval $VERSION;
 }
 1;

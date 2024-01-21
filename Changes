@@ -1,5 +1,11 @@
 Revision history for Data-Printer
 
+1.2.0	2024-01-21
+    NEW FEATURES:
+        - support the core boolean type (true/false) in perl >= 5.36.0
+    OTHER:
+        - doc fixes and improvements (Florian Schlichting, Andre Klärner)
+
 1.1.1   2023-07-30
     BUG FIXES:
         - explicitly mentions that native perl classes (perl 5.38) do not
