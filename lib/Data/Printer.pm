@@ -1099,15 +1099,15 @@ Many thanks to everyone who helped design and develop this module with
 patches, bug reports, wishlists, comments and tests. They are (alphabetically):
 
 Adam Rosenstein, Alexandr Ciornii (chorny), Alexander Hartmaier (abraxxa),
-Allan Whiteford, Anatoly (Snelius30), Andreas König (andk), Andy Bach,
-Anthony DeRobertis, Árpád Szász, Athanasios Douitsis (aduitsis),
+Allan Whiteford, Anatoly (Snelius30), Andre Klärner, Andreas König (andk),
+Andy Bach, Anthony DeRobertis, Árpád Szász, Athanasios Douitsis (aduitsis),
 Baldur Kristinsson, Benct Philip Jonsson (bpj), brian d foy,
 Chad Granum (exodist), Chris Prather (perigrin), Curtis Poe (Ovid),
 David D Lowe (Flimm), David E. Condon (hhg7), David Golden (xdg),
 David Precious (bigpresh), David Raab, David E. Wheeler (theory),
 Damien Krotkine (dams), Denis Howe, dirk, Dotan Dimet, Eden Cardim (edenc),
 Elliot Shank (elliotjs), Elvin Aslanov, Eugen Konkov (KES777),
-Fernando Corrêa (SmokeMachine), Fitz Elliott, Florian (fschlich),
+Fernando Corrêa (SmokeMachine), Fitz Elliott, Florian Schlichting (fschlich),
 Frew Schmidt (frew), GianniGi, Graham Knop (haarg), Graham Todd,
 Gregory J. Oschwald, grr, Håkon Hægland, Iaroslav O. Kosmina (darviarush),
 Ivan Bessarabov (bessarabv), J Mash, James E. Keenan (jkeenan),
