@@ -4,7 +4,7 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
-use constant HAS_BOOLEAN => $] ge '5.036000' && eval 'use builtin; 1';
+use constant HAS_BOOLEAN => $] ge '5.036000';
 
 filter 'SCALAR' => \&parse;
 filter 'LVALUE' => sub {
