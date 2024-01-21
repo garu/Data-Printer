@@ -4,7 +4,7 @@ use warnings;
 use Data::Printer::Filter;
 use Scalar::Util;
 
-my $HAS_BOOLEAN = $] ge '5.036000' && eval 'use builtin; 1';
+use constant HAS_BOOLEAN => $] ge '5.036000' && eval 'use builtin; 1';
 
 filter 'SCALAR' => \&parse;
 filter 'LVALUE' => sub {
@@ -25,7 +25,7 @@ sub parse {
     if (not defined $value) {
         $ret = $ddp->maybe_colorize('undef', 'undef');
     }
-    elsif ($HAS_BOOLEAN && _is_bool($value)) {
+    elsif (HAS_BOOLEAN && _is_bool($value)) {
         if ($value) {
             $ret = $ddp->maybe_colorize('true', 'true');
         } else {
@@ -132,7 +132,7 @@ sub _is_number {
 }
 
 sub _is_bool {
-    no warnings 'experimental::builtin';
+    no if HAS_BOOLEAN, warnings => 'experimental::builtin';
     return builtin::is_bool($_[0]);
 }
 
