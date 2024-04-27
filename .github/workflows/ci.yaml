@@ -1,20 +1,34 @@
 name: CI
 
 on: [push, pull_request]
+
 jobs:
+  perl-versions:
+    runs-on: ubuntu-latest
+    name: List Perl versions
+    outputs:
+      perl-versions: ${{ steps.action.outputs.perl-versions }}
+    steps:
+      - id: action
+        uses: perl-actions/perl-versions@v1
+        with:
+          since-perl: v5.8
+          with-devel: true
   test:
+    needs:
+      - perl-versions
     strategy:
       fail-fast: false
       matrix:
-        perl: [ '5.20', '5.22', '5.24', '5.26', '5.28', '5.30', '5.32', '5.34', '5.36', '5.36-threaded' ]
-        # See options here: https://hub.docker.com/_/perl/tags
+        perl-version: ${{ fromJson (needs.perl-versions.outputs.perl-versions) }}
 
     runs-on: ubuntu-latest
-    name: perl ${{matrix.perl}}
-    container: perl:${{matrix.perl}}
+    name: perl ${{matrix.perl-version}}
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Show perl version
       run: |
         perl -v
