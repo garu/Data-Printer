@@ -1438,7 +1438,7 @@ Shows the current depth level, from 0 onwards.
 
 =head3 current_name
 
-Gets/sets the name for the current posistion, to be printed when the parser
+Gets/sets the name for the current position, to be printed when the parser
 visits that data again. E.g. C<var[0]{abc}[2]>.
 
 =head3 parse( $data_ref )
