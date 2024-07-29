@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 21;
+use Test::More tests => 22;
 use Data::Printer::Object;
 
 my $has_timepiece;
@@ -75,7 +75,7 @@ sub test_time_piece {
 
 sub test_datetime {
     SKIP: {
-        skip 'DateTime not available', 3 unless eval 'use DateTime; 1';
+        skip 'DateTime not available', 4 unless eval 'use DateTime; 1';
         my $d1 = DateTime->new(
             year      => 1981,
             month     =>  9,
@@ -103,7 +103,7 @@ sub test_datetime {
         is( $ddp->parse($d1), '1981-09-29T00:00:00', 'DateTime without TZ data' );
 
         my $diff;
-        skip 'DateTime::Duration not available', 1
+        skip 'DateTime::Duration not available', 2
             unless eval { $diff = $d2 - $d1; $diff && $diff->isa('DateTime::Duration') };
 
         $ddp = Data::Printer::Object->new(
@@ -111,6 +111,13 @@ sub test_datetime {
             filters => ['DateTime'],
         );
         is( $ddp->parse($diff), '3y 1m 16d 0h 0m 0s', 'DateTime::Duration' );
+
+        my $diff_plus_9ns = $diff->clone->add(nanoseconds => 9);
+        is(
+            $ddp->parse($diff_plus_9ns),
+            '3y 1m 16d 0h 0m 0s 9ns',
+            'DateTime::Duration'
+        );
     };
 }
 

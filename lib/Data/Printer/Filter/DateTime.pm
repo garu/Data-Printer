@@ -80,8 +80,13 @@ filter 'DateTime', sub {
 filter 'DateTime::Duration', sub {
     my ($obj, $ddp) = @_;
 
-    my @dur    = $obj->in_units(qw(years months days hours minutes seconds));
+    my @dur    = $obj->in_units(qw(years months days hours minutes seconds nanoseconds));
     my $string = "$dur[0]y $dur[1]m $dur[2]d $dur[3]h $dur[4]m $dur[5]s";
+
+    if ($dur[6] > 0) {
+        $string .= " $dur[6]ns";
+    }
+
     return _format( $string, @_ );
 };
 
