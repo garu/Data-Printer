@@ -23,15 +23,15 @@ is performed and/or merged into. When we make a release, we tag it.
 
 To help you naviage the codebase, below is a rough project outline:
 
-DDP.pm - an alias to Data::Printer;
-Data/Printer.pm - initialization, main imported functions and output handling;
-Data/Printer/Common.pm - shared code (string processing, try/catch, sorting, etc);
-Data/Printer/Config.pm - rc file loading, option merging;
-Data/Printer/Object.pm - stores options, dispatches data to active filters;
-Data/Printer/Filter.pm - used in filters, exports the 'filter' command;
-Data/Printer/Filter/*.pm - filters that print each data type;
-Data/Printer/Theme.pm - handles color themes;
-Data/Printer/Theme/*.pm - each contain a theme's color settings;
+* DDP.pm - an alias to Data::Printer;
+* Data/Printer.pm - initialization, main imported functions and output handling;
+* Data/Printer/Common.pm - shared code (string processing, try/catch, sorting, etc);
+* Data/Printer/Config.pm - rc file loading, option merging;
+* Data/Printer/Object.pm - stores options, dispatches data to active filters;
+* Data/Printer/Filter.pm - used in filters, exports the 'filter' command;
+* Data/Printer/Filter/*.pm - filters that print each data type;
+* Data/Printer/Theme.pm - handles color themes;
+* Data/Printer/Theme/*.pm - each contain a theme's color settings;
 
 #### Submitting your patch / pull request
 
