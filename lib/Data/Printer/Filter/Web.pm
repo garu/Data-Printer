@@ -21,16 +21,27 @@ sub _parse_json_boolean {
 filter 'JSON::NotString' => sub { _parse_json_boolean($_[0]->{value}, $_[1]) };
 
 # JSON::Typist
-filter 'JSON::Typist::String' => sub {
-    my ($obj, $ddp) = @_;
-    require Data::Printer::Common;
-    my $ret = Data::Printer::Common::_process_string($ddp, "$obj", 'string');
-    my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
-    return $quote . $ret . $quote;
+filter 'JSON::Typist::Number' => sub {
+  my ($object, $ddp) = @_;
+  return  $ddp->maybe_colorize($$object, 'number')
+        . ' '
+        . $ddp->maybe_colorize('[', 'brackets')
+        . $ddp->maybe_colorize('jnum', 'number')
+        . $ddp->maybe_colorize(']', 'brackets');
 };
 
-filter 'JSON::Typist::Number' => sub {
-    return $_[1]->maybe_colorize($_[0], 'number');
+filter 'JSON::Typist::String' => sub {
+  my ($object, $ddp) = @_;
+
+  require Data::Printer::Common;
+  my $str = Data::Printer::Common::_process_string($ddp, $$object, 'string');
+  my $quote = $ddp->maybe_colorize($ddp->scalar_quotes, 'quotes');
+
+  return  $quote . $str . $quote
+        . ' '
+        . $ddp->maybe_colorize('[', 'brackets')
+        . $ddp->maybe_colorize('jstr', 'string')
+        . $ddp->maybe_colorize(']', 'brackets');
 };
 
 # NOTE: boolean is used by Pegex::JSON
