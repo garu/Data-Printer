@@ -2,7 +2,7 @@
 # ^^ taint mode must be on for taint checking.
 use strict;
 use warnings;
-use Test::More tests => 72;
+use Test::More tests => 73;
 use Data::Printer::Object;
 use Scalar::Util;
 
@@ -112,6 +112,15 @@ sub test_escape_chars {
         $object->parse(\$string),
         qq("L\\x{e9}on likes to build a m\\x{f8}\\x{f8}se \\x{2603} with \\x{2744}\\x{2746}"),
         'escaping nonascii'
+    );
+
+    # All the $string content is printable, so we'll add a non-printable
+    # character to see it escaped.
+    $object = Data::Printer::Object->new( colored => 0, escape_chars => 'nonprintable' );
+    is(
+        $object->parse(\"\cX $string"), # ^X is U+0018, CANCEL
+        qq("\\x{18} $string"),
+        'escaping nonprintable'
     );
 
     $object = Data::Printer::Object->new( colored => 0, escape_chars => 'nonascii', unicode_charnames => 1 );

@@ -146,7 +146,7 @@ sub _init {
                             $props,
                             'escape_chars',
                             'none',
-                            [qw(none nonascii nonlatin1 all)]
+                            [qw(none nonascii nonlatin1 nonprintable all)]
                         );
     $self->{'caller_info'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'caller_info', 0);
     $self->{'caller_message'} = Data::Printer::Common::_fetch_scalar_or_default(
