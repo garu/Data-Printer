@@ -121,8 +121,9 @@ sub _escape_chars {
 
     my $escape_kind = $ddp->escape_chars;
     my %target_for = (
-        nonascii  => '[^\x{00}-\x{7f}]+',
-        nonlatin1 => '[^\x{00}-\x{ff}]+',
+        nonascii      => '[^\x{00}-\x{7f}]+',
+        nonlatin1     => '[^\x{00}-\x{ff}]+',
+        nonprintable  => '\P{Print}',
     );
 
     if ($ddp->unicode_charnames) {
