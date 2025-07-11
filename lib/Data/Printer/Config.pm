@@ -39,7 +39,10 @@ sub _get_first_rc_file_available {
         $dir = $updir;
     }
     # still here? look for .dataprinter on the user's HOME:
-    return File::Spec->catfile( _my_home(), '.dataprinter');
+    my $file = File::Spec->catfile( _my_home(), '.dataprinter');
+    return $file if -f $file;
+    # still no luck? :( look for dataprinter/config in XDG_CONFIG_HOME
+    return File::Spec->catfile($ENV{XDG_CONFIG_HOME}, 'dataprinter', 'config');
 }
 
 sub _my_cwd {
