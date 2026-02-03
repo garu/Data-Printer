@@ -11,6 +11,12 @@ filter 'SCALAR' => sub {
     my $len = length($$data);
     return if $len < 22;
 
+    # unpack H (below) requires bytes, but $$data could be a perl string
+    # with multibyte codepoints (and clearly not a HTTP::Message content).
+    for (my $i = 0; $i < 22; $i++) {
+        return if ord(substr($$data, $i, 1)) > 255;
+    }
+
     my $hex = unpack('H22', $$data);
     my $hex_8 = substr($hex,0,8);
 
